@@ -23,6 +23,11 @@ export interface Issue {
   /** Human-readable explanation (Spanish) */
   message: string;
   severity: Severity;
+  /**
+   * Relative business impact of fixing this issue.
+   * When omitted, impact is derived from severity at sort time.
+   */
+  impact?: 'high' | 'medium' | 'low';
   /** Optional actionable hint to fix the issue */
   hint?: string;
 }
@@ -117,18 +122,48 @@ export interface GlobalSummary {
    */
   consistencyScore: Score;
   /**
+   * Strategic readiness of the canvas [0–100].
+   * Measures investment/go-to-market preparation signals: financial
+   * viability indicators, competitive awareness, defensible moat,
+   * and absence of critical structural gaps.
+   * 0 = not ready  |  100 = highly investment-ready.
+   */
+  strategicReadinessScore: Score;
+  /**
    * One-line VC-style verdict based on overallScore:
    *   ≥ 80 → "Sólido"  |  60–79 → "Prometedor"  |  40–59 → "En desarrollo"  |  < 40 → "Necesita trabajo"
    */
   verdict: string;
+  /**
+   * Personalized narrative headline summarising the canvas state.
+   * More descriptive than verdict; intended for display at the top of the results panel.
+   */
+  headline: string;
+  /**
+   * The single most important next action the user should take.
+   * Derived from the most critical gap found (completion, cross-block issues,
+   * specificity or strategic readiness).
+   */
+  nextPriority: string;
   /** Top-level strengths extracted from block results */
   topStrengths: Strength[];
-  /** Top-level issues extracted from block results */
+  /** Top-level issues extracted from block results, sorted by severity then impact */
   topIssues: Issue[];
   /** Issues that arise from the interaction between blocks */
   crossBlockIssues: CrossBlockIssue[];
   /** Free-text overall recommendation */
   recommendation: string;
+  /**
+   * Explicit weights used to compute overallScore.
+   * Exposed for UI transparency so users understand how the score is calculated.
+   */
+  scoreWeights: {
+    completeness: number;
+    clarity: number;
+    specificity: number;
+    consistency: number;
+    strategicReadiness: number;
+  };
 }
 
 // ── EvaluationResult ────────────────────────────────────────

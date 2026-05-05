@@ -232,6 +232,52 @@ export function computeSpecificityScore(
 // ── Canvas-level aggregation ─────────────────────────────────
 
 /**
+ * Transparent weights used to compute the canvas-level overallScore
+ * from the five quality dimensions.
+ *
+ *   completeness     25% — Is the canvas fully filled?
+ *   clarity          25% — Is the content specific and non-generic?
+ *   specificity      20% — Is the content quantified and actionable?
+ *   consistency      20% — Are the blocks strategically coherent?
+ *   strategicReadiness 10% — Is the canvas ready for pitching / validation?
+ *
+ * All weights sum to 1.0.
+ */
+export const SCORE_WEIGHTS = {
+  completeness:        0.25,
+  clarity:             0.25,
+  specificity:         0.20,
+  consistency:         0.20,
+  strategicReadiness:  0.10,
+} as const;
+
+/**
+ * Compute the transparent canvas-level overall score [0–100]
+ * from the five quality-dimension subscores using SCORE_WEIGHTS.
+ *
+ * @param completenessScore      Average completeness across all 9 blocks [0–100].
+ * @param clarityScore           Average clarity across all 9 blocks [0–100].
+ * @param specificityScore       Average specificity across all 9 blocks [0–100].
+ * @param consistencyScore       Cross-block consistency score [0–100].
+ * @param strategicReadinessScore Canvas strategic readiness score [0–100].
+ */
+export function computeOverallScore(
+  completenessScore: Score,
+  clarityScore: Score,
+  specificityScore: Score,
+  consistencyScore: Score,
+  strategicReadinessScore: Score,
+): Score {
+  const raw =
+    completenessScore       * SCORE_WEIGHTS.completeness +
+    clarityScore            * SCORE_WEIGHTS.clarity +
+    specificityScore        * SCORE_WEIGHTS.specificity +
+    consistencyScore        * SCORE_WEIGHTS.consistency +
+    strategicReadinessScore * SCORE_WEIGHTS.strategicReadiness;
+  return Math.round(Math.max(0, Math.min(100, raw))) as Score;
+}
+
+/**
  * Aggregate per-block subscores into a single canvas-level value.
  * Blocks that were not filled contribute 0 to all subscores.
  *
