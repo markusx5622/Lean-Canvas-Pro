@@ -15,6 +15,7 @@ import { AboutDialog } from '../components/dialogs/AboutDialog';
 import { AuditDialog } from '../components/dialogs/AuditDialog';
 import { ConfirmDialog } from '../components/dialogs/ConfirmDialog';
 import { PromptDialog } from '../components/dialogs/PromptDialog';
+import { SettingsModal } from '../components/dialogs/SettingsModal';
 import { ShareModal } from '../components/ShareModal';
 import { SplashPage } from './SplashPage';
 import { BLOCKS } from '../data/blocks';
@@ -51,6 +52,7 @@ export function WorkspacePage() {
   const [auditResult, setAuditResult] = useState<EvaluationResult | null>(null);
   const [blockAuditResult, setBlockAuditResult] = useState<BlockFeedback | null>(null);
   const [showAboutDialog, setShowAboutDialog] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [canvasEntryKey, setCanvasEntryKey] = useState(0);
@@ -97,7 +99,7 @@ export function WorkspacePage() {
   }, [canvasLoading, projects]);
 
   useEffect(() => {
-    const shouldLock = showSplash || showAboutDialog || !!auditResult;
+    const shouldLock = showSplash || showAboutDialog || showSettingsModal || !!auditResult;
     if (!shouldLock) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -281,17 +283,13 @@ export function WorkspacePage() {
           filledBlocks={filledBlocks}
           progressPercentage={progressPercentage}
           pdfExporting={pdfExporting}
-          theme={theme}
           user={user}
           prefersReducedMotion={prefersReducedMotion}
           onCreateProject={handleCreateProject}
           onRenameProject={handleRenameProject}
           onDeleteProject={handleDeleteProject}
           onAudit={runCanvasAudit}
-          onToggleAbout={() => setShowAboutDialog(true)}
-          onToggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-          onExportJson={handleExportJson}
-          onImportJson={() => fileInputRef.current?.click()}
+          onOpenSettings={() => setShowSettingsModal(true)}
           onExportPdf={handleExportPdf}
           onShare={() => setShowShareModal(true)}
           onSignOut={signOut}
@@ -301,6 +299,21 @@ export function WorkspacePage() {
         {/* Dialogs */}
         <AnimatePresence>
           {showAboutDialog && <AboutDialog onClose={() => setShowAboutDialog(false)} />}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showSettingsModal && activeProject && (
+            <SettingsModal
+              theme={theme}
+              canvasName={activeProject.name}
+              onToggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              onExportJson={handleExportJson}
+              onImportJson={() => fileInputRef.current?.click()}
+              onOpenAbout={() => setShowAboutDialog(true)}
+              onClearCanvas={handleClearCanvas}
+              onClose={() => setShowSettingsModal(false)}
+            />
+          )}
         </AnimatePresence>
 
         <AnimatePresence>
