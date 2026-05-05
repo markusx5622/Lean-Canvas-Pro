@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link2, Copy, Trash2, Loader2, CheckCircle2, AlertCircle, EyeOff } from 'lucide-react';
-import { useCanvasSharing } from '../hooks/useCanvasSharing';
+import type { UseCanvasSharingReturn } from '../hooks/useCanvasSharing';
 import { ConfirmDialog } from './dialogs/ConfirmDialog';
 
 interface ShareModalProps {
-  canvasId: string;
   canvasName: string;
+  sharing: UseCanvasSharingReturn;
   onClose: () => void;
 }
 
-export function ShareModal({ canvasId, canvasName, onClose }: ShareModalProps) {
-  const { share, loading, creating, revoking, error, generateLink, revokeLink } =
-    useCanvasSharing(canvasId);
+export function ShareModal({ canvasName, sharing, onClose }: ShareModalProps) {
+  const { share, loading, creating, revoking, error, generateLink, revokeLink } = sharing;
 
   const [copied, setCopied] = useState(false);
   const [showManualCopy, setShowManualCopy] = useState(false);
