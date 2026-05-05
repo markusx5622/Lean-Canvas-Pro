@@ -16,8 +16,8 @@
 // so they are trivial to unit-test in isolation.
 // ============================================================
 
-import { wordCount, countKeywordMatches, hasAnyKeyword, looksStructured } from './utils/text';
-import { SHALLOW_CONTENT_TERMS } from './dictionaries/vagueTerms';
+import { wordCount, countKeywordMatches, hasAnyKeyword, looksStructured, containsNumbers, containsConcreteQuantity } from './utils/text';
+import { SHALLOW_CONTENT_TERMS, HEDGE_WORDS, BROAD_AUDIENCE_TERMS } from './dictionaries/vagueTerms';
 import type { Score } from './types';
 
 // ── Completeness subscore ────────────────────────────────────
@@ -155,25 +155,101 @@ export function computeClarityScore(
   return Math.max(0, Math.min(100, score)) as Score;
 }
 
+// ── Specificity subscore ──────────────────────────────────────
+
+export interface SpecificityConfig {
+  /**
+   * Whether numeric values (prices, percentages, time periods) are
+   * especially meaningful for this block.  When true and no numbers
+   * are present the score is penalised.
+   */
+  requiresNumbers?: boolean;
+  /**
+   * Block-specific "concrete signal" keywords — named channels, KPI
+   * acronyms, specific role titles, platform names, etc.
+   */
+  concreteKeywords?: string[];
+  /**
+   * Minimum concrete keyword matches to reach the "specific" tier
+   * (score ≥ 60).  Defaults to 2.
+   */
+  concreteThreshold?: number;
+}
+
+/**
+ * Compute a specificity score [0–100] for a single block.
+ *
+ * Specificity rewards content that is quantified, concrete and
+ * actionable — the opposite of hand-wavy or generic.
+ *
+ * Scoring logic:
+ *   Base score = 30  (low — specificity must be earned)
+ *   + 25 if containsConcreteQuantity (currency, %, time period, entity count)
+ *   + 10 if containsNumbers but no concrete quantity
+ *   - 10 if requiresNumbers and no numbers at all
+ *   + up to +35 for concrete keyword matches  (linear up to threshold × 2)
+ *   - 5 per hedge/broad-audience vague term  (capped at -20)
+ *
+ * @param text   The raw block text.
+ * @param config Keyword lists and options for this block type.
+ */
+export function computeSpecificityScore(
+  text: string,
+  config: SpecificityConfig,
+): Score {
+  const {
+    requiresNumbers = false,
+    concreteKeywords = [],
+    concreteThreshold = 2,
+  } = config;
+
+  if (wordCount(text) === 0) return 0;
+
+  let score = 30;
+
+  // Numeric/quantified content
+  if (containsConcreteQuantity(text)) {
+    score += 25;
+  } else if (containsNumbers(text)) {
+    score += 10;
+  } else if (requiresNumbers) {
+    score -= 10;
+  }
+
+  // Concrete keyword contribution
+  const concreteMatches = countKeywordMatches(text, concreteKeywords);
+  const maxGain = 35;
+  const gainPerMatch = maxGain / Math.max(concreteThreshold * 2, 1);
+  score += Math.min(maxGain, Math.round(concreteMatches * gainPerMatch));
+
+  // Hedge/broad-audience language penalty
+  const vagueMatches = countKeywordMatches(text, [...HEDGE_WORDS, ...BROAD_AUDIENCE_TERMS]);
+  score -= Math.min(20, vagueMatches * 5);
+
+  return Math.max(0, Math.min(100, score)) as Score;
+}
+
 // ── Canvas-level aggregation ─────────────────────────────────
 
 /**
  * Aggregate per-block subscores into a single canvas-level value.
- * Blocks that were not filled contribute 0 to both subscores.
+ * Blocks that were not filled contribute 0 to all subscores.
  *
- * @param scores Array of { completenessScore, clarityScore } from all blocks.
- * @returns Average completeness and clarity scores across all 9 blocks.
+ * @param scores Array of { completenessScore, clarityScore, specificityScore } from all blocks.
+ * @returns Average completeness, clarity and specificity scores across all 9 blocks.
  */
 export function aggregateSubscores(
-  scores: Array<{ completenessScore: Score; clarityScore: Score }>,
-): { completenessScore: Score; clarityScore: Score } {
+  scores: Array<{ completenessScore: Score; clarityScore: Score; specificityScore: Score }>,
+): { completenessScore: Score; clarityScore: Score; specificityScore: Score } {
   if (scores.length === 0) {
-    return { completenessScore: 0, clarityScore: 0 };
+    return { completenessScore: 0, clarityScore: 0, specificityScore: 0 };
   }
   const totalCompleteness = scores.reduce((s, b) => s + b.completenessScore, 0);
   const totalClarity      = scores.reduce((s, b) => s + b.clarityScore, 0);
+  const totalSpecificity  = scores.reduce((s, b) => s + b.specificityScore, 0);
   return {
     completenessScore: Math.round(totalCompleteness / scores.length) as Score,
     clarityScore:      Math.round(totalClarity      / scores.length) as Score,
+    specificityScore:  Math.round(totalSpecificity  / scores.length) as Score,
   };
 }

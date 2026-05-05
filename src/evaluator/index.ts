@@ -13,9 +13,10 @@ export { evaluateBlock }  from './evaluateBlock';
 export {
   computeCompletenessScore,
   computeClarityScore,
+  computeSpecificityScore,
   aggregateSubscores,
 } from './scoring';
-export type { CompletenessConfig, ClarityConfig } from './scoring';
+export type { CompletenessConfig, ClarityConfig, SpecificityConfig } from './scoring';
 
 // ── Dictionaries (re-exported for consumers and tests) ────────
 export {

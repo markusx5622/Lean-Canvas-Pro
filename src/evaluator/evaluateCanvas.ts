@@ -6,8 +6,10 @@ import type {
   CrossBlockIssue, Issue, Strength,
 } from './types';
 import { evaluateBlock } from './evaluateBlock';
-import { clamp } from './utils/text';
+import { clamp, normalise } from './utils/text';
 import { aggregateSubscores } from './scoring';
+import { COPYABLE_ATTRIBUTES } from './dictionaries/vagueTerms';
+import { BLOCK_KEYWORDS } from './dictionaries/keywords';
 
 const ALL_BLOCK_IDS: BlockId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -44,11 +46,14 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
   const topStrengths = allStrengths.slice(0, 3);
 
   const crossBlockIssues = detectCrossBlockIssues(canvasData);
+  const consistencyScore = computeConsistencyScore(crossBlockIssues, filledBlocks);
 
-  const recommendation = buildRecommendation(overallScore, completionPct, crossBlockIssues.length);
+  // Aggregate completeness, clarity and specificity subscores across all 9 blocks
+  const { completenessScore, clarityScore, specificityScore } = aggregateSubscores(blocks);
 
-  // Aggregate completeness and clarity subscores across all 9 blocks
-  const { completenessScore, clarityScore } = aggregateSubscores(blocks);
+  const recommendation = buildRecommendation(
+    overallScore, completionPct, crossBlockIssues, specificityScore,
+  );
 
   const summary: GlobalSummary = {
     overallScore,
@@ -56,6 +61,8 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
     completionPct,
     completenessScore,
     clarityScore,
+    specificityScore,
+    consistencyScore,
     verdict,
     topStrengths,
     topIssues,
@@ -83,9 +90,12 @@ function detectCrossBlockIssues(canvasData: CanvasData): CrossBlockIssue[] {
   const problema  = (canvasData[1] ?? '').toLowerCase();
   const solucion  = (canvasData[4] ?? '').toLowerCase();
   const segmentos = (canvasData[2] ?? '').toLowerCase();
+  const uvp       = (canvasData[3] ?? '').toLowerCase();
+  const canales   = (canvasData[5] ?? '').toLowerCase();
   const ingresos  = (canvasData[6] ?? '').toLowerCase();
   const costes    = (canvasData[7] ?? '').toLowerCase();
   const metricas  = (canvasData[8] ?? '').toLowerCase();
+  const ventaja   = (canvasData[9] ?? '').toLowerCase();
 
   // Rule 1: Solution exists but no Problem defined
   if (solucion.trim().length > 0 && problema.trim().length === 0) {
@@ -134,7 +144,82 @@ function detectCrossBlockIssues(canvasData: CanvasData): CrossBlockIssue[] {
     });
   }
 
+  // Rule 5: Channels defined but no Customer Segment
+  if (canales.trim().length > 0 && segmentos.trim().length === 0) {
+    issues.push({
+      code: 'CHANNELS_WITHOUT_SEGMENT',
+      message: 'Tienes canales definidos pero no has definido a quién te diriges.',
+      severity: 'warning',
+      relatedBlocks: [2, 5],
+      hint: 'Cada canal debe elegirse en función de dónde está y cómo se comporta tu segmento objetivo.',
+    });
+  }
+
+  // Rule 6: UVP defined but no Customer Segment
+  if (uvp.trim().length > 0 && segmentos.trim().length === 0) {
+    issues.push({
+      code: 'UVP_WITHOUT_SEGMENT',
+      message: 'Tienes una propuesta de valor pero no está claro a quién va dirigida.',
+      severity: 'info',
+      relatedBlocks: [2, 3],
+      hint: 'Una buena UVP siempre está orientada a un segmento concreto: "La mejor solución para [quién]".',
+    });
+  }
+
+  // Rule 7: Metrics defined but no Revenue model
+  if (metricas.trim().length > 0 && ingresos.trim().length === 0) {
+    issues.push({
+      code: 'METRICS_WITHOUT_REVENUE',
+      message: 'Defines métricas pero no tienes un modelo de ingresos, lo que dificulta medir la viabilidad económica.',
+      severity: 'warning',
+      relatedBlocks: [6, 8],
+      hint: 'Completa el modelo de ingresos para poder definir métricas financieras relevantes como MRR, ARR o LTV.',
+    });
+  }
+
+  // Rule 8: Unfair advantage relies only on copyable attributes
+  if (ventaja.trim().length > 0) {
+    const ventajaNorm = normalise(ventaja);
+    const hasCopyableOnly = COPYABLE_ATTRIBUTES.some(t => ventajaNorm.includes(normalise(t)));
+    const hasRealMoat = BLOCK_KEYWORDS[9].positive.some(t => ventajaNorm.includes(normalise(t)));
+    if (hasCopyableOnly && !hasRealMoat) {
+      issues.push({
+        code: 'UNFAIR_ADVANTAGE_TOO_GENERIC',
+        message: 'La ventaja injusta se basa solo en atributos copiables (experiencia, dedicación, equipo).',
+        severity: 'warning',
+        relatedBlocks: [9],
+        hint: 'Una ventaja injusta real debe ser imposible de comprar o replicar: datos únicos, patentes, acceso exclusivo o comunidad consolidada.',
+      });
+    }
+  }
+
   return issues;
+}
+
+// ── Consistency subscore ──────────────────────────────────────
+
+/**
+ * Compute a canvas-level consistency score [0–100] based on the
+ * cross-block issues detected.
+ *
+ * Starts at 100 and is penalised per issue:
+ *   critical → -25  |  warning → -15  |  info → -5
+ *
+ * Returns 0 when the canvas is nearly empty (< 3 blocks filled)
+ * since meaningful consistency cannot be assessed.
+ */
+function computeConsistencyScore(
+  crossBlockIssues: CrossBlockIssue[],
+  filledBlocks: number,
+): number {
+  if (filledBlocks < 3) return 0;
+  let score = 100;
+  for (const issue of crossBlockIssues) {
+    if (issue.severity === 'critical')     score -= 25;
+    else if (issue.severity === 'warning') score -= 15;
+    else                                   score -= 5;
+  }
+  return Math.max(0, score);
 }
 
 // ── Verdict & recommendation helpers ─────────────────────────
@@ -150,14 +235,27 @@ function buildVerdict(score: number, completionPct: number): string {
 function buildRecommendation(
   score: number,
   completionPct: number,
-  crossBlockIssueCount: number,
+  crossBlockIssues: CrossBlockIssue[],
+  specificityScore: number,
 ): string {
   if (completionPct < 50) {
     return 'Completa primero los bloques vacíos antes de extraer conclusiones estratégicas. Un Lean Canvas incompleto no puede revelar inconsistencias clave.';
   }
-  if (crossBlockIssueCount > 0) {
-    return `Se detectaron ${crossBlockIssueCount} inconsistencia${crossBlockIssueCount > 1 ? 's' : ''} entre bloques. Revísalas antes de buscar inversión o salir al mercado.`;
+
+  const criticalCross = crossBlockIssues.filter(i => i.severity === 'critical');
+  if (criticalCross.length > 0) {
+    return `Se detectaron ${criticalCross.length} inconsistencia${criticalCross.length > 1 ? 's' : ''} crítica${criticalCross.length > 1 ? 's' : ''} entre bloques. Resuélvelas antes de buscar inversión o salir al mercado.`;
   }
+
+  const totalCross = crossBlockIssues.length;
+  if (totalCross > 0) {
+    return `Se detectaron ${totalCross} inconsistencia${totalCross > 1 ? 's' : ''} entre bloques. Revísalas para asegurar que el modelo es coherente de extremo a extremo.`;
+  }
+
+  if (specificityScore < 40) {
+    return 'El canvas está completo pero le falta concreción. Añade números reales: precios, tiempos, porcentajes y nombres de canales específicos para que el modelo sea validable.';
+  }
+
   if (score >= 80) {
     return 'El canvas está bien estructurado. Prioriza la validación con clientes reales para contrastar las hipótesis documentadas.';
   }

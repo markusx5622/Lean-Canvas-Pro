@@ -94,15 +94,43 @@ describe('evaluateBlock — subscores shape', () => {
   const ids = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 
   for (const id of ids) {
-    it(`block ${id} always returns numeric completenessScore and clarityScore`, () => {
+    it(`block ${id} always returns numeric completenessScore, clarityScore and specificityScore`, () => {
       const canvas: CanvasData = { [id]: 'texto de ejemplo para evaluar este bloque del canvas lean' };
       const result = evaluateBlock(id, canvas as CanvasData);
       expect(typeof result.completenessScore).toBe('number');
       expect(typeof result.clarityScore).toBe('number');
+      expect(typeof result.specificityScore).toBe('number');
       expect(result.completenessScore).toBeGreaterThanOrEqual(0);
       expect(result.completenessScore).toBeLessThanOrEqual(100);
       expect(result.clarityScore).toBeGreaterThanOrEqual(0);
       expect(result.clarityScore).toBeLessThanOrEqual(100);
+      expect(result.specificityScore).toBeGreaterThanOrEqual(0);
+      expect(result.specificityScore).toBeLessThanOrEqual(100);
     });
   }
+});
+
+describe('evaluateBlock — specificityScore rewards quantified content', () => {
+  it('block 6 (revenue) has higher specificityScore with prices than without', () => {
+    const withPrice  = evaluateBlock(6, { 6: 'Suscripción SaaS de 49 €/mes por empresa, plan anual 490 €/año.' });
+    const withoutPrice = evaluateBlock(6, { 6: 'Vamos a cobrar dinero por las ventas del servicio.' });
+    expect(withPrice.specificityScore).toBeGreaterThan(withoutPrice.specificityScore);
+  });
+
+  it('block 5 (channels) has higher specificityScore with named channels', () => {
+    const specific = evaluateBlock(5, { 5: 'SEO orgánico, LinkedIn outreach y email marketing semanal.' });
+    const vague    = evaluateBlock(5, { 5: 'Marketing online y redes sociales en internet.' });
+    expect(specific.specificityScore).toBeGreaterThan(vague.specificityScore);
+  });
+
+  it('block 2 (segments) has higher specificityScore with concrete descriptors', () => {
+    const specific = evaluateBlock(2, { 2: 'Pymes B2B de 10-50 empleados del sector logístico en España.' });
+    const vague    = evaluateBlock(2, { 2: 'Todo el mundo cualquier persona en general.' });
+    expect(specific.specificityScore).toBeGreaterThan(vague.specificityScore);
+  });
+
+  it('empty block always returns specificityScore=0', () => {
+    const result = evaluateBlock(8, {});
+    expect(result.specificityScore).toBe(0);
+  });
 });

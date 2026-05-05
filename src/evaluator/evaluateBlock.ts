@@ -18,8 +18,10 @@ import { wordCount } from './utils/text';
 import {
   computeCompletenessScore,
   computeClarityScore,
+  computeSpecificityScore,
   type CompletenessConfig,
   type ClarityConfig,
+  type SpecificityConfig,
 } from './scoring';
 
 type BlockRuleFn = (text: string) => {
@@ -68,6 +70,19 @@ const CLARITY_CONFIGS: Record<BlockId, ClarityConfig> = {
   9: { positiveKeywords: BLOCK_KEYWORDS[9].positive, positiveThreshold: 2, extraVagueTerms: BLOCK_KEYWORDS[9].generic },
 };
 
+/** Specificity config for each block (concrete signals and number expectations). */
+const SPECIFICITY_CONFIGS: Record<BlockId, SpecificityConfig> = {
+  1: { requiresNumbers: true,  concreteKeywords: BLOCK_KEYWORDS[1].concrete, concreteThreshold: 2 },
+  2: { requiresNumbers: false, concreteKeywords: BLOCK_KEYWORDS[2].concrete, concreteThreshold: 2 },
+  3: { requiresNumbers: false, concreteKeywords: BLOCK_KEYWORDS[3].concrete, concreteThreshold: 2 },
+  4: { requiresNumbers: false, concreteKeywords: BLOCK_KEYWORDS[4].concrete, concreteThreshold: 2 },
+  5: { requiresNumbers: false, concreteKeywords: BLOCK_KEYWORDS[5].concrete, concreteThreshold: 2 },
+  6: { requiresNumbers: true,  concreteKeywords: BLOCK_KEYWORDS[6].concrete, concreteThreshold: 2 },
+  7: { requiresNumbers: true,  concreteKeywords: BLOCK_KEYWORDS[7].concrete, concreteThreshold: 2 },
+  8: { requiresNumbers: true,  concreteKeywords: BLOCK_KEYWORDS[8].concrete, concreteThreshold: 2 },
+  9: { requiresNumbers: false, concreteKeywords: BLOCK_KEYWORDS[9].concrete, concreteThreshold: 2 },
+};
+
 /**
  * Evaluate a single Lean Canvas block.
  *
@@ -88,6 +103,7 @@ export function evaluateBlock(blockId: BlockId, canvasData: CanvasData): BlockFe
       score: 0,
       completenessScore: 0,
       clarityScore: 0,
+      specificityScore: 0,
       issues: [{
         code: 'EMPTY_BLOCK',
         message: `El bloque "${BLOCK_NAMES[blockId]}" está vacío.`,
@@ -104,6 +120,7 @@ export function evaluateBlock(blockId: BlockId, canvasData: CanvasData): BlockFe
 
   const completenessScore = computeCompletenessScore(text, COMPLETENESS_CONFIGS[blockId]);
   const clarityScore      = computeClarityScore(text, CLARITY_CONFIGS[blockId]);
+  const specificityScore  = computeSpecificityScore(text, SPECIFICITY_CONFIGS[blockId]);
 
   const summary = buildBlockSummary(blockId, score, issues.length, strengths.length);
 
@@ -114,6 +131,7 @@ export function evaluateBlock(blockId: BlockId, canvasData: CanvasData): BlockFe
     score,
     completenessScore,
     clarityScore,
+    specificityScore,
     issues,
     strengths,
     summary,

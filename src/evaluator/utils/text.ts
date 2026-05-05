@@ -82,6 +82,29 @@ export function containsNumbers(text: string): boolean {
 }
 
 /**
+ * Detect whether the text contains a concrete, quantified value:
+ * a number paired with a meaningful unit (currency, %, time period,
+ * or count of real-world entities).
+ *
+ * Examples that match: "3 horas", "50 €", "20%", "500 usuarios",
+ *                      "$99/mes", "2 000 €/año", "3k €"
+ */
+export function containsConcreteQuantity(text: string): boolean {
+  // Currency symbols or codes (with optional thousands separator)
+  const hasCurrency = /\d[\d.,\s]*(€|\$|£|eur|usd|gbp|k€|m€)/i.test(text);
+  // Percentage values
+  const hasPct = /\d[\d.,]*\s*%/.test(text);
+  // Time-denominated quantities
+  const hasTime = /\d+\s*(hora|horas|día|días|semana|semanas|mes|meses|año|años)s?\b/i.test(text);
+  // Counts of real-world entities
+  const hasCount = /\d+\s*(usuario|usuarios|cliente|clientes|empresa|empresas|persona|personas|empleado|empleados)\b/i.test(text);
+  // Rate notation: e.g. "99€/mes", "$49/year"
+  const hasRate = /\d[\d.,]*\s*(€|\$|£)?\s*\/\s*(mes|año|semana|dia|day|month|year)/i.test(text);
+
+  return hasCurrency || hasPct || hasTime || hasCount || hasRate;
+}
+
+/**
  * Detect typical list formatting (bullet points, numbered lists, line breaks
  * with text). Useful to reward structured content.
  */
