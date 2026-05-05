@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 // === Types ===
 
@@ -9,6 +9,8 @@ interface AuthContextValue {
   session: Session | null;
   /** True while the initial session is being retrieved from Supabase. */
   loading: boolean;
+  /** False when VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY are missing. */
+  isSupabaseConfigured: boolean;
   signUp: (email: string, password: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
@@ -26,6 +28,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      // Supabase is not configured — skip all auth calls and mark loading done.
+      setLoading(false);
+      return;
+    }
+
     // Retrieve existing session on mount (handles page reload).
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -44,21 +52,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string) => {
+    if (!supabase) return { error: 'Supabase no está configurado.' };
     const { error } = await supabase.auth.signUp({ email, password });
     return { error: error?.message ?? null };
   };
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) return { error: 'Supabase no está configurado.' };
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error?.message ?? null };
   };
 
   const signOut = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isSupabaseConfigured, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
