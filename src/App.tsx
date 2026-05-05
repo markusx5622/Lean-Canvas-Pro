@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, AlertCircle, Lightbulb, Rocket, TrendingUp, Share2, ShieldCheck, DollarSign, CreditCard,
-  Printer, Trash2, MessageSquare, BookOpen, CheckCircle2, Download, Upload, Plus, Edit2, FolderOpen, Sun, Moon
+  Printer, Trash2, MessageSquare, BookOpen, CheckCircle2, Download, Upload, Plus, Edit2, FolderOpen, Sun, Moon,
+  Sparkles, Loader2, Bot
 } from 'lucide-react';
 
 // === Tipos & utilidades ===
@@ -52,8 +53,8 @@ const BLOCKS = [
     details: "Sin un problema real, no hay negocio. Aquí también incluyes 'Alternativas existentes' (cómo resuelven el problema hoy).",
     questions: ["¿Qué duele más a tu cliente hoy?", "¿Cómo lo solucionan ahora sin tu ayuda?", "¿Cuánto gastan en resolverlo?", "¿Con qué frecuencia ocurre el problema?"],
     examples: [
-      { company: "Airbnb", text: "1. Los hoteles son caros y carecen de autenticidad local.\n2. Los anfitriones no tienen forma fácil de alquilar sus espacios libres.\n3. Interfaz de reserva compleja." },
-      { company: "Uber", text: "1. Conseguir taxi es difícil y frustrante.\n2. No saber cuánto va a costar ni cuándo llegará.\n3. Coches de mala calidad y sin opciones de pago." }
+      { company: "Cabify", text: "1. Conseguir taxi u VTC de forma rápida y segura.\n2. Evitar sorpresas en la tarifa final.\n3. Pagos automatizados y servicio corporativo para empresas." },
+      { company: "Wallapop", text: "1. Vender cosas usadas es un proceso complejo y da poca confianza.\n2. Comprar artículos de segunda mano cerca de ti no es fácil ni inmediato." }
     ]
   },
   {
@@ -63,7 +64,7 @@ const BLOCKS = [
     details: "No intentes construir todo a la vez. Enfócate en las 3 funciones principales.",
     questions: ["¿Es esta la forma más simple de resolverlo?", "¿Puedes construirlo rápidamente?", "¿Requiere mucho esfuerzo del cliente?"],
     examples: [
-      { company: "Uber", text: "App móvil para solicitar viajes con 1 clic. Rastreo por GPS, estimación de tarifa anticipada y pago automático." }
+      { company: "Glovo", text: "App móvil para pedir cualquier cosa recadera en tu ciudad en menos de 30 min. Sistema de riders autónomos y geolocalización en tiempo real." }
     ]
   },
   {
@@ -73,7 +74,7 @@ const BLOCKS = [
     details: "Debe ser un mensaje de alto nivel que condense el valor. Describe beneficios tangibles, no funciones.",
     questions: ["¿Cómo resumirías tu valor en un tuit...", "¿Qué te hace diferente?", "¿Por qué pagarían por esto hoy?"],
     examples: [
-      { company: "Airbnb", text: "Reserva casas de personas locales, en lugar de hoteles. Siéntete como en casa en cualquier lugar del mundo." }
+      { company: "Mercadona", text: "'Siempre Precios Bajos' (SPB). Calidad altísima en marca blanca (Hacendado) sin depender de ofertas temporales o cupones." }
     ]
   },
   {
@@ -83,7 +84,7 @@ const BLOCKS = [
     details: "Puede ser un equipo de expertos, patentes, una comunidad exclusiva o datos únicos que solo tú posees.",
     questions: ["¿Tienes información exclusiva?", "¿Tu comunidad es un foso defensivo?", "¿Tienes canales preferentes?"],
     examples: [
-      { company: "Google", text: "Algoritmo de búsqueda PageRank. Infraestructura de datos gigantesca y marca genérica ('googlearlo')." }
+      { company: "Hawkers", text: "Comunidad inicial masiva en redes sociales y modelo de influencers de micro-nichos que abarató su CAC frente a gigantes." }
     ]
   },
   {
@@ -93,7 +94,7 @@ const BLOCKS = [
     details: "Los 'Early Adopters' son los que necesitan tu solución ahora mismo, aunque no sea perfecta. Encuéntralos primero.",
     questions: ["¿Quién pagaría por esto hoy mismo?", "¿Cómo es el perfil demográfico?", "¿Hay un nicho más accesible?"],
     examples: [
-      { company: "Uber", text: "Profesionales urbanos que necesitan ir de punto A a punto B de forma fiable." }
+      { company: "Typeform", text: "Diseñadores web y marketers que querían formularios hermosos y conversacionales que no parecieran una base de datos." }
     ]
   },
   {
@@ -103,7 +104,7 @@ const BLOCKS = [
     details: "Elige métricas procesables como el CAC, LTV o tasas de retención.",
     questions: ["¿Qué dato define el éxito?", "¿Estás midiendo la retención?", "¿Cuál es el costo de adquisición?"],
     examples: [
-      { company: "SaaS General", text: "MRR, Costo de Adquisición (CAC), Tasa de abandono (Churn rate) y Lifetime Value (LTV)." }
+      { company: "Holded", text: "Ingresos Recurrentes (MRR), Costo de Adquisición de un PYME/Autónomo (CAC) y Lifetime Value (LTV)." }
     ]
   },
   {
@@ -113,7 +114,7 @@ const BLOCKS = [
     details: "Define tu estrategia de adquisición y distribución: inbound, outbound, o partners.",
     questions: ["¿Dónde buscan soluciones hoy?", "¿Cómo te descubrirán por primera vez?", "¿Es escalable a largo plazo?"],
     examples: [
-      { company: "Netflix", text: "Directo, Apps integradas en Smart TVs, Alianzas con proveedores de internet." }
+      { company: "Idealista", text: "SEO orgánico dominando palabras clave inmobiliarias locales, campañas masivas offline (TV/Metro) para construir marca de confianza." }
     ]
   },
   {
@@ -123,7 +124,7 @@ const BLOCKS = [
     details: "Clasifica en costos fijos y variables para calcular el punto de equilibrio.",
     questions: ["¿Cuál es el burn-rate mensual?", "¿Qué costo puedes reducir hoy?", "¿Cuál es el costo de desarrollo?"],
     examples: [
-      { company: "Uber", text: "Pagos a conductores, Seguros, Operaciones locales (City Managers), Desarrollo de software, Publicidad." }
+      { company: "Cabify", text: "Marketing y captación, salarios del equipo tech/operaciones, infraestructura cloud y seguros de responsabilidad civil." }
     ]
   },
   {
@@ -133,7 +134,7 @@ const BLOCKS = [
     details: "Define tu modelo de monetización. La forma más directa de validar una startup es lograr que alguien pague.",
     questions: ["¿Cómo prefiere pagar tu cliente?", "¿Ofreces pagos recurrentes?", "¿Cuál es tu margen de beneficio?"],
     examples: [
-      { company: "Spotify", text: "Suscripciones mensuales Premium y modelo publicitario para usuarios gratuitos." }
+      { company: "Flywire", text: "Modelo híbrido B2B2C: Tasa de transacción por transferencia internacional (ganancia de Forex) + fee directo a instituciones." }
     ]
   }
 ];
@@ -153,6 +154,10 @@ const LeanCanvasApp = () => {
   const [editorText, setEditorText] = useState("");
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('lean-canvas-pro-theme', 'light');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
+  const [globalAiLoading, setGlobalAiLoading] = useState(false);
+  const [globalAiFeedback, setGlobalAiFeedback] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
@@ -169,13 +174,60 @@ const LeanCanvasApp = () => {
     }
   }, [theme]);
 
+  const evaluateGlobalContext = async () => {
+    if (filledBlocks === 0) return;
+    setGlobalAiLoading(true);
+    setGlobalAiFeedback(null);
+    try {
+      const resp = await fetch("/api/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ canvasData, blockId: null })
+      });
+      const data = await resp.json();
+      if (data.result) {
+        setGlobalAiFeedback(data.result);
+      } else {
+        setGlobalAiFeedback("Error: " + (data.error || "Algo salió mal"));
+      }
+    } catch (e) {
+      setGlobalAiFeedback("Error de conexión");
+    } finally {
+      setGlobalAiLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (selectedBlockId) {
       setEditorText(canvasData[selectedBlockId] || "");
       setActiveTab('guide');
       setSaveStatus('idle');
+      setAiFeedback(null);
     }
   }, [selectedBlockId, activeProjectId]);
+
+  const evaluateBlock = async () => {
+    if (!editorText.trim() || !selectedBlockId) return;
+    setAiLoading(true);
+    setAiFeedback(null);
+    try {
+      const resp = await fetch("/api/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ canvasData: editorText, blockId: selectedBlockId })
+      });
+      const data = await resp.json();
+      if (data.result) {
+        setAiFeedback(data.result);
+      } else {
+        setAiFeedback("Error: " + (data.error || "Algo salió mal"));
+      }
+    } catch (e) {
+      setAiFeedback("Error de conexión con el AI Copilot");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!selectedBlockId) return;
@@ -278,18 +330,18 @@ const LeanCanvasApp = () => {
         onClick={() => setSelectedBlockId(data.id)}
         className={`relative flex flex-col cursor-pointer overflow-hidden rounded-[20px] transition-all duration-300
           ${isActive 
-            ? `bg-white dark:bg-slate-900 shadow-[0_15px_40px_-5px_rgba(0,0,0,0.12)] dark:shadow-[0_15px_40px_-5px_rgba(0,0,0,0.4)] ring-2 ring-offset-2 dark:ring-offset-slate-950 ${data.ringColor} z-20` 
-            : 'bg-white dark:bg-slate-900 shadow-[0_4px_16px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-slate-200/80 dark:border-slate-800'
+            ? `bg-white dark:bg-slate-800 shadow-[0_15px_40px_-5px_rgba(0,0,0,0.12)] dark:shadow-[0_15px_40px_-5px_rgba(0,0,0,0.4)] ring-2 ring-offset-2 dark:ring-offset-slate-900 ${data.ringColor} z-20` 
+            : 'bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-slate-200/80 dark:border-slate-700'
           } ${additionalClasses}`}
       >
         <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none no-print border-none transition-all duration-500`} />
 
         <div className="p-5 relative h-full flex flex-col z-10 w-full">
           <div className="flex items-start justify-between mb-4">
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 ${data.iconColor}`}>
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 ${data.iconColor}`}>
                {data.icon}
             </div>
-            <span className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 font-bold text-[10px] w-6 h-6 flex items-center justify-center rounded-full no-print border border-slate-200/50 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
+            <span className="bg-slate-100/80 dark:bg-slate-700/80 text-slate-400 dark:text-slate-500 font-bold text-[10px] w-6 h-6 flex items-center justify-center rounded-full no-print border border-slate-200/50 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
               {data.order}
             </span>
           </div>
@@ -332,7 +384,7 @@ const LeanCanvasApp = () => {
   const selectedBlock = BLOCKS.find(b => b.id === selectedBlockId);
 
   return (
-    <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex justify-center pb-16 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
+    <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 flex justify-center pb-16 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
       <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleImportJson} />
 
       <style dangerouslySetInnerHTML={{__html: `
@@ -354,18 +406,18 @@ const LeanCanvasApp = () => {
         {/* === TOP TOOLBAR === */}
         <motion.div 
           initial={{ y: -20, opacity: 0 }} autoFocus animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, ease: "easeOut" }}
-          className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border text-sm border-slate-200/60 dark:border-slate-800 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-[20px] p-3 px-5 flex flex-col md:flex-row items-center justify-between gap-4 no-print sticky top-4 z-[100]"
+          className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border text-sm border-slate-200/60 dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-[20px] p-3 px-5 flex flex-col md:flex-row items-center justify-between gap-4 no-print sticky top-4 z-[100]"
         >
           {/* Logo & Dropdown */}
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="bg-slate-900 dark:bg-slate-800 text-white p-2 rounded-[14px] shadow-sm shrink-0 relative overflow-hidden">
+            <div className="bg-slate-900 dark:bg-slate-700 text-white p-2 rounded-[14px] shadow-sm shrink-0 relative overflow-hidden">
                <Rocket size={18} strokeWidth={2.5} className="relative z-10" />
             </div>
             <div className="flex flex-col relative w-full group">
                <div className="text-[9px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 mb-[2px] ml-[5px]">
                  Workspace
                </div>
-               <div className="flex items-center gap-1 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl p-0.5 transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700">
+               <div className="flex items-center gap-1 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl p-0.5 transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700">
                  <div className="relative flex items-center">
                    <select 
                      value={activeProjectId} 
@@ -380,15 +432,15 @@ const LeanCanvasApp = () => {
                  </div>
                  
                  <div className="flex items-center">
-                   <button onClick={handleRenameProject} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200 dark:hover:border-slate-700"><Edit2 size={13} strokeWidth={2.5} /></button>
-                   <button onClick={handleDeleteProject} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200 dark:hover:border-slate-700"><Trash2 size={13} strokeWidth={2.5} /></button>
+                   <button onClick={handleRenameProject} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200 dark:hover:border-slate-700"><Edit2 size={13} strokeWidth={2.5} /></button>
+                   <button onClick={handleDeleteProject} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200 dark:hover:border-slate-700"><Trash2 size={13} strokeWidth={2.5} /></button>
                  </div>
                </div>
             </div>
             
-            <div className="h-8 w-px bg-slate-200/60 dark:bg-slate-800 mx-1 hidden lg:block"></div>
+            <div className="h-8 w-px bg-slate-200/60 dark:bg-slate-700 mx-1 hidden lg:block"></div>
             
-            <button onClick={handleCreateProject} className="hidden lg:flex items-center gap-2 px-3 py-[7px] bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold rounded-[10px] hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap text-[13px] tracking-tight border border-slate-200/80 dark:border-slate-700 shadow-sm">
+            <button onClick={handleCreateProject} className="hidden lg:flex items-center gap-2 px-3 py-[7px] bg-slate-50 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-[10px] hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap text-[13px] tracking-tight border border-slate-200/80 dark:border-slate-700 shadow-sm">
                <Plus size={15} strokeWidth={2.5} /> Nuevo
             </button>
           </div>
@@ -399,7 +451,7 @@ const LeanCanvasApp = () => {
               <span>Validación de la Startup</span>
               <span className={progressPercentage === 100 ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-300'}>{progressPercentage}%</span>
             </div>
-            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
+            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
               <motion.div 
                 initial={{ width: 0 }} animate={{ width: `${progressPercentage}%` }} transition={{ duration: 0.8, ease: "easeOut" }}
                 className={`h-full ${progressPercentage === 100 ? 'bg-emerald-500 shadow-[0_0_10px_rgb(16,185,129,0.5)]' : 'bg-slate-900'}`} 
@@ -409,27 +461,83 @@ const LeanCanvasApp = () => {
 
           {/* Acciones Globales */}
           <div className="flex items-center gap-1.5 w-full md:w-auto justify-end">
-            <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
+            <button 
+              onClick={evaluateGlobalContext} 
+              disabled={globalAiLoading || filledBlocks === 0}
+              title="Analizar Modelo Completo con AI VC"
+              className="flex items-center gap-2 p-2 px-3 text-indigo-600 dark:text-indigo-400 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 rounded-lg transition-all border border-indigo-100 dark:border-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-[13px] font-bold"
+            >
+              {globalAiLoading ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin" /> : <Bot size={16} strokeWidth={2.5} />}
+              <span className="hidden lg:inline">Auditoría Startup IA</span>
+            </button>
+            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
+            <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
               {theme === 'dark' ? <Sun size={18} strokeWidth={2.5} /> : <Moon size={18} strokeWidth={2.5} />}
             </button>
-            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-800 mx-1"></div>
-            <button title="Exportar JSON" onClick={handleExportJson} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
+            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
+            <button title="Exportar JSON" onClick={handleExportJson} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
               <Download size={18} strokeWidth={2.5} />
             </button>
-            <button title="Importar JSON" onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
+            <button title="Importar JSON" onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
               <Upload size={18} strokeWidth={2.5} />
             </button>
-            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-800 mx-1"></div>
+            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
             <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-[7px] bg-indigo-600 text-white font-bold rounded-[10px] hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap text-[13px] tracking-tight">
               <Printer size={15} strokeWidth={2.5} /> <span className="hidden sm:inline">Exportar PDF</span>
             </button>
           </div>
         </motion.div>
 
-        <div className="hidden print:block mb-6 text-center border-b pb-4 mt-6 border-slate-200 dark:border-slate-800">
+        <div className="hidden print:block mb-6 text-center border-b pb-4 mt-6 border-slate-200 dark:border-slate-700">
             <h1 className="font-display text-4xl font-extrabold text-slate-900 dark:text-white uppercase tracking-widest mb-2">{activeProject.name}</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold">Lienzo Lean Startups</p>
         </div>
+
+        <AnimatePresence>
+          {globalAiFeedback && (
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm"
+              onClick={() => setGlobalAiFeedback(null)}
+            >
+              <motion.div 
+                initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-700"
+              >
+                <div className="bg-indigo-600 p-5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                      <Bot className="text-white" size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-extrabold text-lg flex items-center gap-2">
+                        Auditoría AI de VC <Sparkles size={16} className="text-indigo-200" />
+                      </h3>
+                      <p className="text-indigo-100 text-[13px] font-medium">Revisión integral de tu modelo de negocio</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setGlobalAiFeedback(null)} className="text-white/70 hover:text-white p-2 transition-colors">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                  </button>
+                </div>
+                <div className="p-8 max-h-[70vh] overflow-y-auto">
+                  <div className="prose prose-slate dark:prose-invert prose-indigo max-w-none text-[15px] leading-relaxed whitespace-pre-wrap font-medium">
+                    {globalAiFeedback}
+                  </div>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 px-8 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                  <button 
+                    onClick={() => setGlobalAiFeedback(null)} 
+                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors text-[14px]"
+                  >
+                    Entendido
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* === MAIN LAYOUT === */}
         <div className="flex flex-col lg:flex-row gap-5 items-stretch relative md:px-2 pt-2">
@@ -464,13 +572,13 @@ const LeanCanvasApp = () => {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: 200, scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  className="bg-white dark:bg-slate-900 border rounded-[28px] border-slate-200/80 dark:border-slate-800 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] p-7 flex flex-col h-full w-full relative overflow-hidden"
+                  className="bg-white dark:bg-slate-800 border rounded-[28px] border-slate-200/80 dark:border-slate-700 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] p-7 flex flex-col h-full w-full relative overflow-hidden"
                 >
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${selectedBlock.color}`}></div>
 
                   <div className="flex items-start gap-4 mb-6 shrink-0 pt-2">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br ${selectedBlock.color} ${selectedBlock.iconColor} shadow-inner border border-stone-50 dark:border-slate-800 relative overflow-hidden`}>
-                      <div className="absolute inset-0 bg-white dark:bg-slate-900 opacity-40 blur-md rounded-full scale-150"></div>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br ${selectedBlock.color} ${selectedBlock.iconColor} shadow-inner border border-stone-50 dark:border-slate-700 relative overflow-hidden`}>
+                      <div className="absolute inset-0 bg-white dark:bg-slate-800 opacity-40 blur-md rounded-full scale-150"></div>
                       <div className="relative z-10">{selectedBlock.icon}</div>
                     </div>
                     <div className="flex-1 pt-1">
@@ -483,7 +591,7 @@ const LeanCanvasApp = () => {
                     </div>
                   </div>
 
-                  <div className="flex bg-slate-50 dark:bg-slate-800/80 p-1.5 rounded-xl mb-6 shrink-0 border border-slate-200/60 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
+                  <div className="flex bg-slate-50 dark:bg-slate-700/80 p-1.5 rounded-xl mb-6 shrink-0 border border-slate-200/60 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
                     <button onClick={() => setActiveTab('guide')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[13px] font-bold rounded-lg transition-all duration-300 ${activeTab === 'guide' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}> 
                       <BookOpen size={16} strokeWidth={2.5} /> Guía
                     </button>
@@ -515,7 +623,7 @@ const LeanCanvasApp = () => {
                         {activeTab === 'examples' && (
                           <div className="flex flex-col gap-3">
                             {selectedBlock.examples.map((ex, idx) => (
-                              <div key={idx} className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700 rounded-xl p-4 shadow-sm dark:shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+                              <div key={idx} className="bg-slate-50 dark:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700 rounded-xl p-4 shadow-sm dark:shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
                                  <div className="font-extrabold text-slate-900 dark:text-white text-[11px] mb-2 flex items-center gap-1.5 tracking-wider uppercase">
                                    <Rocket size={14} className="text-slate-400 dark:text-slate-500" /> CASO DE ÉXITO: {ex.company}
                                  </div>
@@ -529,12 +637,20 @@ const LeanCanvasApp = () => {
                   </div>
 
                   {/* Redacción */}
-                  <div className="flex flex-col flex-1 relative border-t border-slate-100 dark:border-slate-800 pt-6 mt-auto">
+                  <div className="flex flex-col flex-1 relative border-t border-slate-100 dark:border-slate-700 pt-6 mt-auto">
                     <div className="flex justify-between items-center mb-3 shrink-0">
                       <label htmlFor="editorCanvas" className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
                         Tus notas estratégicas
                       </label>
-                      <div className="h-5 flex items-center justify-end">
+                      <div className="h-5 flex items-center justify-end gap-3">
+                        <button 
+                          onClick={evaluateBlock}
+                          disabled={aiLoading || !editorText.trim()}
+                          className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                          Validar con IA
+                        </button>
                         {saveStatus === 'saving' && <span className="text-[10px] font-bold text-slate-400 animate-pulse uppercase tracking-wider">Guardando...</span>}
                         {saveStatus === 'saved' && <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100"><CheckCircle2 size={12} strokeWidth={2.5}/> Listo</span>}
                       </div>
@@ -542,24 +658,42 @@ const LeanCanvasApp = () => {
                     
                     <textarea
                       id="editorCanvas"
-                      className={`flex-1 w-full p-4 bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-[14px] font-medium text-slate-800 dark:text-slate-200 leading-relaxed focus:bg-white focus:dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:dark:ring-offset-slate-950 ${selectedBlock.ringColor} focus:border-transparent transition-all resize-none placeholder-slate-400 dark:placeholder-slate-500 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]`}
-                      placeholder="Escribe tus ideas aquí...&#10;Se validarán automáticamente."
+                      className={`flex-1 w-full p-4 bg-slate-50/80 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-[14px] font-medium text-slate-800 dark:text-slate-200 leading-relaxed focus:bg-white focus:dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:dark:ring-offset-slate-900 ${selectedBlock.ringColor} focus:border-transparent transition-all resize-none placeholder-slate-400 dark:placeholder-slate-500 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]`}
+                      placeholder="Escribe tus ideas aquí...&#10;Haz clic en 'Validar con IA' para recibir feedback al instante."
                       value={editorText}
                       onChange={(e) => setEditorText(e.target.value)}
                     />
+
+                    <AnimatePresence>
+                      {aiFeedback && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10, height: 0 }}
+                          animate={{ opacity: 1, y: 0, height: 'auto' }}
+                          exit={{ opacity: 0, y: 10, height: 0 }}
+                          className="mt-4 p-4 bg-indigo-50/80 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-500/30 rounded-xl"
+                        >
+                          <div className="flex items-center gap-2 mb-2 text-indigo-700 dark:text-indigo-400 font-bold text-[11px] uppercase tracking-wider">
+                            <Bot size={14} /> AI Copilot Feedback
+                          </div>
+                          <div className="text-[13px] text-slate-700 dark:text-slate-300 leading-relaxed font-medium whitespace-pre-wrap">
+                            {aiFeedback}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </motion.div>
               ) : (
                 <motion.div 
                   key="empty"
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="h-full bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border-2 border-slate-200 dark:border-slate-800 border-dashed rounded-[28px] p-10 flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-700 relative overflow-hidden"
+                  className="h-full bg-white/60 dark:bg-slate-800/40 backdrop-blur-xl border-2 border-slate-200 dark:border-slate-700 border-dashed rounded-[28px] p-10 flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-700 relative overflow-hidden"
                 >
                   <motion.div 
                     initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}
                     className="flex flex-col items-center z-10"
                   >
-                    <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-slate-100 dark:border-slate-700">
+                    <div className="w-20 h-20 bg-white dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-slate-100 dark:border-slate-700">
                       <FolderOpen size={36} strokeWidth={2.5} className="text-slate-300 dark:text-slate-600" />
                     </div>
                     <h3 className="font-display text-2xl font-extrabold text-slate-800 dark:text-slate-200 mb-3 tracking-tight">Focus Mode</h3>
@@ -583,13 +717,13 @@ const LeanCanvasApp = () => {
             >
                 <motion.div 
                   initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="bg-white dark:bg-slate-900 rounded-t-[32px] h-[85vh] w-full flex flex-col shadow-2xl p-6 cursor-auto relative" 
+                  className="bg-white dark:bg-slate-800 rounded-t-[32px] h-[85vh] w-full flex flex-col shadow-2xl p-6 cursor-auto relative" 
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mb-4"></div>
                   
                   <div className="mt-5 flex items-center gap-4 mb-6 shrink-0">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br ${selectedBlock.color} ${selectedBlock.iconColor} shadow-inner border border-white dark:border-slate-800`}>
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br ${selectedBlock.color} ${selectedBlock.iconColor} shadow-inner border border-white dark:border-slate-700`}>
                         {selectedBlock.icon}
                       </div>
                       <div>
@@ -603,7 +737,7 @@ const LeanCanvasApp = () => {
                   </div>
 
                   <textarea
-                      className={`flex-1 w-full p-4 mb-5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-[15px] font-medium text-slate-800 dark:text-slate-200 leading-relaxed focus:bg-white focus:dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:dark:ring-offset-slate-950 ${selectedBlock.ringColor} resize-none shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]`}
+                      className={`flex-1 w-full p-4 mb-5 bg-slate-50 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-[15px] font-medium text-slate-800 dark:text-slate-200 leading-relaxed focus:bg-white focus:dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:dark:ring-offset-slate-900 ${selectedBlock.ringColor} resize-none shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]`}
                       placeholder="Escribe tus ideas..."
                       value={editorText}
                       onChange={(e) => setEditorText(e.target.value)}
