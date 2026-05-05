@@ -7,6 +7,7 @@ import {
   deleteCanvas,
   type CanvasRow,
 } from '../lib/canvasService';
+import { createSnapshot } from '../lib/snapshotService';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,8 @@ export interface UseCanvasesReturn {
   /** Updates a block locally and persists to Supabase. Returns the cloud-write promise so callers can handle errors. */
   updateBlock: (projectId: string, blockId: number, text: string) => Promise<void>;
   importProject: (name: string, data: CanvasData) => string;
+  /** Replace all canvas data with a previous snapshot and persist to Supabase. */
+  restoreProject: (id: string, data: CanvasData) => Promise<void>;
 }
 
 // ── Storage keys ─────────────────────────────────────────────────────────────
@@ -77,6 +80,22 @@ export function useCanvases(): UseCanvasesReturn {
   useEffect(() => {
     projectsRef.current = projects;
   }, [projects]);
+
+  // ── Auto-snapshot (debounced, 5 min after last block edit) ────────────────
+
+  /**
+   * Minimum idle time (ms) before an auto-snapshot is taken.
+   * A 5-minute window keeps snapshot frequency low without losing meaningful work.
+   */
+  const SNAPSHOT_DEBOUNCE_MS = 5 * 60 * 1000;
+  const autoSnapshotTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  // Clear all pending timers when the component unmounts.
+  useEffect(() => {
+    return () => {
+      autoSnapshotTimers.current.forEach((t) => clearTimeout(t));
+    };
+  }, []);
 
   // Write-through to the per-user localStorage cache.
   const persist = useCallback(
@@ -250,6 +269,18 @@ export function useCanvases(): UseCanvasesReturn {
             : p
         )
       );
+
+      // Debounce auto-snapshot: reset the timer on every block edit.
+      const existing = autoSnapshotTimers.current.get(projectId);
+      if (existing) clearTimeout(existing);
+      const timer = setTimeout(() => {
+        autoSnapshotTimers.current.delete(projectId);
+        createSnapshot(projectId, projectDataToRecord(newData), 'auto').catch(
+          (err) => console.error('[useCanvases] Auto-snapshot failed:', err)
+        );
+      }, SNAPSHOT_DEBOUNCE_MS);
+      autoSnapshotTimers.current.set(projectId, timer);
+
       return updateCanvas(projectId, {
         data: projectDataToRecord(newData),
       });
@@ -270,6 +301,18 @@ export function useCanvases(): UseCanvasesReturn {
     [updateProjects]
   );
 
+  const restoreProject = useCallback(
+    (id: string, data: CanvasData): Promise<void> => {
+      updateProjects((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, data, lastModified: Date.now() } : p
+        )
+      );
+      return updateCanvas(id, { data: projectDataToRecord(data) });
+    },
+    [updateProjects]
+  );
+
   return {
     projects,
     loading,
@@ -279,5 +322,6 @@ export function useCanvases(): UseCanvasesReturn {
     clearProject,
     updateBlock,
     importProject,
+    restoreProject,
   };
 }
