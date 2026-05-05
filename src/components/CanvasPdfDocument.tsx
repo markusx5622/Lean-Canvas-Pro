@@ -31,7 +31,9 @@ const BLOCK_META: BlockMeta[] = [
 ];
 
 function getMeta(id: number): BlockMeta {
-  return BLOCK_META.find((b) => b.id === id)!;
+  const meta = BLOCK_META.find((b) => b.id === id);
+  if (!meta) throw new Error(`Unknown block id: ${id}`);
+  return meta;
 }
 
 // ── Styles ───────────────────────────────────────────────────────────────────
@@ -217,7 +219,7 @@ interface Props {
 
 const CanvasPdfDocument: React.FC<Props> = ({ project }) => {
   const d = project.data;
-  const get = (id: number) => (d[id] ?? '').toString();
+  const get = (id: number) => d[id] ?? '';
   const date = new Date().toLocaleDateString('es-ES', {
     year: 'numeric',
     month: 'long',
