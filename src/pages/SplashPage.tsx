@@ -342,6 +342,104 @@ export function SplashPage({ theme, onEnter, prefersReducedMotion }: SplashPageP
           </div>
         </Section>
 
+        {/* ── Cómo funciona la auditoría ── */}
+        <Section className="mb-24">
+          <SectionHeading
+            eyebrow="Transparencia"
+            title={<>Así funciona la auditoría<br className="hidden md:block" /> estratégica</>}
+            subtitle="Sin IA externa ni cajas negras. El motor aplica reglas heurísticas explícitas basadas en las mejores prácticas del Lean Canvas — el resultado es predecible y siempre explicable."
+          />
+          <div className="flex flex-col gap-6">
+
+            {/* 5 evaluation dimensions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+              {[
+                {
+                  icon: <BarChart2 size={18} />,
+                  label: 'Completitud',
+                  desc: 'Volumen de contenido por bloque frente a umbrales mínimos y óptimos establecidos para cada uno de los 9 bloques.',
+                },
+                {
+                  icon: <CheckCircle2 size={18} />,
+                  label: 'Claridad',
+                  desc: 'Presencia de conceptos clave esperados en cada bloque según el framework Lean Canvas.',
+                },
+                {
+                  icon: <Target size={18} />,
+                  label: 'Especificidad',
+                  desc: 'Uso de cifras reales (€, %, plazos, nombres) en lugar de lenguaje vago o genérico.',
+                },
+                {
+                  icon: <Zap size={18} />,
+                  label: 'Consistencia',
+                  desc: 'Coherencia estructural entre bloques: solución ↔ problema, ingresos ↔ costes, canales ↔ segmento.',
+                },
+                {
+                  icon: <Rocket size={18} />,
+                  label: 'Madurez estratégica',
+                  desc: 'Preparación para inversores: modelo financiero cerrado, ventaja defensible y cobertura total del canvas.',
+                },
+              ].map(({ icon, label, desc }) => (
+                <div
+                  key={label}
+                  className="bg-white/70 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-4 flex flex-col gap-2"
+                >
+                  <div className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 mb-1">
+                    {icon}
+                    <span className="text-[13px] font-extrabold text-slate-800 dark:text-white">{label}</span>
+                  </div>
+                  <p className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Cross-block coherence rules */}
+            <div className="bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-800/50 rounded-2xl p-6 flex flex-col md:flex-row gap-4 md:gap-8 items-start">
+              <div className="shrink-0">
+                <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 rounded-xl flex items-center justify-center">
+                  <Layers size={20} />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-bold text-slate-900 dark:text-white text-[15px] mb-2">
+                  Coherencia entre bloques: 8 reglas explícitas
+                </h4>
+                <p className="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+                  Además de evaluar cada bloque de forma individual, el motor comprueba 8 relaciones estructurales entre bloques.
+                  Por ejemplo, que no se defina una solución sin haber descrito el problema, o que no queden costes sin un modelo
+                  de ingresos que los justifique. Cada regla lleva una severidad asignada —<em> crítica</em>,{' '}
+                  <em>alerta</em> o <em>informativa</em>— y una pista de acción concreta sobre cómo resolverla.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    'Solución sin Problema',
+                    'Ingresos sin Segmento',
+                    'Costes sin Ingresos',
+                    'Canales sin Segmento',
+                    'UVP sin Segmento',
+                    'Métricas sin Ingresos',
+                    'Sin CAC/LTV con modelo financiero',
+                    'Ventaja injusta genérica',
+                  ].map((rule) => (
+                    <span
+                      key={rule}
+                      className="inline-flex items-center px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 border border-indigo-100 dark:border-indigo-800/60 text-[11px] font-semibold text-slate-600 dark:text-slate-300"
+                    >
+                      {rule}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Scoring disclaimer */}
+            <p className="text-center text-[12px] text-slate-400 dark:text-slate-600 font-medium">
+              La puntuación final es una combinación ponderada de las 5 dimensiones. No interviene ninguna IA ni servicio externo — todo el análisis se ejecuta localmente en tu navegador.
+            </p>
+
+          </div>
+        </Section>
+
         {/* ── Por qué es diferente ── */}
         <Section className="mb-24">
           <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl p-8 md:p-12 relative overflow-hidden">
