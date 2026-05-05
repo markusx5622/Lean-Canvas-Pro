@@ -455,7 +455,7 @@ const Block = ({ data, additionalClasses = "", index, isActive, hasContent, canv
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 0.98, filter: 'blur(8px)' }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-[500] flex flex-col pt-16 md:pt-24 items-center bg-[#F4F5F8] dark:bg-slate-950 overflow-y-auto"
+            className="fixed inset-0 z-[500] flex flex-col pt-16 md:pt-24 items-center bg-[#F4F5F8] dark:bg-slate-950 overflow-y-auto overflow-x-hidden hide-scrollbar"
           >
              {/* Background decorative elements */}
              <ParticleBackground theme={theme} />

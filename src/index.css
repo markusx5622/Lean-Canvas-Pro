@@ -7,3 +7,10 @@
 }
 
 @custom-variant dark (&:is(.dark *));
+
+@utility hide-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
