@@ -27,7 +27,7 @@ export function CanvasGrid({ canvasData, selectedBlockId, canvasEntryKey, onSele
   return (
     <div className="flex-[1.5] xl:flex-[2] w-full flex flex-col gap-5">
       {/* Top 7 blocks (2-row grid) */}
-      <div key={canvasEntryKey} className="grid grid-cols-1 md:grid-cols-10 md:grid-rows-[minmax(230px,auto)_minmax(230px,auto)] gap-5">
+      <div key={canvasEntryKey} className="grid grid-cols-1 md:grid-cols-10 md:grid-rows-[minmax(270px,auto)_minmax(270px,auto)] gap-5">
         <BlockCard index={0} data={blockById(1)} additionalClasses="md:col-span-2 md:row-span-2" isActive={selectedBlockId === 1} hasContent={hasContent(canvasData, 1)} canvasDataValue={canvasData[1] || ''} onClick={() => onSelectBlock(1)} />
         <BlockCard index={1} data={blockById(4)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-1" isActive={selectedBlockId === 4} hasContent={hasContent(canvasData, 4)} canvasDataValue={canvasData[4] || ''} onClick={() => onSelectBlock(4)} />
         <BlockCard index={2} data={blockById(8)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-2" isActive={selectedBlockId === 8} hasContent={hasContent(canvasData, 8)} canvasDataValue={canvasData[8] || ''} onClick={() => onSelectBlock(8)} />
@@ -39,8 +39,8 @@ export function CanvasGrid({ canvasData, selectedBlockId, canvasEntryKey, onSele
 
       {/* Bottom 2 blocks */}
       <div key={`${canvasEntryKey}-bottom`} className="grid grid-cols-1 md:grid-cols-10 gap-5">
-        <BlockCard index={7} data={blockById(7)} additionalClasses="md:col-span-5 md:h-[200px]" isActive={selectedBlockId === 7} hasContent={hasContent(canvasData, 7)} canvasDataValue={canvasData[7] || ''} onClick={() => onSelectBlock(7)} />
-        <BlockCard index={8} data={blockById(6)} additionalClasses="md:col-span-5 md:h-[200px]" isActive={selectedBlockId === 6} hasContent={hasContent(canvasData, 6)} canvasDataValue={canvasData[6] || ''} onClick={() => onSelectBlock(6)} />
+        <BlockCard index={7} data={blockById(7)} additionalClasses="md:col-span-5 md:h-[230px]" isActive={selectedBlockId === 7} hasContent={hasContent(canvasData, 7)} canvasDataValue={canvasData[7] || ''} onClick={() => onSelectBlock(7)} />
+        <BlockCard index={8} data={blockById(6)} additionalClasses="md:col-span-5 md:h-[230px]" isActive={selectedBlockId === 6} hasContent={hasContent(canvasData, 6)} canvasDataValue={canvasData[6] || ''} onClick={() => onSelectBlock(6)} />
       </div>
     </div>
   );

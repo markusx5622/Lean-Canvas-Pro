@@ -43,8 +43,8 @@ export function BlockCard({
     >
       <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 group-hover:opacity-100 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none border-none transition-all duration-500`} />
 
-      <div className="p-5 relative h-full flex flex-col z-10 w-full">
-        <div className="flex items-start justify-between mb-4">
+      <div className="p-6 relative h-full flex flex-col z-10 w-full">
+        <div className="flex items-start justify-between mb-3">
           <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 ${data.iconColor}`}>
             {data.icon}
           </div>
@@ -53,7 +53,7 @@ export function BlockCard({
           </span>
         </div>
 
-        <h3 className="font-display text-[16px] font-extrabold text-slate-900 dark:text-white tracking-tight mb-2.5">{data.title}</h3>
+        <h3 className="font-display text-[17px] font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">{data.title}</h3>
 
         <div className="flex-1 overflow-hidden relative">
           <AnimatePresence mode="wait">
@@ -61,7 +61,7 @@ export function BlockCard({
               <motion.div
                 key="content"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="text-[13.5px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium h-full pr-1"
+                className="text-[14px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium line-clamp-[9] pr-1"
               >
                 {canvasDataValue}
               </motion.div>
@@ -71,7 +71,7 @@ export function BlockCard({
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="group h-full flex flex-col relative"
               >
-                <p className="text-[12.5px] text-slate-400 dark:text-slate-500 leading-snug line-clamp-4 group-hover:opacity-0 transition-opacity duration-300 font-medium">
+                <p className="text-[13px] text-slate-400 dark:text-slate-500 leading-snug line-clamp-5 group-hover:opacity-0 transition-opacity duration-300 font-medium">
                   {data.description}
                 </p>
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
