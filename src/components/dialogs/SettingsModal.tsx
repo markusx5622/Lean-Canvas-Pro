@@ -123,7 +123,7 @@ export function SettingsModal({
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
                   >
                     {theme === 'dark' ? <Sun size={13} strokeWidth={2.5} /> : <Moon size={13} strokeWidth={2.5} />}
-                    {theme === 'dark' ? 'Activar' : 'Activar'}
+                    {theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
                   </button>
                 }
               />
