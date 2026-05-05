@@ -608,8 +608,8 @@ const LeanCanvasApp = () => {
               >
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[14px]"></div>
                 <motion.div
-                  animate={prefersReducedMotion ? {} : { y: [0, -3, 0], rotate: [0, 8, 0] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                  animate={prefersReducedMotion ? {} : { y: [0, -3], rotate: [0, 8] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", repeatType: "mirror" }}
                   className="relative z-10"
                 >
                   <Rocket size={18} strokeWidth={2.5} />
