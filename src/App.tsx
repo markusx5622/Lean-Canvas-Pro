@@ -511,7 +511,7 @@ const LeanCanvasApp = () => {
                      </div>
                      <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3 relative z-10">Privacidad Garantizada</h3>
                      <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium relative z-10">
-                       Tu propiedad intelectual es vital. Los lienzos se encriptan y guardan localmente para tu total tranquilidad.
+                       Tu propiedad intelectual es vital. Los lienzos se guardan localmente en tu navegador y nunca abandonan tu dispositivo.
                      </p>
                   </motion.div>
               </motion.div>
