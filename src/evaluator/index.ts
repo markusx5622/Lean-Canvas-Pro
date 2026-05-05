@@ -14,7 +14,9 @@ export {
   computeCompletenessScore,
   computeClarityScore,
   computeSpecificityScore,
+  computeOverallScore,
   aggregateSubscores,
+  SCORE_WEIGHTS,
 } from './scoring';
 export type { CompletenessConfig, ClarityConfig, SpecificityConfig } from './scoring';
 

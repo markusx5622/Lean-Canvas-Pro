@@ -2,7 +2,7 @@
 // Lean Canvas Pro — Heuristic Evaluator  · __tests__/scoring.test.ts
 // ============================================================
 import { describe, it, expect } from 'vitest';
-import { computeCompletenessScore, computeClarityScore, computeSpecificityScore, aggregateSubscores } from '../scoring';
+import { computeCompletenessScore, computeClarityScore, computeSpecificityScore, aggregateSubscores, computeOverallScore, SCORE_WEIGHTS } from '../scoring';
 
 // ── computeCompletenessScore ──────────────────────────────────
 
@@ -205,5 +205,41 @@ describe('aggregateSubscores', () => {
     expect(result.completenessScore).toBe(45);
     expect(result.clarityScore).toBe(45);
     expect(result.specificityScore).toBe(45);
+  });
+});
+
+// ── computeOverallScore ───────────────────────────────────────
+
+describe('computeOverallScore', () => {
+  it('returns 0 when all subscores are 0', () => {
+    expect(computeOverallScore(0, 0, 0, 0, 0)).toBe(0);
+  });
+
+  it('returns 100 when all subscores are 100', () => {
+    expect(computeOverallScore(100, 100, 100, 100, 100)).toBe(100);
+  });
+
+  it('matches manual weighted calculation', () => {
+    const c = 80, cl = 70, sp = 60, co = 90, sr = 50;
+    const expected = Math.round(
+      c  * SCORE_WEIGHTS.completeness +
+      cl * SCORE_WEIGHTS.clarity +
+      sp * SCORE_WEIGHTS.specificity +
+      co * SCORE_WEIGHTS.consistency +
+      sr * SCORE_WEIGHTS.strategicReadiness,
+    );
+    expect(computeOverallScore(c, cl, sp, co, sr)).toBe(expected);
+  });
+
+  it('clamps result to [0, 100]', () => {
+    // Feeding values slightly above 100 shouldn't overflow
+    expect(computeOverallScore(100, 100, 100, 100, 100)).toBeLessThanOrEqual(100);
+    expect(computeOverallScore(0, 0, 0, 0, 0)).toBeGreaterThanOrEqual(0);
+  });
+
+  it('SCORE_WEIGHTS sum to 1.0', () => {
+    const total = SCORE_WEIGHTS.completeness + SCORE_WEIGHTS.clarity +
+      SCORE_WEIGHTS.specificity + SCORE_WEIGHTS.consistency + SCORE_WEIGHTS.strategicReadiness;
+    expect(total).toBeCloseTo(1.0);
   });
 });

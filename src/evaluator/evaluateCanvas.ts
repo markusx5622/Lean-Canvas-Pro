@@ -6,8 +6,8 @@ import type {
   CrossBlockIssue, Issue, Strength,
 } from './types';
 import { evaluateBlock } from './evaluateBlock';
-import { clamp, normalise } from './utils/text';
-import { aggregateSubscores } from './scoring';
+import { normalise, hasAnyKeyword } from './utils/text';
+import { aggregateSubscores, computeOverallScore, SCORE_WEIGHTS } from './scoring';
 import { COPYABLE_ATTRIBUTES } from './dictionaries/vagueTerms';
 import { BLOCK_KEYWORDS } from './dictionaries/keywords';
 
@@ -28,31 +28,39 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
   const filledBlocks = blocks.filter(b => b.filled).length;
   const completionPct = Math.round((filledBlocks / 9) * 100);
 
-  // Overall score = weighted average across all 9 blocks.
-  // Unfilled blocks contribute 0, so leaving blocks empty lowers the score
-  // and incentivises completing the full canvas.
-  const totalScore = blocks.reduce((sum, b) => sum + b.score, 0);
-  const overallScore = filledBlocks > 0 ? clamp(Math.round(totalScore / 9), 0, 100) : 0;
-
-  const verdict = buildVerdict(overallScore, completionPct);
-
-  // Surface the top 3 strengths and top 3 issues from all blocks.
-  const allStrengths: Strength[] = blocks.flatMap(b => b.strengths);
-  const allIssues: Issue[] = blocks.flatMap(b => b.issues);
-
-  const criticalIssues = allIssues.filter(i => i.severity === 'critical');
-  const warningIssues  = allIssues.filter(i => i.severity === 'warning');
-  const topIssues = [...criticalIssues, ...warningIssues].slice(0, 3);
-  const topStrengths = allStrengths.slice(0, 3);
-
   const crossBlockIssues = detectCrossBlockIssues(canvasData);
   const consistencyScore = computeConsistencyScore(crossBlockIssues, filledBlocks);
 
   // Aggregate completeness, clarity and specificity subscores across all 9 blocks
   const { completenessScore, clarityScore, specificityScore } = aggregateSubscores(blocks);
 
+  // 5th dimension: strategic readiness
+  const strategicReadinessScore = computeStrategicReadinessScore(
+    canvasData, filledBlocks, crossBlockIssues,
+  );
+
+  // Overall score = transparent weighted combination of the 5 dimensions.
+  // Empty canvas → 0; otherwise the formula drives the score.
+  const overallScore: number = filledBlocks > 0
+    ? computeOverallScore(completenessScore, clarityScore, specificityScore, consistencyScore, strategicReadinessScore)
+    : 0;
+
+  const verdict = buildVerdict(overallScore, completionPct);
+
+  // Surface top 5 issues from all blocks, sorted by severity then impact.
+  const allStrengths: Strength[] = blocks.flatMap(b => b.strengths);
+  const allIssues: Issue[] = blocks.flatMap(b => b.issues);
+
+  const topIssues = sortIssuesByPriority(allIssues).slice(0, 5);
+  const topStrengths = allStrengths.slice(0, 3);
+
   const recommendation = buildRecommendation(
     overallScore, completionPct, crossBlockIssues, specificityScore,
+  );
+
+  const headline = buildHeadline(overallScore, completionPct, crossBlockIssues, strategicReadinessScore);
+  const nextPriority = buildNextPriority(
+    completionPct, crossBlockIssues, specificityScore, strategicReadinessScore, blocks,
   );
 
   const summary: GlobalSummary = {
@@ -63,11 +71,15 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
     clarityScore,
     specificityScore,
     consistencyScore,
+    strategicReadinessScore,
     verdict,
+    headline,
+    nextPriority,
     topStrengths,
     topIssues,
     crossBlockIssues,
     recommendation,
+    scoreWeights: { ...SCORE_WEIGHTS },
   };
 
   return {
@@ -263,4 +275,198 @@ function buildRecommendation(
     return 'Base sólida. Trabaja en profundizar los bloques con puntuación más baja y añade métricas concretas (CAC, LTV, MRR).';
   }
   return 'Revisa los issues críticos de cada bloque. Empieza por definir claramente el Problema y el Segmento de Clientes, ya que son la base de todo el modelo.';
+}
+
+// ── Strategic readiness subscore ─────────────────────────────
+
+/**
+ * Compute a canvas-level strategic readiness score [0–100].
+ *
+ * Rewards signals that indicate the canvas is ready for investor
+ * pitches or customer validation:
+ *   • Full canvas coverage (all 9 blocks filled)
+ *   • Financial viability (both costs and revenue defined)
+ *   • CAC / LTV awareness in the Metrics block
+ *   • Competitive awareness in the Problem block (alternatives mentioned)
+ *   • Defensible moat in the Unfair Advantage block
+ *
+ * Penalises:
+ *   • Critical cross-block issues (-15 each, capped at -30)
+ *   • Warning cross-block issues  (-5  each, capped at -15)
+ *
+ * Returns 0 when fewer than 3 blocks are filled since strategic
+ * readiness cannot be meaningfully assessed on a skeleton canvas.
+ */
+function computeStrategicReadinessScore(
+  canvasData: CanvasData,
+  filledBlocks: number,
+  crossBlockIssues: CrossBlockIssue[],
+): number {
+  if (filledBlocks < 3) return 0;
+
+  let score = 40; // baseline — readiness must be earned
+
+  const problema  = canvasData[1] ?? '';
+  const ingresos  = canvasData[6] ?? '';
+  const costes    = canvasData[7] ?? '';
+  const metricas  = canvasData[8] ?? '';
+  const ventaja   = canvasData[9] ?? '';
+
+  // Canvas coverage
+  if (filledBlocks === 9)      score += 15;
+  else if (filledBlocks >= 7)  score += 8;
+  else if (filledBlocks >= 5)  score += 4;
+
+  // Financial viability: both costs and revenue defined
+  if (ingresos.trim().length > 0 && costes.trim().length > 0) score += 10;
+
+  // CAC / LTV awareness in metrics
+  if (/cac|ltv/i.test(metricas)) score += 10;
+
+  // Competitive awareness in Problem block
+  if (hasAnyKeyword(problema, ['alternativas', 'workaround', 'cómo resuelven', 'competidores', 'solución actual'])) {
+    score += 8;
+  }
+
+  // Defensible moat in Unfair Advantage block
+  const ventajaNorm = normalise(ventaja);
+  const hasRealMoat = ventaja.trim().length > 0 &&
+    BLOCK_KEYWORDS[9].positive.some(t => ventajaNorm.includes(normalise(t)));
+  if (hasRealMoat) score += 7;
+
+  // Penalise structural cross-block gaps
+  const criticalCount = crossBlockIssues.filter(i => i.severity === 'critical').length;
+  const warningCount  = crossBlockIssues.filter(i => i.severity === 'warning').length;
+  score -= Math.min(30, criticalCount * 15);
+  score -= Math.min(15, warningCount  * 5);
+
+  return Math.max(0, Math.min(100, score));
+}
+
+// ── Issue prioritisation ──────────────────────────────────────
+
+/**
+ * Sort a list of issues by severity (critical → warning → info) and then
+ * by impact (high → medium → low). When impact is not explicitly set,
+ * it is derived from severity as a sensible default.
+ *
+ * Issues with an actionable hint are ranked above those without when
+ * all other criteria are equal, since they give the user a concrete next step.
+ */
+function sortIssuesByPriority(issues: Issue[]): Issue[] {
+  const severityRank: Record<string, number> = { critical: 3, warning: 2, info: 1 };
+  const impactRank:   Record<string, number> = { high: 3, medium: 2, low: 1 };
+
+  const effectiveImpact = (issue: Issue): number => {
+    if (issue.impact) return impactRank[issue.impact];
+    // Derive from severity when not explicit
+    return severityRank[issue.severity] ?? 1;
+  };
+
+  return [...issues].sort((a, b) => {
+    const severityDiff = (severityRank[b.severity] ?? 0) - (severityRank[a.severity] ?? 0);
+    if (severityDiff !== 0) return severityDiff;
+
+    const impactDiff = effectiveImpact(b) - effectiveImpact(a);
+    if (impactDiff !== 0) return impactDiff;
+
+    // Tie-break: issues with an actionable hint come first
+    return (b.hint ? 1 : 0) - (a.hint ? 1 : 0);
+  });
+}
+
+// ── Headline & next-priority helpers ─────────────────────────
+
+/**
+ * Generate a short, personalised narrative headline for the evaluation results.
+ * More descriptive than verdict and intended for display at the top of the UI.
+ */
+function buildHeadline(
+  score: number,
+  completionPct: number,
+  crossBlockIssues: CrossBlockIssue[],
+  strategicReadinessScore: number,
+): string {
+  if (completionPct === 0) {
+    return 'Tu canvas está en blanco — empieza por el Problema y el Segmento de Clientes.';
+  }
+  if (completionPct < 33) {
+    return 'Canvas incipiente: completa los bloques fundamentales antes de evaluar la estrategia.';
+  }
+
+  const hasCritical = crossBlockIssues.some(i => i.severity === 'critical');
+
+  if (completionPct < 70) {
+    return hasCritical
+      ? 'Canvas parcial con inconsistencias críticas: resuelve los conflictos estructurales primero.'
+      : 'Canvas en construcción — llena los bloques restantes para obtener una evaluación completa.';
+  }
+
+  // Canvas ≥ 70% filled
+  if (hasCritical) {
+    return 'Modelo casi completo pero con inconsistencias críticas que bloquean la viabilidad estratégica.';
+  }
+
+  if (score >= 80 && strategicReadinessScore >= 60) {
+    return 'Canvas sólido y estratégicamente preparado — listo para validar con clientes reales.';
+  }
+  if (score >= 80) {
+    return 'Canvas sólido en calidad de contenido; refuerza los indicadores estratégicos (CAC, LTV, moat).';
+  }
+  if (score >= 60) {
+    return 'Base prometedora — profundiza en los bloques más débiles y añade métricas concretas.';
+  }
+  if (score >= 40) {
+    return 'Modelo en desarrollo: el contenido necesita más concreción y coherencia estratégica.';
+  }
+  return 'Canvas incompleto en calidad — aborda los issues críticos bloque a bloque.';
+}
+
+/**
+ * Determine the single most important next action for the user.
+ * Follows a strict priority order so the user always gets one clear,
+ * actionable instruction rather than a list of suggestions.
+ */
+function buildNextPriority(
+  completionPct: number,
+  crossBlockIssues: CrossBlockIssue[],
+  specificityScore: number,
+  strategicReadinessScore: number,
+  blocks: Array<{ filled: boolean; blockName: string }>,
+): string {
+  // 1. Completion gaps take absolute priority
+  if (completionPct < 50) {
+    const firstEmpty = blocks.find(b => !b.filled);
+    const blockLabel = firstEmpty ? `"${firstEmpty.blockName}"` : 'los bloques vacíos';
+    return `Completa ${blockLabel} — sin un canvas ≥ 50% lleno no pueden detectarse inconsistencias clave.`;
+  }
+
+  // 2. Critical cross-block issues block strategic progress
+  const firstCritical = crossBlockIssues.find(i => i.severity === 'critical');
+  if (firstCritical) {
+    return firstCritical.hint
+      ? `Resuelve inconsistencia crítica: ${firstCritical.hint}`
+      : `Resuelve inconsistencia crítica entre bloques: ${firstCritical.message}`;
+  }
+
+  // 3. Warning cross-block issues
+  const firstWarning = crossBlockIssues.find(i => i.severity === 'warning');
+  if (firstWarning) {
+    return firstWarning.hint
+      ? `Corrige alerta estratégica: ${firstWarning.hint}`
+      : `Corrige alerta entre bloques: ${firstWarning.message}`;
+  }
+
+  // 4. Low specificity: content is too vague to be actionable
+  if (specificityScore < 40) {
+    return 'Añade cifras concretas al canvas: precios (€), porcentajes (%), plazos y nombres de canales específicos.';
+  }
+
+  // 5. Low strategic readiness: missing investment-ready signals
+  if (strategicReadinessScore < 50) {
+    return 'Completa el modelo financiero (costes + ingresos + CAC/LTV) y define tu ventaja injusta para aumentar la preparación estratégica.';
+  }
+
+  // 6. Canvas is solid — move to validation
+  return 'Realiza al menos 5 entrevistas con clientes potenciales para contrastar las hipótesis del canvas.';
 }
