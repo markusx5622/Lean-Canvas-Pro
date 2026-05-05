@@ -22,9 +22,11 @@ export interface SharedCanvasRow {
  * Returns the new row including the generated token.
  */
 export async function createShare(canvasId: string): Promise<ShareRow> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
     .from('canvas_shares')
-    .insert({ canvas_id: canvasId })
+    .insert({ canvas_id: canvasId, user_id: user.id })
     .select('id, canvas_id, token, created_at')
     .single();
   if (error) throw error;

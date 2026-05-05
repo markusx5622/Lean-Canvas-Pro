@@ -6,6 +6,7 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from '../evaluator';
 import type { EvaluationResult, BlockFeedback, BlockId } from '../evaluator';
 import { exportCanvasToPdf } from '../lib/exportPdf';
+import { useCanvasSharing } from '../hooks/useCanvasSharing';
 import { ParticleBackground } from '../ParticleBackground';
 import { Toolbar } from '../components/toolbar/Toolbar';
 import { CanvasGrid } from '../components/canvas/CanvasGrid';
@@ -76,6 +77,10 @@ export function WorkspacePage() {
     (val) => typeof val === 'string' && (val as string).trim().length > 0
   ).length;
   const progressPercentage = Math.round((filledBlocks / 9) * 100);
+
+  // Sharing state — lifted here so Toolbar can show the active-share indicator
+  // without a separate DB fetch, and ShareModal reuses the same state.
+  const sharing = useCanvasSharing(activeProject?.id);
 
   // ── Effects ─────────────────────────────────────────────────────────────────
 
@@ -285,6 +290,7 @@ export function WorkspacePage() {
           pdfExporting={pdfExporting}
           user={user}
           prefersReducedMotion={prefersReducedMotion}
+          hasActiveShare={sharing.share !== null}
           onCreateProject={handleCreateProject}
           onRenameProject={handleRenameProject}
           onDeleteProject={handleDeleteProject}
@@ -323,8 +329,8 @@ export function WorkspacePage() {
         <AnimatePresence>
           {showShareModal && activeProject && (
             <ShareModal
-              canvasId={activeProject.id}
               canvasName={activeProject.name}
+              sharing={sharing}
               onClose={() => setShowShareModal(false)}
             />
           )}

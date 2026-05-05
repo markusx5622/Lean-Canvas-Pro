@@ -8,8 +8,9 @@
 CREATE TABLE IF NOT EXISTS public.canvas_shares (
   id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   canvas_id   uuid        NOT NULL REFERENCES public.canvases(id) ON DELETE CASCADE,
-  -- Denormalised for simpler RLS without a JOIN
-  user_id     uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  -- Denormalised for simpler RLS without a JOIN.
+  -- DEFAULT auth.uid() lets the client omit user_id; the DB fills it from the JWT.
+  user_id     uuid        NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
   -- Cryptographically random token used as the public share URL slug
   token       uuid        NOT NULL DEFAULT gen_random_uuid(),
   created_at  timestamptz NOT NULL DEFAULT now(),

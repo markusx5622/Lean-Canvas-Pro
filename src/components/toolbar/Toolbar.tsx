@@ -18,6 +18,7 @@ export interface ToolbarProps {
   pdfExporting: boolean;
   user: User | null;
   prefersReducedMotion: boolean | null | undefined;
+  hasActiveShare: boolean;
   onCreateProject: () => void;
   onRenameProject: () => void;
   onDeleteProject: () => void;
@@ -40,6 +41,7 @@ export function Toolbar({
   pdfExporting,
   user,
   prefersReducedMotion,
+  hasActiveShare,
   onCreateProject,
   onRenameProject,
   onDeleteProject,
@@ -183,10 +185,14 @@ export function Toolbar({
         </button>
         <button
           onClick={onShare}
-          title="Compartir canvas (solo lectura)"
-          className="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-[10px] transition-all border border-slate-200/60 dark:border-slate-700 hover:border-indigo-200/80 dark:hover:border-indigo-500/20 active:scale-95"
+          title={hasActiveShare ? 'Canvas compartido · gestionar enlace' : 'Compartir canvas (solo lectura)'}
+          className="relative flex items-center gap-1.5 px-3.5 py-2 text-slate-600 dark:text-slate-300 font-bold rounded-[10px] hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border border-slate-200/60 dark:border-slate-700 hover:border-indigo-200/80 dark:hover:border-indigo-500/20 active:scale-95 whitespace-nowrap text-[13px] tracking-tight"
         >
-          <Share2 size={15} strokeWidth={2.5} />
+          {hasActiveShare && (
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-800 shadow-sm" />
+          )}
+          <Share2 size={14} strokeWidth={2.5} />
+          <span className="hidden sm:inline">Compartir</span>
         </button>
 
         <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-0.5" />
