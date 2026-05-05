@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { 
   Users, AlertCircle, Lightbulb, Rocket, TrendingUp, Share2, ShieldCheck, DollarSign, CreditCard,
@@ -223,7 +223,7 @@ const LeanCanvasApp = () => {
   const [selectedBlockId, setSelectedBlockId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'guide' | 'examples'>('guide');
   const [editorText, setEditorText] = useState("");
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('lean-canvas-pro-theme', 'light');
   const [auditResult, setAuditResult] = useState<EvaluationResult | null>(null);
   const [blockAuditResult, setBlockAuditResult] = useState<BlockFeedback | null>(null);
@@ -231,6 +231,8 @@ const LeanCanvasApp = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [canvasEntryKey, setCanvasEntryKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  /** Tracks any unsaved text so it can be flushed immediately on block/project switch. */
+  const dirtyRef = useRef<{ projectId: string; blockId: number; text: string } | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
   const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
@@ -274,14 +276,28 @@ const LeanCanvasApp = () => {
     setAuditResult(result);
   };
 
+  /** Immediately persists any dirty text to the backend (used when switching context). */
+  const flushPendingSave = useCallback(() => {
+    const pending = dirtyRef.current;
+    if (!pending) return;
+    dirtyRef.current = null;
+    updateBlock(pending.projectId, pending.blockId, pending.text).catch((err) => {
+      console.error('[autosave] Background flush failed:', err);
+    });
+  }, [updateBlock]);
+
   useEffect(() => {
     if (selectedBlockId) {
+      // Flush any unsaved text from the previous block before loading the new one.
+      // Fire-and-forget: local state is already updated synchronously inside updateBlock,
+      // so the new block loads consistently regardless of when the Supabase write settles.
+      flushPendingSave();
       setEditorText(canvasData[selectedBlockId] || "");
       setActiveTab('guide');
       setSaveStatus('idle');
       setBlockAuditResult(null);
     }
-  }, [selectedBlockId, activeProjectId]);
+  }, [selectedBlockId, activeProjectId, flushPendingSave]);
 
   const runBlockAudit = () => {
     if (!editorText.trim() || !selectedBlockId) return;
@@ -291,20 +307,42 @@ const LeanCanvasApp = () => {
     setBlockAuditResult(result);
   };
 
+  // Autosave: debounced 800 ms. Awaits the Supabase write before marking 'saved'
+  // so that failures are surfaced rather than silently swallowed.
+  // selectedBlockId / activeProjectId / canvasData are intentionally omitted from
+  // deps: they are captured via dirtyRef at write-time to avoid restarting the
+  // debounce on every render. updateBlock is stable (useCallback with stable deps).
   useEffect(() => {
-    if (!selectedBlockId) return;
+    if (!selectedBlockId || !activeProject) return;
     const currentData = canvasData[selectedBlockId] || "";
-    if (editorText === currentData) return;
+    if (editorText === currentData) {
+      // Text matches persisted state — nothing pending.
+      dirtyRef.current = null;
+      return;
+    }
 
+    dirtyRef.current = { projectId: activeProjectId, blockId: selectedBlockId, text: editorText };
     setSaveStatus('saving');
+
     const timerId = setTimeout(() => {
-      updateBlock(activeProjectId, selectedBlockId, editorText);
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 2000);
-    }, 600);
+      const pending = dirtyRef.current;
+      if (!pending) return; // Already flushed by a block switch.
+      dirtyRef.current = null;
+      updateBlock(pending.projectId, pending.blockId, pending.text)
+        .then(() => {
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus((s) => (s === 'saved' ? 'idle' : s)), 2000);
+        })
+        .catch((err: unknown) => {
+          console.error('[autosave] Save failed:', err);
+          setSaveStatus('error');
+          setTimeout(() => setSaveStatus((s) => (s === 'error' ? 'idle' : s)), 3000);
+        });
+    }, 800);
 
     return () => clearTimeout(timerId);
-  }, [editorText, selectedBlockId, activeProjectId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorText, updateBlock]);
 
   // == Funciones de Gestión ==
   const handleCreateProject = () => {
@@ -1022,7 +1060,8 @@ const LeanCanvasApp = () => {
                           Auditar bloque
                         </button>
                         {saveStatus === 'saving' && <span className="text-[10px] font-bold text-slate-400 animate-pulse uppercase tracking-wider">Guardando...</span>}
-                        {saveStatus === 'saved' && <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100"><CheckCircle2 size={12} strokeWidth={2.5}/> Listo</span>}
+                        {saveStatus === 'saved' && <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-700"><CheckCircle2 size={12} strokeWidth={2.5}/> Guardado</span>}
+                        {saveStatus === 'error' && <span className="flex items-center gap-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 px-2.5 py-0.5 rounded-full border border-rose-100 dark:border-rose-700"><AlertCircle size={12} strokeWidth={2.5}/> Error al guardar</span>}
                       </div>
                     </div>
                     
