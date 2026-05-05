@@ -49,7 +49,19 @@ export interface BlockFeedback {
   blockName: string;
   /** Whether the block contains any text at all */
   filled: boolean;
+  /** Combined heuristic score [0–100] */
   score: Score;
+  /**
+   * How well the block is filled: considers word count and structure.
+   * 0 = empty, 100 = thoroughly developed.
+   */
+  completenessScore: Score;
+  /**
+   * How specific and clear the content is: considers domain keyword
+   * density and absence of vague / generic language.
+   * 0 = very vague, 100 = highly specific.
+   */
+  clarityScore: Score;
   issues: Issue[];
   strengths: Strength[];
   /** One-line summary for this block */
@@ -76,6 +88,16 @@ export interface GlobalSummary {
   filledBlocks: number;
   /** Completion percentage [0–100] */
   completionPct: number;
+  /**
+   * Average completeness subscore across all 9 blocks [0–100].
+   * Unfilled blocks contribute 0, so this rewards filling everything.
+   */
+  completenessScore: Score;
+  /**
+   * Average clarity subscore across all 9 blocks [0–100].
+   * Reflects how specific and non-generic the content is overall.
+   */
+  clarityScore: Score;
   /**
    * One-line VC-style verdict based on overallScore:
    *   ≥ 80 → "Sólido"  |  60–79 → "Prometedor"  |  40–59 → "En desarrollo"  |  < 40 → "Necesita trabajo"

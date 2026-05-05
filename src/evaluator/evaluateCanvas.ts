@@ -7,6 +7,7 @@ import type {
 } from './types';
 import { evaluateBlock } from './evaluateBlock';
 import { clamp } from './utils/text';
+import { aggregateSubscores } from './scoring';
 
 const ALL_BLOCK_IDS: BlockId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -46,10 +47,15 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
 
   const recommendation = buildRecommendation(overallScore, completionPct, crossBlockIssues.length);
 
+  // Aggregate completeness and clarity subscores across all 9 blocks
+  const { completenessScore, clarityScore } = aggregateSubscores(blocks);
+
   const summary: GlobalSummary = {
     overallScore,
     filledBlocks,
     completionPct,
+    completenessScore,
+    clarityScore,
     verdict,
     topStrengths,
     topIssues,
