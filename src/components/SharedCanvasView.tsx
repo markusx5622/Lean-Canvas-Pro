@@ -1,24 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import {
-  Users, AlertCircle, Lightbulb, Rocket, TrendingUp, Share2, ShieldCheck, DollarSign, CreditCard,
-  EyeOff, Loader2,
-} from 'lucide-react';
+import { Rocket, EyeOff, Loader2 } from 'lucide-react';
 import { getCanvasByShareToken, type SharedCanvasRow } from '../lib/shareService';
-
-// ── Block metadata (mirrors the definitions in App.tsx) ──────────────────────
-
-const BLOCK_META: Record<number, { title: string; icon: React.ReactNode; color: string; iconColor: string }> = {
-  1: { title: 'Problema',        icon: <AlertCircle size={22} strokeWidth={2.5} />, color: 'from-rose-50 to-white dark:from-rose-950/30 dark:to-slate-900',     iconColor: 'text-rose-500 dark:text-rose-400' },
-  4: { title: 'Solución',        icon: <Lightbulb   size={22} strokeWidth={2.5} />, color: 'from-amber-50 to-white dark:from-amber-950/30 dark:to-slate-900',   iconColor: 'text-amber-500 dark:text-amber-400' },
-  3: { title: 'Propuesta Única', icon: <Rocket      size={22} strokeWidth={2.5} />, color: 'from-violet-50 to-white dark:from-violet-950/30 dark:to-slate-900', iconColor: 'text-violet-500 dark:text-violet-400' },
-  9: { title: 'Ventaja Injusta', icon: <ShieldCheck size={22} strokeWidth={2.5} />, color: 'from-blue-50 to-white dark:from-blue-950/30 dark:to-slate-900',     iconColor: 'text-blue-500 dark:text-blue-400' },
-  2: { title: 'Segmentos',       icon: <Users       size={22} strokeWidth={2.5} />, color: 'from-emerald-50 to-white dark:from-emerald-950/30 dark:to-slate-900', iconColor: 'text-emerald-500 dark:text-emerald-400' },
-  8: { title: 'Métricas Clave',  icon: <TrendingUp  size={22} strokeWidth={2.5} />, color: 'from-orange-50 to-white dark:from-orange-950/30 dark:to-slate-900', iconColor: 'text-orange-500 dark:text-orange-400' },
-  5: { title: 'Canales',         icon: <Share2      size={22} strokeWidth={2.5} />, color: 'from-teal-50 to-white dark:from-teal-950/30 dark:to-slate-900',     iconColor: 'text-teal-500 dark:text-teal-400' },
-  7: { title: 'Costes',          icon: <CreditCard  size={22} strokeWidth={2.5} />, color: 'from-slate-100 to-white dark:from-slate-800/50 dark:to-slate-900',  iconColor: 'text-slate-600 dark:text-slate-400' },
-  6: { title: 'Flujo de Ingresos', icon: <DollarSign size={22} strokeWidth={2.5} />, color: 'from-cyan-50 to-white dark:from-cyan-950/30 dark:to-slate-900',   iconColor: 'text-cyan-500 dark:text-cyan-400' },
-};
+import { BLOCK_META } from '../data/blocks';
 
 // ── Read-only block card ─────────────────────────────────────────────────────
 
