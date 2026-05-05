@@ -7,7 +7,12 @@ import {
 } from 'lucide-react';
 import { ParticleBackground } from './ParticleBackground';
 import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from './evaluator';
-import type { EvaluationResult, BlockFeedback } from './evaluator';
+import type { EvaluationResult, BlockFeedback, BlockId } from './evaluator';
+
+const VALID_BLOCK_IDS: BlockId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+function asBlockId(id: number): BlockId | null {
+  return (VALID_BLOCK_IDS as number[]).includes(id) ? (id as BlockId) : null;
+}
 
 // === Tipos & utilidades ===
 interface CanvasData {
@@ -268,7 +273,9 @@ const LeanCanvasApp = () => {
 
   const runBlockAudit = () => {
     if (!editorText.trim() || !selectedBlockId) return;
-    const result = evaluateBlockHeuristic(selectedBlockId as 1|2|3|4|5|6|7|8|9, { ...canvasData, [selectedBlockId]: editorText } as Record<number, string>);
+    const blockId = asBlockId(selectedBlockId);
+    if (!blockId) return;
+    const result = evaluateBlockHeuristic(blockId, { ...canvasData, [blockId]: editorText } as Record<number, string>);
     setBlockAuditResult(result);
   };
 
