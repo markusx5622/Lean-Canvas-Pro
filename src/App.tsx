@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, AlertCircle, Lightbulb, Rocket, TrendingUp, Share2, ShieldCheck, DollarSign, CreditCard,
-  Printer, Trash2, MessageSquare, BookOpen, CheckCircle2, Download, Upload, Plus, Edit2, FolderOpen
+  Printer, Trash2, MessageSquare, BookOpen, CheckCircle2, Download, Upload, Plus, Edit2, FolderOpen, Sun, Moon
 } from 'lucide-react';
 
 // === Tipos & utilidades ===
@@ -46,7 +46,7 @@ function useLocalStorage<T>(key: string, initialValue: T) {
 // === Datos Estáticos de los Bloques ===
 const BLOCKS = [
   {
-    id: 1, order: 1, title: "Problema", color: "from-rose-50 to-white", iconColor: "text-rose-500", ringColor: "ring-rose-500/50",
+    id: 1, order: 1, title: "Problema", color: "from-rose-50 to-white dark:from-rose-950/30 dark:to-slate-900", iconColor: "text-rose-500 dark:text-rose-400", ringColor: "ring-rose-500/50 dark:ring-rose-500/40",
     icon: <AlertCircle size={22} strokeWidth={2.5} />,
     description: "Identifica los 3 problemas principales. Sin un problema real, no hay negocio.",
     details: "Sin un problema real, no hay negocio. Aquí también incluyes 'Alternativas existentes' (cómo resuelven el problema hoy).",
@@ -57,7 +57,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 4, order: 4, title: "Solución", color: "from-amber-50 to-white", iconColor: "text-amber-500", ringColor: "ring-amber-500/50",
+    id: 4, order: 4, title: "Solución", color: "from-amber-50 to-white dark:from-amber-950/30 dark:to-slate-900", iconColor: "text-amber-500 dark:text-amber-400", ringColor: "ring-amber-500/50 dark:ring-amber-500/40",
     icon: <Lightbulb size={22} strokeWidth={2.5} />,
     description: "Define las características clave que resuelven los problemas principales.",
     details: "No intentes construir todo a la vez. Enfócate en las 3 funciones principales.",
@@ -67,7 +67,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 3, order: 3, title: "Propuesta Única", color: "from-violet-50 to-white", iconColor: "text-violet-500", ringColor: "ring-violet-500/50",
+    id: 3, order: 3, title: "Propuesta Única", color: "from-violet-50 to-white dark:from-violet-950/30 dark:to-slate-900", iconColor: "text-violet-500 dark:text-violet-400", ringColor: "ring-violet-500/50 dark:ring-violet-500/40",
     icon: <Rocket size={22} strokeWidth={2.5} />,
     description: "Mensaje claro: qué haces y por qué eres diferente. El corazón del lienzo.",
     details: "Debe ser un mensaje de alto nivel que condense el valor. Describe beneficios tangibles, no funciones.",
@@ -77,7 +77,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 9, order: 9, title: "Ventaja Injusta", color: "from-blue-50 to-white", iconColor: "text-blue-500", ringColor: "ring-blue-500/50",
+    id: 9, order: 9, title: "Ventaja Injusta", color: "from-blue-50 to-white dark:from-blue-950/30 dark:to-slate-900", iconColor: "text-blue-500 dark:text-blue-400", ringColor: "ring-blue-500/50 dark:ring-blue-500/40",
     icon: <ShieldCheck size={22} strokeWidth={2.5} />,
     description: "Algo que no se puede copiar o comprar fácilmente por la competencia.",
     details: "Puede ser un equipo de expertos, patentes, una comunidad exclusiva o datos únicos que solo tú posees.",
@@ -87,7 +87,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 2, order: 2, title: "Segmentos", color: "from-emerald-50 to-white", iconColor: "text-emerald-500", ringColor: "ring-emerald-500/50",
+    id: 2, order: 2, title: "Segmentos", color: "from-emerald-50 to-white dark:from-emerald-950/30 dark:to-slate-900", iconColor: "text-emerald-500 dark:text-emerald-400", ringColor: "ring-emerald-500/50 dark:ring-emerald-500/40",
     icon: <Users size={22} strokeWidth={2.5} />,
     description: "¿Quiénes son tus clientes? Identifica a tus Early Adopters iniciales.",
     details: "Los 'Early Adopters' son los que necesitan tu solución ahora mismo, aunque no sea perfecta. Encuéntralos primero.",
@@ -97,7 +97,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 8, order: 8, title: "Métricas Clave", color: "from-orange-50 to-white", iconColor: "text-orange-500", ringColor: "ring-orange-500/50",
+    id: 8, order: 8, title: "Métricas Clave", color: "from-orange-50 to-white dark:from-orange-950/30 dark:to-slate-900", iconColor: "text-orange-500 dark:text-orange-400", ringColor: "ring-orange-500/50 dark:ring-orange-500/40",
     icon: <TrendingUp size={22} strokeWidth={2.5} />,
     description: "Los números críticos que indican si el negocio está realmente funcionando.",
     details: "Elige métricas procesables como el CAC, LTV o tasas de retención.",
@@ -107,7 +107,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 5, order: 5, title: "Canales", color: "from-teal-50 to-white", iconColor: "text-teal-500", ringColor: "ring-teal-500/50",
+    id: 5, order: 5, title: "Canales", color: "from-teal-50 to-white dark:from-teal-950/30 dark:to-slate-900", iconColor: "text-teal-500 dark:text-teal-400", ringColor: "ring-teal-500/50 dark:ring-teal-500/40",
     icon: <Share2 size={22} strokeWidth={2.5} />,
     description: "Tu ruta al mercado. Cómo vas a captar y retener a tus clientes.",
     details: "Define tu estrategia de adquisición y distribución: inbound, outbound, o partners.",
@@ -117,7 +117,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 7, order: 7, title: "Costes", color: "from-slate-100 to-white", iconColor: "text-slate-600", ringColor: "ring-slate-500/50",
+    id: 7, order: 7, title: "Costes", color: "from-slate-100 to-white dark:from-slate-800/50 dark:to-slate-900", iconColor: "text-slate-600 dark:text-slate-400", ringColor: "ring-slate-500/50 dark:ring-slate-500/40",
     icon: <CreditCard size={22} strokeWidth={2.5} />,
     description: "Tus gastos principales para operar: servidores, marketing, salarios, etc.",
     details: "Clasifica en costos fijos y variables para calcular el punto de equilibrio.",
@@ -127,7 +127,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 6, order: 6, title: "Flujo de Ingresos", color: "from-cyan-50 to-white", iconColor: "text-cyan-500", ringColor: "ring-cyan-500/50",
+    id: 6, order: 6, title: "Flujo de Ingresos", color: "from-cyan-50 to-white dark:from-cyan-950/30 dark:to-slate-900", iconColor: "text-cyan-500 dark:text-cyan-400", ringColor: "ring-cyan-500/50 dark:ring-cyan-500/40",
     icon: <DollarSign size={22} strokeWidth={2.5} />,
     description: "Cómo vas a ganar dinero: suscripciones, pago por uso o márgenes de venta.",
     details: "Define tu modelo de monetización. La forma más directa de validar una startup es lograr que alguien pague.",
@@ -152,6 +152,7 @@ const LeanCanvasApp = () => {
   const [activeTab, setActiveTab] = useState<'guide' | 'examples'>('guide');
   const [editorText, setEditorText] = useState("");
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('lean-canvas-pro-theme', 'light');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
@@ -159,6 +160,14 @@ const LeanCanvasApp = () => {
 
   const filledBlocks = Object.values(canvasData).filter(val => typeof val === 'string' && val.trim().length > 0).length;
   const progressPercentage = Math.round((filledBlocks / 9) * 100);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   useEffect(() => {
     if (selectedBlockId) {
@@ -269,23 +278,23 @@ const LeanCanvasApp = () => {
         onClick={() => setSelectedBlockId(data.id)}
         className={`relative flex flex-col cursor-pointer overflow-hidden rounded-[20px] transition-all duration-300
           ${isActive 
-            ? `bg-white shadow-[0_15px_40px_-5px_rgba(0,0,0,0.12)] ring-2 ring-offset-2 ${data.ringColor} z-20` 
-            : 'bg-white shadow-[0_4px_16px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-200/80'
+            ? `bg-white dark:bg-slate-900 shadow-[0_15px_40px_-5px_rgba(0,0,0,0.12)] dark:shadow-[0_15px_40px_-5px_rgba(0,0,0,0.4)] ring-2 ring-offset-2 dark:ring-offset-slate-950 ${data.ringColor} z-20` 
+            : 'bg-white dark:bg-slate-900 shadow-[0_4px_16px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-slate-200/80 dark:border-slate-800'
           } ${additionalClasses}`}
       >
         <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none no-print border-none transition-all duration-500`} />
 
         <div className="p-5 relative h-full flex flex-col z-10 w-full">
           <div className="flex items-start justify-between mb-4">
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-white shadow-sm border border-slate-100 ${data.iconColor}`}>
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 ${data.iconColor}`}>
                {data.icon}
             </div>
-            <span className="bg-slate-100/80 text-slate-400 font-bold text-[10px] w-6 h-6 flex items-center justify-center rounded-full no-print border border-slate-200/50 shadow-inner">
+            <span className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 font-bold text-[10px] w-6 h-6 flex items-center justify-center rounded-full no-print border border-slate-200/50 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
               {data.order}
             </span>
           </div>
 
-          <h3 className="font-display text-[16px] font-extrabold text-slate-900 tracking-tight mb-2.5">{data.title}</h3>
+          <h3 className="font-display text-[16px] font-extrabold text-slate-900 dark:text-white tracking-tight mb-2.5">{data.title}</h3>
 
           <div className="flex-1 overflow-hidden relative">
             <AnimatePresence mode="wait">
@@ -293,7 +302,7 @@ const LeanCanvasApp = () => {
                 <motion.div 
                   key="content"
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="text-[13.5px] text-slate-700 leading-relaxed whitespace-pre-wrap font-medium h-full pr-1"
+                  className="text-[13.5px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium h-full pr-1"
                 >
                   {canvasData[data.id]}
                 </motion.div>
@@ -303,11 +312,11 @@ const LeanCanvasApp = () => {
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="group h-full flex flex-col relative"
                 >
-                  <p className="text-[12.5px] text-slate-400 leading-snug line-clamp-4 group-hover:opacity-0 transition-opacity duration-300 print:hidden font-medium">
+                  <p className="text-[12.5px] text-slate-400 dark:text-slate-500 leading-snug line-clamp-4 group-hover:opacity-0 transition-opacity duration-300 print:hidden font-medium">
                     {data.description}
                   </p>
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 no-print">
-                     <span className="flex items-center gap-1.5 bg-slate-900 text-white shadow-lg py-1.5 px-3.5 rounded-full text-[11px] font-bold tracking-wide transition-transform group-hover:scale-105 duration-300">
+                     <span className="flex items-center gap-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg py-1.5 px-3.5 rounded-full text-[11px] font-bold tracking-wide transition-transform group-hover:scale-105 duration-300">
                         <Edit2 size={12} strokeWidth={2.5} /> Escribir
                      </span>
                   </div>
@@ -323,7 +332,7 @@ const LeanCanvasApp = () => {
   const selectedBlock = BLOCKS.find(b => b.id === selectedBlockId);
 
   return (
-    <div className="min-h-screen bg-[#F4F5F8] font-sans text-slate-900 flex justify-center pb-16 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
+    <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex justify-center pb-16 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
       <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleImportJson} />
 
       <style dangerouslySetInnerHTML={{__html: `
@@ -345,47 +354,52 @@ const LeanCanvasApp = () => {
         {/* === TOP TOOLBAR === */}
         <motion.div 
           initial={{ y: -20, opacity: 0 }} autoFocus animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, ease: "easeOut" }}
-          className="bg-white/90 backdrop-blur-xl border text-sm border-slate-200/60 shadow-[0_4px_20px_rgb(0,0,0,0.03)] rounded-[20px] p-3 px-5 flex flex-col md:flex-row items-center justify-between gap-4 no-print sticky top-4 z-[100]"
+          className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border text-sm border-slate-200/60 dark:border-slate-800 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-[20px] p-3 px-5 flex flex-col md:flex-row items-center justify-between gap-4 no-print sticky top-4 z-[100]"
         >
           {/* Logo & Dropdown */}
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="bg-slate-900 text-white p-2 rounded-[14px] shadow-sm shrink-0 relative overflow-hidden">
+            <div className="bg-slate-900 dark:bg-slate-800 text-white p-2 rounded-[14px] shadow-sm shrink-0 relative overflow-hidden">
                <Rocket size={18} strokeWidth={2.5} className="relative z-10" />
             </div>
             <div className="flex flex-col relative w-full group">
-               <div className="text-[9px] uppercase font-bold tracking-widest text-slate-400 mb-[2px] ml-[5px]">
+               <div className="text-[9px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 mb-[2px] ml-[5px]">
                  Workspace
                </div>
-               <div className="flex items-center gap-1 bg-transparent hover:bg-slate-50 rounded-xl p-0.5 transition-all border border-transparent hover:border-slate-200/80">
-                 <select 
-                   value={activeProjectId} 
-                   onChange={(e) => { setActiveProjectId(e.target.value); setSelectedBlockId(null); }}
-                   className="font-display appearance-none bg-transparent text-slate-800 font-extrabold text-[15px] py-1 pl-2 pr-8 focus:outline-none min-w-[180px] cursor-pointer tracking-tight"
-                 >
-                   {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                 </select>
-                 <div className="pointer-events-none absolute left-[175px] top-[18px] text-slate-400 transition-colors group-hover:text-slate-600">
-                    <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
+               <div className="flex items-center gap-1 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl p-0.5 transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700">
+                 <div className="relative flex items-center">
+                   <select 
+                     value={activeProjectId} 
+                     onChange={(e) => { setActiveProjectId(e.target.value); setSelectedBlockId(null); }}
+                     className="font-display appearance-none bg-transparent text-slate-800 dark:text-slate-200 font-extrabold text-[15px] py-1 pl-2 pr-8 focus:outline-none min-w-[150px] cursor-pointer tracking-tight"
+                   >
+                     {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                   </select>
+                   <div className="pointer-events-none absolute right-2 text-slate-400 dark:text-slate-500 transition-colors group-hover:text-slate-600 dark:group-hover:text-slate-400">
+                      <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
+                   </div>
                  </div>
-                 <button onClick={handleRenameProject} className="p-1.5 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-white transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200"><Edit2 size={13} strokeWidth={2.5} /></button>
-                 <button onClick={handleDeleteProject} className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-white transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200"><Trash2 size={13} strokeWidth={2.5} /></button>
+                 
+                 <div className="flex items-center">
+                   <button onClick={handleRenameProject} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200 dark:hover:border-slate-700"><Edit2 size={13} strokeWidth={2.5} /></button>
+                   <button onClick={handleDeleteProject} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200 dark:hover:border-slate-700"><Trash2 size={13} strokeWidth={2.5} /></button>
+                 </div>
                </div>
             </div>
             
-            <div className="h-8 w-px bg-slate-200/60 mx-1 hidden lg:block"></div>
+            <div className="h-8 w-px bg-slate-200/60 dark:bg-slate-800 mx-1 hidden lg:block"></div>
             
-            <button onClick={handleCreateProject} className="hidden lg:flex items-center gap-2 px-3 py-[7px] bg-slate-50 text-slate-700 font-bold rounded-[10px] hover:bg-slate-100 hover:text-slate-900 transition-colors whitespace-nowrap text-[13px] tracking-tight border border-slate-200/80 shadow-sm">
+            <button onClick={handleCreateProject} className="hidden lg:flex items-center gap-2 px-3 py-[7px] bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold rounded-[10px] hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap text-[13px] tracking-tight border border-slate-200/80 dark:border-slate-700 shadow-sm">
                <Plus size={15} strokeWidth={2.5} /> Nuevo
             </button>
           </div>
 
           {/* Progreso del Lienzo */}
           <div className="hidden md:flex flex-col items-center flex-1 max-w-[280px]">
-            <div className="flex w-full justify-between mb-[6px] text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+            <div className="flex w-full justify-between mb-[6px] text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
               <span>Validación de la Startup</span>
-              <span className={progressPercentage === 100 ? 'text-emerald-500' : 'text-slate-800'}>{progressPercentage}%</span>
+              <span className={progressPercentage === 100 ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-300'}>{progressPercentage}%</span>
             </div>
-            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
               <motion.div 
                 initial={{ width: 0 }} animate={{ width: `${progressPercentage}%` }} transition={{ duration: 0.8, ease: "easeOut" }}
                 className={`h-full ${progressPercentage === 100 ? 'bg-emerald-500 shadow-[0_0_10px_rgb(16,185,129,0.5)]' : 'bg-slate-900'}`} 
@@ -395,22 +409,26 @@ const LeanCanvasApp = () => {
 
           {/* Acciones Globales */}
           <div className="flex items-center gap-1.5 w-full md:w-auto justify-end">
-            <button title="Exportar JSON" onClick={handleExportJson} className="p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors border border-transparent">
+            <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
+              {theme === 'dark' ? <Sun size={18} strokeWidth={2.5} /> : <Moon size={18} strokeWidth={2.5} />}
+            </button>
+            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-800 mx-1"></div>
+            <button title="Exportar JSON" onClick={handleExportJson} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
               <Download size={18} strokeWidth={2.5} />
             </button>
-            <button title="Importar JSON" onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors border border-transparent">
+            <button title="Importar JSON" onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
               <Upload size={18} strokeWidth={2.5} />
             </button>
-            <div className="h-6 w-px bg-slate-200/60 mx-1"></div>
+            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-800 mx-1"></div>
             <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-[7px] bg-indigo-600 text-white font-bold rounded-[10px] hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap text-[13px] tracking-tight">
               <Printer size={15} strokeWidth={2.5} /> <span className="hidden sm:inline">Exportar PDF</span>
             </button>
           </div>
         </motion.div>
 
-        <div className="hidden print:block mb-6 text-center border-b pb-4 mt-6">
-            <h1 className="font-display text-4xl font-extrabold text-slate-900 uppercase tracking-widest mb-2">{activeProject.name}</h1>
-            <p className="text-sm text-slate-500 uppercase tracking-widest font-bold">Lienzo Lean Startups</p>
+        <div className="hidden print:block mb-6 text-center border-b pb-4 mt-6 border-slate-200 dark:border-slate-800">
+            <h1 className="font-display text-4xl font-extrabold text-slate-900 dark:text-white uppercase tracking-widest mb-2">{activeProject.name}</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold">Lienzo Lean Startups</p>
         </div>
 
         {/* === MAIN LAYOUT === */}
@@ -446,30 +464,30 @@ const LeanCanvasApp = () => {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: 200, scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  className="bg-white border rounded-[28px] border-slate-200/80 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] p-7 flex flex-col h-full w-full relative overflow-hidden"
+                  className="bg-white dark:bg-slate-900 border rounded-[28px] border-slate-200/80 dark:border-slate-800 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] p-7 flex flex-col h-full w-full relative overflow-hidden"
                 >
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${selectedBlock.color}`}></div>
 
                   <div className="flex items-start gap-4 mb-6 shrink-0 pt-2">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br ${selectedBlock.color} ${selectedBlock.iconColor} shadow-inner border border-stone-50 relative overflow-hidden`}>
-                      <div className="absolute inset-0 bg-white opacity-40 blur-md rounded-full scale-150"></div>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br ${selectedBlock.color} ${selectedBlock.iconColor} shadow-inner border border-stone-50 dark:border-slate-800 relative overflow-hidden`}>
+                      <div className="absolute inset-0 bg-white dark:bg-slate-900 opacity-40 blur-md rounded-full scale-150"></div>
                       <div className="relative z-10">{selectedBlock.icon}</div>
                     </div>
                     <div className="flex-1 pt-1">
                       <div className="text-[10px] uppercase tracking-[2px] text-slate-400 font-extrabold mb-1">
                         BLOQUE 0{selectedBlock.order}
                       </div>
-                      <h2 className="font-display text-[26px] font-extrabold text-slate-900 leading-tight tracking-tight">
+                      <h2 className="font-display text-[26px] font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight">
                         {selectedBlock.title}
                       </h2>
                     </div>
                   </div>
 
-                  <div className="flex bg-slate-50 p-1.5 rounded-xl mb-6 shrink-0 border border-slate-200/60 shadow-inner">
-                    <button onClick={() => setActiveTab('guide')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[13px] font-bold rounded-lg transition-all duration-300 ${activeTab === 'guide' ? 'bg-white text-slate-900 shadow-[0_2px_10px_rgba(0,0,0,0.04)]' : 'text-slate-500 hover:text-slate-700'}`}> 
+                  <div className="flex bg-slate-50 dark:bg-slate-800/80 p-1.5 rounded-xl mb-6 shrink-0 border border-slate-200/60 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
+                    <button onClick={() => setActiveTab('guide')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[13px] font-bold rounded-lg transition-all duration-300 ${activeTab === 'guide' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}> 
                       <BookOpen size={16} strokeWidth={2.5} /> Guía
                     </button>
-                    <button onClick={() => setActiveTab('examples')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[13px] font-bold rounded-lg transition-all duration-300 ${activeTab === 'examples' ? 'bg-white text-slate-900 shadow-[0_2px_10px_rgba(0,0,0,0.04)]' : 'text-slate-500 hover:text-slate-700'}`}> 
+                    <button onClick={() => setActiveTab('examples')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[13px] font-bold rounded-lg transition-all duration-300 ${activeTab === 'examples' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}> 
                       <MessageSquare size={16} strokeWidth={2.5} /> Ejemplos
                     </button>
                   </div>
@@ -483,12 +501,12 @@ const LeanCanvasApp = () => {
                       >
                         {activeTab === 'guide' && (
                           <>
-                            <p className="text-slate-600 mb-5 font-medium leading-relaxed">{selectedBlock.details}</p>
-                            <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Preguntas clave</h4>
+                            <p className="text-slate-600 dark:text-slate-300 mb-5 font-medium leading-relaxed">{selectedBlock.details}</p>
+                            <h4 className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Preguntas clave</h4>
                             <ul className="flex flex-col gap-2.5">
                               {selectedBlock.questions.map((q, idx) => (
-                                <li key={idx} className="text-slate-700 flex items-start gap-2.5 font-medium">
-                                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-slate-300`} /> {q}
+                                <li key={idx} className="text-slate-700 dark:text-slate-300 flex items-start gap-2.5 font-medium">
+                                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-slate-300 dark:bg-slate-600`} /> {q}
                                 </li>
                               ))}
                             </ul>
@@ -497,11 +515,11 @@ const LeanCanvasApp = () => {
                         {activeTab === 'examples' && (
                           <div className="flex flex-col gap-3">
                             {selectedBlock.examples.map((ex, idx) => (
-                              <div key={idx} className="bg-slate-50 border border-slate-200/70 rounded-xl p-4 shadow-sm">
-                                 <div className="font-extrabold text-slate-900 text-[11px] mb-2 flex items-center gap-1.5 tracking-wider uppercase">
-                                   <Rocket size={14} className="text-slate-400" /> CASO DE ÉXITO: {ex.company}
+                              <div key={idx} className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700 rounded-xl p-4 shadow-sm dark:shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+                                 <div className="font-extrabold text-slate-900 dark:text-white text-[11px] mb-2 flex items-center gap-1.5 tracking-wider uppercase">
+                                   <Rocket size={14} className="text-slate-400 dark:text-slate-500" /> CASO DE ÉXITO: {ex.company}
                                  </div>
-                                 <p className="text-[13px] text-slate-600 leading-relaxed whitespace-pre-wrap font-medium">{ex.text}</p>
+                                 <p className="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap font-medium">{ex.text}</p>
                               </div>
                             ))}
                           </div>
@@ -511,9 +529,9 @@ const LeanCanvasApp = () => {
                   </div>
 
                   {/* Redacción */}
-                  <div className="flex flex-col flex-1 relative border-t border-slate-100 pt-6 mt-auto">
+                  <div className="flex flex-col flex-1 relative border-t border-slate-100 dark:border-slate-800 pt-6 mt-auto">
                     <div className="flex justify-between items-center mb-3 shrink-0">
-                      <label htmlFor="editorCanvas" className="text-[11px] font-extrabold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                      <label htmlFor="editorCanvas" className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
                         Tus notas estratégicas
                       </label>
                       <div className="h-5 flex items-center justify-end">
@@ -524,7 +542,7 @@ const LeanCanvasApp = () => {
                     
                     <textarea
                       id="editorCanvas"
-                      className={`flex-1 w-full p-4 bg-slate-50/80 border border-slate-200 rounded-2xl text-[14px] font-medium text-slate-800 leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${selectedBlock.ringColor} focus:border-transparent transition-all resize-none placeholder-slate-400 shadow-inner`}
+                      className={`flex-1 w-full p-4 bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-[14px] font-medium text-slate-800 dark:text-slate-200 leading-relaxed focus:bg-white focus:dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:dark:ring-offset-slate-950 ${selectedBlock.ringColor} focus:border-transparent transition-all resize-none placeholder-slate-400 dark:placeholder-slate-500 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]`}
                       placeholder="Escribe tus ideas aquí...&#10;Se validarán automáticamente."
                       value={editorText}
                       onChange={(e) => setEditorText(e.target.value)}
@@ -535,16 +553,16 @@ const LeanCanvasApp = () => {
                 <motion.div 
                   key="empty"
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="h-full bg-white/60 backdrop-blur-xl border-2 border-slate-200 border-dashed rounded-[28px] p-10 flex flex-col items-center justify-center text-center text-slate-400 transition-all duration-300 hover:border-slate-300 relative overflow-hidden"
+                  className="h-full bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border-2 border-slate-200 dark:border-slate-800 border-dashed rounded-[28px] p-10 flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-700 relative overflow-hidden"
                 >
                   <motion.div 
                     initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}
                     className="flex flex-col items-center z-10"
                   >
-                    <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-slate-100">
-                      <FolderOpen size={36} strokeWidth={2.5} className="text-slate-300" />
+                    <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-slate-100 dark:border-slate-700">
+                      <FolderOpen size={36} strokeWidth={2.5} className="text-slate-300 dark:text-slate-600" />
                     </div>
-                    <h3 className="font-display text-2xl font-extrabold text-slate-800 mb-3 tracking-tight">Focus Mode</h3>
+                    <h3 className="font-display text-2xl font-extrabold text-slate-800 dark:text-slate-200 mb-3 tracking-tight">Focus Mode</h3>
                     <p className="text-[14px] max-w-[280px] leading-relaxed font-medium text-slate-500">
                       Haz clic en cualquier bloque a tu izquierda para descubrir guías, ver referencias y redactar tus hipótesis.
                     </p>
@@ -565,27 +583,27 @@ const LeanCanvasApp = () => {
             >
                 <motion.div 
                   initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="bg-white rounded-t-[32px] h-[85vh] w-full flex flex-col shadow-2xl p-6 cursor-auto relative" 
+                  className="bg-white dark:bg-slate-900 rounded-t-[32px] h-[85vh] w-full flex flex-col shadow-2xl p-6 cursor-auto relative" 
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-slate-200 rounded-full mb-4"></div>
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mb-4"></div>
                   
                   <div className="mt-5 flex items-center gap-4 mb-6 shrink-0">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br ${selectedBlock.color} ${selectedBlock.iconColor} shadow-inner border border-white`}>
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br ${selectedBlock.color} ${selectedBlock.iconColor} shadow-inner border border-white dark:border-slate-800`}>
                         {selectedBlock.icon}
                       </div>
                       <div>
-                        <div className="text-[10px] uppercase tracking-[1.5px] text-slate-400 font-extrabold mb-0.5">
+                        <div className="text-[10px] uppercase tracking-[1.5px] text-slate-400 dark:text-slate-500 font-extrabold mb-0.5">
                           BLOQUE 0{selectedBlock.order}
                         </div>
-                        <h2 className="font-display text-[22px] font-extrabold text-slate-900 leading-none tracking-tight">
+                        <h2 className="font-display text-[22px] font-extrabold text-slate-900 dark:text-white leading-none tracking-tight">
                           {selectedBlock.title}
                         </h2>
                       </div>
                   </div>
 
                   <textarea
-                      className={`flex-1 w-full p-4 mb-5 bg-slate-50 border border-slate-200 rounded-2xl text-[15px] font-medium text-slate-800 leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${selectedBlock.ringColor} resize-none shadow-inner`}
+                      className={`flex-1 w-full p-4 mb-5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-[15px] font-medium text-slate-800 dark:text-slate-200 leading-relaxed focus:bg-white focus:dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:dark:ring-offset-slate-950 ${selectedBlock.ringColor} resize-none shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]`}
                       placeholder="Escribe tus ideas..."
                       value={editorText}
                       onChange={(e) => setEditorText(e.target.value)}
