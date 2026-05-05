@@ -513,6 +513,16 @@ describe('evaluateCanvas — cross-block coherence', () => {
     expect(result.summary.crossBlockIssues.some(i => i.code === 'SOLUTION_WITHOUT_PROBLEM')).toBe(true);
   });
 
+  it('detects REVENUE_WITHOUT_SEGMENT when revenue is filled but segment is empty', () => {
+    const canvas: CanvasData = {
+      1: 'El cliente pierde tiempo gestionando procesos internos de forma manual.',
+      4: 'App de automatización con dashboard en tiempo real.',
+      6: 'Suscripción SaaS de 49 €/mes por empresa.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'REVENUE_WITHOUT_SEGMENT')).toBe(true);
+  });
+
   it('detects COSTS_WITHOUT_REVENUE when costs are filled but revenue is empty', () => {
     const canvas: CanvasData = {
       7: 'Servidores cloud 1.500 €/mes, salarios 3 desarrolladores, marketing 500 €/mes.',
