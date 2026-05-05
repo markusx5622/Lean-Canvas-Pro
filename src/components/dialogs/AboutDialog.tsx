@@ -43,6 +43,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
         onClick={onClose}
       >
         <motion.div
+          role="dialog" aria-modal="true" aria-labelledby="about-dialog-title"
           initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
           onClick={(e) => e.stopPropagation()}
           className="bg-white dark:bg-slate-900 w-full max-w-[820px] max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-800 relative"
@@ -55,7 +56,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
                 <Sparkles size={14} className="text-indigo-200" />
                 <span className="text-[11px] font-bold uppercase tracking-widest text-indigo-200">Lean Canvas Pro</span>
               </div>
-              <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white tracking-tight mb-2">
+              <h2 id="about-dialog-title" className="font-display text-2xl md:text-3xl font-extrabold text-white tracking-tight mb-2">
                 Tu herramienta de modelado<br className="hidden md:block" /> estratégico
               </h2>
               <p className="text-[13px] text-indigo-100 leading-relaxed max-w-lg">
@@ -152,7 +153,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
           <button
             onClick={onClose}
             title="Cerrar"
-            className="absolute top-4 right-4 p-2 text-white/60 hover:text-white transition-colors rounded-full hover:bg-white/10"
+            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white transition-colors rounded-full hover:bg-white/10"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6 6 18" /><path d="m6 6 12 12" />
