@@ -407,7 +407,7 @@ export function SplashPage({ theme, onEnter, prefersReducedMotion }: SplashPageP
                 <p className="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
                   Además de evaluar cada bloque de forma individual, el motor comprueba 8 relaciones estructurales entre bloques.
                   Por ejemplo, que no se defina una solución sin haber descrito el problema, o que no queden costes sin un modelo
-                  de ingresos que los justifique. Cada regla lleva una severidad asignada —<em> crítica</em>,{' '}
+                  de ingresos que los justifique. Cada regla lleva una severidad asignada —<em>crítica</em>,{' '}
                   <em>alerta</em> o <em>informativa</em>— y una pista de acción concreta sobre cómo resolverla.
                 </p>
                 <div className="flex flex-wrap gap-2">
