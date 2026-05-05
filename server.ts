@@ -30,7 +30,7 @@ async function startServer() {
             // in index.html (<link rel="icon" href="data:image/svg+xml,…">).
             imgSrc: ["'self'", "data:"],
             fontSrc: ["'self'"],
-            connectSrc: ["'self'"],
+            connectSrc: ["'self'", "https://*.supabase.co"],
             objectSrc: ["'none'"],
             frameAncestors: ["'none'"],
             upgradeInsecureRequests: [],

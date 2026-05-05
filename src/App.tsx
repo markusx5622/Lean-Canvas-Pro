@@ -3,11 +3,13 @@ import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { 
   Users, AlertCircle, Lightbulb, Rocket, TrendingUp, Share2, ShieldCheck, DollarSign, CreditCard,
   Printer, Trash2, MessageSquare, BookOpen, CheckCircle2, Download, Upload, Plus, Edit2, FolderOpen, Sun, Moon,
-  Sparkles, BarChart2, Info, Code, Linkedin
+  Sparkles, BarChart2, Info, Code, Linkedin, LogOut
 } from 'lucide-react';
 import { ParticleBackground } from './ParticleBackground';
 import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from './evaluator';
 import type { EvaluationResult, BlockFeedback, BlockId } from './evaluator';
+import { useAuth } from './contexts/AuthContext';
+import { AuthPage } from './components/auth/AuthPage';
 
 const VALID_BLOCK_IDS: BlockId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 function asBlockId(id: number): BlockId | null {
@@ -212,6 +214,7 @@ const Block = ({ data, additionalClasses = "", index, isActive, hasContent, canv
 };
 
 const LeanCanvasApp = () => {
+  const { user, signOut } = useAuth();
   const defaultProjectId = `project-${Date.now()}`;
   const [projects, setProjects] = useLocalStorage<Project[]>('lean-canvas-pro-projects', [{
     id: defaultProjectId,
@@ -662,6 +665,15 @@ const LeanCanvasApp = () => {
             <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
             <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-[7px] bg-indigo-600 text-white font-bold rounded-[10px] hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap text-[13px] tracking-tight">
               <Printer size={15} strokeWidth={2.5} /> <span className="hidden sm:inline">Exportar PDF</span>
+            </button>
+            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
+            <button
+              onClick={signOut}
+              title={`Cerrar sesión (${user?.email})`}
+              className="flex items-center gap-2 px-3 py-[7px] text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-[10px] transition-all border border-transparent hover:border-rose-200/80 dark:hover:border-rose-500/20 active:scale-95 whitespace-nowrap text-[13px] font-bold"
+            >
+              <LogOut size={15} strokeWidth={2.5} />
+              <span className="hidden lg:inline max-w-[120px] truncate">{user?.email}</span>
             </button>
           </div>
         </motion.div>
@@ -1128,4 +1140,30 @@ const LeanCanvasApp = () => {
   );
 };
 
-export default LeanCanvasApp;
+// === Auth gate ===
+// This is the component rendered by main.tsx. It shows the auth screen when the
+// user is not authenticated and the full workspace once they are signed in.
+const App = () => {
+  const { user, loading, session } = useAuth();
+  const [theme] = useLocalStorage<'light' | 'dark'>('lean-canvas-pro-theme', 'light');
+
+  if (loading) {
+    // Minimal loading state — avoid flash of wrong screen.
+    return (
+      <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-950 flex items-center justify-center">
+        <svg className="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+        </svg>
+      </div>
+    );
+  }
+
+  if (!user || !session) {
+    return <AuthPage theme={theme} />;
+  }
+
+  return <LeanCanvasApp />;
+};
+
+export default App;
