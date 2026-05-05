@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link2, Copy, Trash2, Loader2, CheckCircle2, AlertCircle, EyeOff } from 'lucide-react';
 import { useCanvasSharing } from '../hooks/useCanvasSharing';
+import { ConfirmDialog } from './dialogs/ConfirmDialog';
 
 interface ShareModalProps {
   canvasId: string;
@@ -14,6 +15,8 @@ export function ShareModal({ canvasId, canvasName, onClose }: ShareModalProps) {
     useCanvasSharing(canvasId);
 
   const [copied, setCopied] = useState(false);
+  const [showManualCopy, setShowManualCopy] = useState(false);
+  const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
 
   const shareUrl = share
     ? `${window.location.origin}/share/${share.token}`
@@ -26,17 +29,17 @@ export function ShareModal({ canvasId, canvasName, onClose }: ShareModalProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard API failed (e.g. non-HTTPS or permission denied) — show the URL for manual copy
-      window.prompt('Copia el enlace manualmente:', shareUrl);
+      // Clipboard API failed — show inline manual copy UI
+      setShowManualCopy(true);
     }
   };
 
-  const handleRevoke = async () => {
-    if (!window.confirm('¿Revocar el enlace? Quien tenga el enlace actual ya no podrá ver el canvas.')) return;
-    await revokeLink();
+  const handleRevoke = () => {
+    setShowRevokeConfirm(true);
   };
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -122,6 +125,35 @@ export function ShareModal({ canvasId, canvasName, onClose }: ShareModalProps) {
                     : <Copy size={16} strokeWidth={2.5} />}
                 </button>
               </div>
+
+              {/* Manual copy fallback (shown when clipboard API is unavailable) */}
+              <AnimatePresence>
+                {showManualCopy && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex flex-col gap-2 p-3 bg-amber-50 dark:bg-amber-500/10 rounded-xl border border-amber-100 dark:border-amber-500/20 overflow-hidden"
+                  >
+                    <p className="text-[12px] text-amber-800 dark:text-amber-300 font-medium">
+                      Copia el enlace manualmente:
+                    </p>
+                    <input
+                      readOnly
+                      value={shareUrl ?? ''}
+                      onFocus={(e) => e.target.select()}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-500/30 rounded-lg text-[12px] text-slate-700 dark:text-slate-300 font-mono focus:outline-none select-all"
+                    />
+                    <button
+                      onClick={() => setShowManualCopy(false)}
+                      className="text-[12px] text-amber-700 dark:text-amber-400 font-bold hover:underline text-right"
+                    >
+                      Cerrar
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <button
                 onClick={handleCopy}
                 className="flex items-center justify-center gap-2 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors text-[14px] active:scale-[0.98]"
@@ -162,5 +194,23 @@ export function ShareModal({ canvasId, canvasName, onClose }: ShareModalProps) {
         </div>
       </motion.div>
     </motion.div>
+
+    {/* Revoke confirm dialog */}
+    <AnimatePresence>
+      {showRevokeConfirm && (
+        <ConfirmDialog
+          title="Revocar enlace"
+          message="¿Revocar el enlace? Quien tenga el enlace actual ya no podrá ver el canvas."
+          confirmLabel="Revocar"
+          variant="danger"
+          onConfirm={async () => {
+            setShowRevokeConfirm(false);
+            await revokeLink();
+          }}
+          onCancel={() => setShowRevokeConfirm(false)}
+        />
+      )}
+    </AnimatePresence>
+    </>
   );
 }

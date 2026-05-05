@@ -13,6 +13,8 @@ import { EditorPanel } from '../components/editor/EditorPanel';
 import { MobileEditor } from '../components/editor/MobileEditor';
 import { AboutDialog } from '../components/dialogs/AboutDialog';
 import { AuditDialog } from '../components/dialogs/AuditDialog';
+import { ConfirmDialog } from '../components/dialogs/ConfirmDialog';
+import { PromptDialog } from '../components/dialogs/PromptDialog';
 import { ShareModal } from '../components/ShareModal';
 import { SplashPage } from './SplashPage';
 import { BLOCKS } from '../data/blocks';
@@ -53,6 +55,12 @@ export function WorkspacePage() {
   const [showSplash, setShowSplash] = useState(true);
   const [canvasEntryKey, setCanvasEntryKey] = useState(0);
   const [pdfExporting, setPdfExporting] = useState(false);
+
+  // ── Dialog state ─────────────────────────────────────────────────────────────
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<{ title: string; message: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Tracks any unsaved text so it can be flushed immediately on block/project switch. */
@@ -157,30 +165,19 @@ export function WorkspacePage() {
   };
 
   const handleRenameProject = () => {
-    const newName = window.prompt('Nombre del proyecto:', activeProject.name);
-    if (newName && newName.trim()) {
-      renameProject(activeProjectId, newName.trim());
-    }
+    setShowRenameDialog(true);
   };
 
   const handleDeleteProject = () => {
     if (projects.length <= 1) {
-      alert('No puedes borrar tu único lienzo.');
+      setAlertMessage({ title: 'Acción no permitida', message: 'No puedes borrar tu único lienzo.' });
       return;
     }
-    if (window.confirm(`¿Eliminar '${activeProject.name}'?`)) {
-      const remaining = projects.filter((p) => p.id !== activeProjectId);
-      deleteProject(activeProjectId);
-      setActiveProjectId(remaining[0].id);
-      setSelectedBlockId(null);
-    }
+    setShowDeleteConfirm(true);
   };
 
   const handleClearCanvas = () => {
-    if (window.confirm('¿Seguro que quieres borrar este lienzo? Se perderá todo el texto actual.')) {
-      clearProject(activeProjectId);
-      if (selectedBlockId) setEditorText('');
-    }
+    setShowClearConfirm(true);
   };
 
   const handleExportJson = () => {
@@ -205,7 +202,7 @@ export function WorkspacePage() {
           setSelectedBlockId(null);
         }
       } catch {
-        alert('Error al leer el archivo JSON.');
+        setAlertMessage({ title: 'Error al importar', message: 'El archivo no es un JSON válido o no tiene el formato esperado.' });
       }
     };
     reader.readAsText(file);
@@ -219,7 +216,7 @@ export function WorkspacePage() {
       await exportCanvasToPdf(activeProject);
     } catch (err) {
       console.error('[exportPdf] Failed to generate PDF:', err);
-      alert('No se pudo generar el PDF. Inténtalo de nuevo.');
+      setAlertMessage({ title: 'Error al exportar', message: 'No se pudo generar el PDF. Inténtalo de nuevo.' });
     } finally {
       setPdfExporting(false);
     }
@@ -320,6 +317,76 @@ export function WorkspacePage() {
           )}
         </AnimatePresence>
 
+        {/* Rename dialog */}
+        <AnimatePresence>
+          {showRenameDialog && activeProject && (
+            <PromptDialog
+              title="Renombrar lienzo"
+              label="Nombre del proyecto"
+              initialValue={activeProject.name}
+              confirmLabel="Guardar"
+              onConfirm={(newName) => {
+                if (newName !== activeProject.name) {
+                  renameProject(activeProjectId, newName);
+                }
+                setShowRenameDialog(false);
+              }}
+              onCancel={() => setShowRenameDialog(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Delete confirm dialog */}
+        <AnimatePresence>
+          {showDeleteConfirm && activeProject && (
+            <ConfirmDialog
+              title="Eliminar lienzo"
+              message={`¿Eliminar '${activeProject.name}'? Esta acción no se puede deshacer.`}
+              confirmLabel="Eliminar"
+              variant="danger"
+              onConfirm={() => {
+                const remaining = projects.filter((p) => p.id !== activeProjectId);
+                deleteProject(activeProjectId);
+                setActiveProjectId(remaining[0].id);
+                setSelectedBlockId(null);
+                setShowDeleteConfirm(false);
+              }}
+              onCancel={() => setShowDeleteConfirm(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Clear canvas confirm dialog */}
+        <AnimatePresence>
+          {showClearConfirm && (
+            <ConfirmDialog
+              title="Borrar contenido"
+              message="¿Seguro que quieres borrar este lienzo? Se perderá todo el texto actual."
+              confirmLabel="Borrar todo"
+              variant="danger"
+              onConfirm={() => {
+                clearProject(activeProjectId);
+                if (selectedBlockId) setEditorText('');
+                setShowClearConfirm(false);
+              }}
+              onCancel={() => setShowClearConfirm(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Alert dialog */}
+        <AnimatePresence>
+          {alertMessage && (
+            <ConfirmDialog
+              title={alertMessage.title}
+              message={alertMessage.message}
+              confirmLabel="Entendido"
+              alertOnly
+              onConfirm={() => setAlertMessage(null)}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Main layout: canvas grid + editor panel */}
         <div className="flex flex-col lg:flex-row gap-5 items-stretch relative md:px-2 pt-2">
           <CanvasGrid
@@ -347,6 +414,11 @@ export function WorkspacePage() {
             selectedBlock={selectedBlock}
             editorText={editorText}
             onChangeText={setEditorText}
+            activeTab={activeTab}
+            onChangeTab={setActiveTab}
+            saveStatus={saveStatus}
+            blockAuditResult={blockAuditResult}
+            onAuditBlock={runBlockAudit}
             onClose={() => setSelectedBlockId(null)}
           />
         )}
