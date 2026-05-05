@@ -72,9 +72,9 @@ export function Toolbar({
           />
           <motion.button
             onClick={onLogoClick}
-            whileHover={{ scale: 1.12, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
-            whileTap={{ scale: 0.93, transition: { duration: 0.15 } }}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-[14px] shadow-lg shadow-indigo-600/40 hover:shadow-xl hover:shadow-indigo-600/50 relative group cursor-pointer overflow-hidden transition-all duration-300"
+            whileHover={{ scale: 1.08, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
+            whileTap={{ scale: 0.93, transition: { duration: 0.15, ease: [0.22, 1, 0.36, 1] } }}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-[14px] shadow-lg shadow-indigo-600/40 hover:shadow-xl hover:shadow-indigo-600/50 relative group cursor-pointer overflow-hidden transition-[background-color,box-shadow] duration-300 will-change-transform"
           >
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[14px]" />
             <motion.div
