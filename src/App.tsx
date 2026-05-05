@@ -251,7 +251,7 @@ const LeanCanvasApp = () => {
   // cloud load, deletion on another device, or first-time migration).
   useEffect(() => {
     if (!canvasLoading && projects.length > 0) {
-      if (!projects.find((p) => p.id === activeProjectId)) {
+      if (!projects.some((p) => p.id === activeProjectId)) {
         setActiveProjectId(projects[0].id);
       }
     }

@@ -129,19 +129,25 @@ export function useCanvases(): UseCanvasesReturn {
             // Migrate legacy localStorage canvases to Supabase (new UUIDs).
             const legacy = JSON.parse(legacyRaw) as Project[];
             if (legacy.length > 0) {
-              const migrated = await Promise.all(
+              const results = await Promise.allSettled(
                 legacy.map(async (p) => {
                   const newId = crypto.randomUUID();
-                  await createCanvas(
-                    newId,
-                    p.name,
-                    projectDataToRecord(p.data)
-                  ).catch(console.error);
-                  return { ...p, id: newId };
+                  await createCanvas(newId, p.name, projectDataToRecord(p.data));
+                  return { ...p, id: newId } as Project;
                 })
               );
-              setProjects(migrated);
-              persist(migrated);
+              const migrated = results
+                .filter((r): r is PromiseFulfilledResult<Project> => r.status === 'fulfilled')
+                .map((r) => r.value);
+              const failCount = results.filter((r) => r.status === 'rejected').length;
+              if (failCount > 0) {
+                console.error(`[useCanvases] Migration: ${failCount} canvas(es) failed to upload.`);
+              }
+              if (migrated.length > 0) {
+                setProjects(migrated);
+                persist(migrated);
+              }
+              // Always set the flag to prevent infinite retry loops.
               localStorage.setItem(migratedFlag, '1');
               return;
             }
@@ -186,7 +192,13 @@ export function useCanvases(): UseCanvasesReturn {
 
   const createProject = useCallback((): string => {
     const newId = crypto.randomUUID();
-    const name = `Lienzo ${projectsRef.current.length + 1}`;
+    // Derive the next numeric suffix to avoid duplicates when canvases are deleted.
+    const existingNums = projectsRef.current.map((p) => {
+      const m = p.name.match(/^Lienzo (\d+)$/);
+      return m ? parseInt(m[1], 10) : 0;
+    });
+    const nextNum = existingNums.length > 0 ? Math.max(0, ...existingNums) + 1 : 1;
+    const name = `Lienzo ${nextNum}`;
     updateProjects((prev) => [
       ...prev,
       { id: newId, name, lastModified: Date.now(), data: {} },
