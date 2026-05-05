@@ -12,7 +12,7 @@ export const ParticleBackground: React.FC<{ theme: 'light' | 'dark' }> = ({ them
 
     let animationFrameId: number;
     let particles: Particle[] = [];
-    const particleCount = 60; // Adjust for density
+    const particleCount = 180; // Adjust for density
 
     // Resize canvas
     const handleResize = () => {
@@ -32,10 +32,10 @@ export const ParticleBackground: React.FC<{ theme: 'light' | 'dark' }> = ({ them
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2 + 0.5;
-        this.speedX = (Math.random() - 0.5) * 0.5;
-        this.speedY = (Math.random() - 0.5) * 0.5;
-        this.opacity = Math.random() * 0.5 + 0.1;
+        this.size = Math.random() * 3.5 + 1.5;
+        this.speedX = (Math.random() - 0.5) * 1.8;
+        this.speedY = (Math.random() - 0.5) * 1.8;
+        this.opacity = Math.random() * 0.6 + 0.4;
       }
 
       update() {
@@ -78,12 +78,12 @@ export const ParticleBackground: React.FC<{ theme: 'light' | 'dark' }> = ({ them
           const dy = particles[i].y - particles[j].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance < 120) { // Connection distance
+          if (distance < 160) { // Connection distance
             ctx.beginPath();
             const color = theme === 'dark' ? '255, 255, 255' : '79, 70, 229';
-            const opacity = (1 - distance / 120) * 0.15; // Fade out further away
+            const opacity = (1 - distance / 160) * 0.35; // Fade out further away
             ctx.strokeStyle = `rgba(${color}, ${opacity})`;
-            ctx.lineWidth = 0.5;
+            ctx.lineWidth = 0.8;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
@@ -120,7 +120,7 @@ export const ParticleBackground: React.FC<{ theme: 'light' | 'dark' }> = ({ them
     <canvas
       ref={canvasRef}
       className="absolute inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.6 }}
+      style={{ opacity: 1.0 }}
     />
   );
 };
