@@ -12,7 +12,7 @@ export const ParticleBackground: React.FC<{ theme: 'light' | 'dark' }> = ({ them
 
     let animationFrameId: number;
     let particles: Particle[] = [];
-    const particleCount = 180; // Adjust for density
+    const particleCount = 140; // Adjust for density
 
     // Resize canvas
     const handleResize = () => {
@@ -33,8 +33,8 @@ export const ParticleBackground: React.FC<{ theme: 'light' | 'dark' }> = ({ them
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
         this.size = Math.random() * 3.5 + 1.5;
-        this.speedX = (Math.random() - 0.5) * 1.8;
-        this.speedY = (Math.random() - 0.5) * 1.8;
+        this.speedX = (Math.random() - 0.5) * 1.2;
+        this.speedY = (Math.random() - 0.5) * 1.2;
         this.opacity = Math.random() * 0.6 + 0.4;
       }
 

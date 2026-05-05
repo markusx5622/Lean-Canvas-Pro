@@ -395,6 +395,8 @@ const LeanCanvasApp = () => {
   return (
     <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 flex justify-center pb-16 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
       
+      <ParticleBackground theme={theme} />
+
       <AnimatePresence>
         {showSplash && (
           <motion.div
