@@ -10,6 +10,8 @@ import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from './evalu
 import type { EvaluationResult, BlockFeedback, BlockId } from './evaluator';
 import { useAuth } from './contexts/AuthContext';
 import { AuthPage } from './components/auth/AuthPage';
+import { useCanvases } from './hooks/useCanvases';
+import type { Project, CanvasData } from './hooks/useCanvases';
 
 const VALID_BLOCK_IDS: BlockId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 function asBlockId(id: number): BlockId | null {
@@ -17,16 +19,7 @@ function asBlockId(id: number): BlockId | null {
 }
 
 // === Tipos & utilidades ===
-interface CanvasData {
-  [blockId: number]: string;
-}
-
-interface Project {
-  id: string;
-  name: string;
-  lastModified: number;
-  data: CanvasData;
-}
+// Project / CanvasData are imported from ./hooks/useCanvases
 
 function useLocalStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(() => {
@@ -215,15 +208,18 @@ const Block = ({ data, additionalClasses = "", index, isActive, hasContent, canv
 
 const LeanCanvasApp = () => {
   const { user, signOut } = useAuth();
-  const defaultProjectId = `project-${Date.now()}`;
-  const [projects, setProjects] = useLocalStorage<Project[]>('lean-canvas-pro-projects', [{
-    id: defaultProjectId,
-    name: 'Mi Primer Canvas',
-    lastModified: Date.now(),
-    data: {}
-  }]);
-  
-  const [activeProjectId, setActiveProjectId] = useLocalStorage<string>('lean-canvas-pro-active', defaultProjectId);
+  const {
+    projects,
+    loading: canvasLoading,
+    createProject,
+    renameProject,
+    deleteProject,
+    clearProject,
+    updateBlock,
+    importProject,
+  } = useCanvases();
+
+  const [activeProjectId, setActiveProjectId] = useLocalStorage<string>('lean-canvas-pro-active', '');
   const [selectedBlockId, setSelectedBlockId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'guide' | 'examples'>('guide');
   const [editorText, setEditorText] = useState("");
@@ -250,6 +246,19 @@ const LeanCanvasApp = () => {
       document.documentElement.classList.remove('dark');
     }
   }, [theme]);
+
+  // Keep activeProjectId valid whenever the project list changes (e.g. after
+  // cloud load, deletion on another device, or first-time migration).
+  useEffect(() => {
+    if (!canvasLoading && projects.length > 0) {
+      if (!projects.find((p) => p.id === activeProjectId)) {
+        setActiveProjectId(projects[0].id);
+      }
+    }
+  // Intentionally omit activeProjectId to avoid a loop: we only want to
+  // re-validate when the authoritative project list changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvasLoading, projects]);
 
   useEffect(() => {
     const shouldLock = showSplash || showAboutDialog || !!auditResult;
@@ -289,16 +298,7 @@ const LeanCanvasApp = () => {
 
     setSaveStatus('saving');
     const timerId = setTimeout(() => {
-      setProjects(prev => prev.map(p => {
-        if (p.id === activeProjectId) {
-          return {
-            ...p,
-            lastModified: Date.now(),
-            data: { ...p.data, [selectedBlockId]: editorText }
-          };
-        }
-        return p;
-      }));
+      updateBlock(activeProjectId, selectedBlockId, editorText);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
     }, 600);
@@ -308,8 +308,7 @@ const LeanCanvasApp = () => {
 
   // == Funciones de Gestión ==
   const handleCreateProject = () => {
-    const newId = `project-${Date.now()}`;
-    setProjects(prev => [...prev, { id: newId, name: `Lienzo ${prev.length + 1}`, lastModified: Date.now(), data: {} }]);
+    const newId = createProject();
     setActiveProjectId(newId);
     setSelectedBlockId(null);
   };
@@ -317,7 +316,7 @@ const LeanCanvasApp = () => {
   const handleRenameProject = () => {
     const newName = window.prompt("Nombre del proyecto:", activeProject.name);
     if (newName && newName.trim()) {
-      setProjects(prev => prev.map(p => p.id === activeProjectId ? { ...p, name: newName.trim(), lastModified: Date.now() } : p));
+      renameProject(activeProjectId, newName.trim());
     }
   };
 
@@ -326,16 +325,16 @@ const LeanCanvasApp = () => {
       alert("No puedes borrar tu único lienzo."); return;
     }
     if (window.confirm(`¿Eliminar '${activeProject.name}'?`)) {
-      const filtered = projects.filter(p => p.id !== activeProjectId);
-      setProjects(filtered);
-      setActiveProjectId(filtered[0].id);
+      const remaining = projects.filter(p => p.id !== activeProjectId);
+      deleteProject(activeProjectId);
+      setActiveProjectId(remaining[0].id);
       setSelectedBlockId(null);
     }
   };
 
   const handleClearCanvas = () => {
     if (window.confirm("¿Seguro que quieres borrar este lienzo? Se perderá todo el texto actual.")) {
-      setProjects(prev => prev.map(p => p.id === activeProjectId ? { ...p, data: {}, lastModified: Date.now() } : p));
+      clearProject(activeProjectId);
       if (selectedBlockId) setEditorText("");
     }
   };
@@ -357,8 +356,7 @@ const LeanCanvasApp = () => {
       try {
         const importedData = JSON.parse(event.target?.result as string);
         if (importedData && typeof importedData === 'object' && importedData.data) {
-          const newId = `project-${Date.now()}`;
-          setProjects(prev => [...prev, { id: newId, name: `${importedData.name || 'Importado'}`, lastModified: Date.now(), data: importedData.data }]);
+          const newId = importProject(`${importedData.name || 'Importado'}`, importedData.data);
           setActiveProjectId(newId);
           setSelectedBlockId(null);
         }
@@ -369,6 +367,19 @@ const LeanCanvasApp = () => {
   };
 
   const selectedBlock = BLOCKS.find(b => b.id === selectedBlockId);
+
+  // Show a spinner while cloud canvases are being fetched for the first time
+  // (only when there is no local cache to seed the UI from).
+  if (canvasLoading && projects.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-900 flex items-center justify-center">
+        <svg className="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+        </svg>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 flex justify-center pb-16 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
@@ -512,9 +523,9 @@ const LeanCanvasApp = () => {
                      <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-500/20">
                        <ShieldCheck size={24} strokeWidth={2.5} />
                      </div>
-                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3 relative z-10">Privacidad Garantizada</h3>
+                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3 relative z-10">Persistencia Cloud Segura</h3>
                      <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium relative z-10">
-                       Tu propiedad intelectual es vital. Los lienzos se guardan localmente en tu navegador y nunca abandonan tu dispositivo.
+                       Los lienzos se sincronizan con tu cuenta en la nube. Accede a tus datos desde cualquier dispositivo, sin perder nada si cambias de navegador.
                      </p>
                   </motion.div>
               </motion.div>

@@ -51,13 +51,83 @@ La autenticación es completamente por email y contraseña; la sesión persiste 
    ```
 4. En el panel de Supabase, asegúrate de que **Email Auth** está habilitado en *Authentication → Providers*.  
    (Opcional) Desactiva la confirmación de email en entornos de desarrollo en *Authentication → Settings → Email confirmations*.
-5. Arranca el servidor de desarrollo:
+5. Crea la tabla `canvases` ejecutando la migración (ver sección siguiente).
+6. Arranca el servidor de desarrollo:
    ```bash
    npm run dev
    ```
 
 > Las variables `VITE_*` son expuestas al cliente por Vite de forma segura.  
 > Nunca añadas la clave `service_role` al frontend.
+
+---
+
+## ☁️ Persistencia Cloud (Supabase Postgres)
+
+Los lienzos se almacenan en Supabase Postgres con **Row Level Security** activado, de modo que cada usuario solo puede acceder a sus propios datos.
+
+### Esquema
+
+```sql
+-- Tabla: canvases
+id          uuid        PRIMARY KEY   -- UUID generado en cliente con crypto.randomUUID()
+user_id     uuid        NOT NULL      -- FK → auth.users, ON DELETE CASCADE
+name        text        NOT NULL      -- Nombre del lienzo
+data        jsonb       NOT NULL      -- Bloques del lienzo: { "1": "Problema...", "4": "Solución..." }
+created_at  timestamptz NOT NULL
+updated_at  timestamptz NOT NULL      -- Actualizado automáticamente por trigger
+```
+
+Los 9 bloques del canvas (identificados por su número 1–9) se guardan como claves del objeto JSON `data`.
+
+### Migración
+
+Ejecuta el archivo `supabase/migrations/001_create_canvases.sql` **una sola vez** en tu proyecto de Supabase:
+
+1. Abre **Dashboard → SQL Editor → New query**.
+2. Pega el contenido del archivo.
+3. Haz clic en **Run**.
+
+El script crea la tabla, el índice por `user_id`, el trigger `set_updated_at` y la política RLS.
+
+### Flujo de persistencia
+
+```
+[Usuario teclea]
+      │  600 ms debounce
+      ▼
+updateBlock() ──► localStorage cache (escritura inmediata)
+      │
+      └──► Supabase updateCanvas() (fire-and-forget, en paralelo)
+
+[Carga inicial]
+      │
+      ├──► localStorage cache → render instantáneo
+      └──► Supabase listCanvases() → reconcilia y actualiza UI
+             │
+             └── Si no hay datos en Supabase:
+                   • Migra desde la clave legacy lean-canvas-pro-projects (una sola vez)
+                   • O crea un lienzo vacío por defecto
+```
+
+### Decisiones clave
+
+| Decisión | Justificación |
+|---|---|
+| **Supabase Postgres** | Coherente con la auth ya implementada; sin nueva infraestructura |
+| **UUID generado en cliente** | Permite escritura optimista sin round-trip extra |
+| **localStorage como caché** | Render instantáneo al recargar; resiliencia ante desconexión |
+| **Fire-and-forget para el sync** | Mantiene la fluidez de edición; los errores no bloquean la UI |
+| **Migración automática una vez** | Ningún dato del usuario se pierde al pasar a cloud |
+| **RLS en Postgres** | Los datos de cada usuario son privados por defecto, incluso si la `anon key` se expone |
+
+### Archivos relevantes
+
+| Archivo | Responsabilidad |
+|---|---|
+| `src/lib/canvasService.ts` | CRUD helpers sobre la tabla `canvases` |
+| `src/hooks/useCanvases.ts` | Hook: estado local + sync cloud + migración legacy |
+| `supabase/migrations/001_create_canvases.sql` | Schema, trigger y RLS |
 
 
 
