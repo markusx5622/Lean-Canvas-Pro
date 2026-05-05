@@ -26,7 +26,40 @@
 - **Backend:** Servidor en Node.js mediante Express con Vite en modo middleware (*Full-Stack*).
 - **Motor Heurístico:** Motor heurístico local (`src/evaluator`) que analiza el canvas al instante: puntuación, fortalezas, inconsistencias entre bloques y prioridades de mejora. Sin dependencias de APIs externas.
 
-## 👨‍💻 Autor e Ingeniería
+## 🔑 Autenticación (Supabase Auth)
+
+Lean Canvas Pro usa **Supabase Auth** para gestionar cuentas reales de usuario.  
+La autenticación es completamente por email y contraseña; la sesión persiste al recargar el navegador gracias al almacenamiento de sesión de Supabase.
+
+### Arquitectura
+
+| Pieza | Responsabilidad |
+|---|---|
+| `src/lib/supabase.ts` | Cliente Supabase singleton |
+| `src/contexts/AuthContext.tsx` | Context que expone `user`, `session`, `loading`, `signIn`, `signUp`, `signOut` |
+| `src/components/auth/AuthPage.tsx` | Pantalla de registro/inicio de sesión coherente con el diseño |
+| `src/App.tsx` (componente `App`) | Auth-gate: muestra `AuthPage` o el workspace según el estado de sesión |
+
+### Setup local
+
+1. Crea un proyecto gratuito en [supabase.com](https://supabase.com).
+2. Ve a **Settings → API** y copia la URL y la clave `anon public`.
+3. Crea un archivo `.env` en la raíz del proyecto (basándote en `.env.example`):
+   ```env
+   VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-public-key
+   ```
+4. En el panel de Supabase, asegúrate de que **Email Auth** está habilitado en *Authentication → Providers*.  
+   (Opcional) Desactiva la confirmación de email en entornos de desarrollo en *Authentication → Settings → Email confirmations*.
+5. Arranca el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
+
+> Las variables `VITE_*` son expuestas al cliente por Vite de forma segura.  
+> Nunca añadas la clave `service_role` al frontend.
+
+
 
 Diseñado y desarrollado de manera empírica en el ecosistema de talento e innovación por **Marc Cubero Cantavella** desde el campo de la *Ingeniería de Organización Industrial* aplicados sobre la **Universidad Europea de Valencia**. 
 
