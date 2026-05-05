@@ -27,10 +27,12 @@ function ReadOnlyBlock({
       transition={{ duration: 0.5, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
       className={`relative flex flex-col overflow-hidden rounded-[20px] bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgb(0,0,0,0.02)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-slate-200/80 dark:border-slate-700 ${additionalClasses}`}
     >
+      {/* Colored accent bar */}
+      <div className={`absolute top-0 left-0 right-0 h-[3px] rounded-t-[20px] ${meta.accentBar} opacity-60`} />
       <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${meta.color} opacity-60 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none`} />
       <div className="p-5 relative flex flex-col h-full z-10">
         <div className="flex items-start justify-between mb-4">
-          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 ${meta.iconColor}`}>
+          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${meta.accentIconBg} shadow-sm border border-slate-100/50 dark:border-slate-700/50 ${meta.iconColor}`}>
             {meta.icon}
           </div>
         </div>
