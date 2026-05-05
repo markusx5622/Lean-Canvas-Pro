@@ -145,9 +145,9 @@ const Block = ({ data, additionalClasses = "", index, isActive, hasContent, canv
   return (
     <motion.div 
       layoutId={`block-${data.id}`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05, ease: "easeOut" }}
+      initial={{ opacity: 0, y: 50, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.55, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
       whileHover={!isActive ? { y: -2, scale: 1.01 } : {}}
       onClick={onClick}
       className={`relative flex flex-col cursor-pointer overflow-hidden rounded-[20px] transition-all duration-300
@@ -224,6 +224,7 @@ const LeanCanvasApp = () => {
   const [globalAiFeedback, setGlobalAiFeedback] = useState<string | null>(null);
   const [showAboutDialog, setShowAboutDialog] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
+  const [canvasEntryKey, setCanvasEntryKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
@@ -469,7 +470,7 @@ const LeanCanvasApp = () => {
                       transition={{ delay: 0.55, duration: 0.5, type: "spring" }}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => setShowSplash(false)}
+                      onClick={() => { setShowSplash(false); setCanvasEntryKey(prev => prev + 1); }}
                       className="group relative flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-colors shadow-[0_10px_30px_-5px_rgba(79,70,229,0.3)] hover:shadow-[0_15px_40px_-5px_rgba(79,70,229,0.5)] overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
@@ -793,7 +794,7 @@ const LeanCanvasApp = () => {
           {/* El Lienzo (10 Columns Perfect Harmony) */}
           <div className="flex-[1.5] xl:flex-[2] w-full flex flex-col gap-5">
             
-            <div className="grid grid-cols-1 md:grid-cols-10 md:grid-rows-[minmax(230px,auto)_minmax(230px,auto)] print:grid-cols-10 print:grid-rows-[270px_270px] gap-5">
+            <div key={canvasEntryKey} className="grid grid-cols-1 md:grid-cols-10 md:grid-rows-[minmax(230px,auto)_minmax(230px,auto)] print:grid-cols-10 print:grid-rows-[270px_270px] gap-5">
               <Block index={0} data={BLOCKS.find(b => b.id === 1)} additionalClasses="md:col-span-2 md:row-span-2 print:col-span-2 print:row-span-2" isActive={selectedBlockId === 1} hasContent={!!canvasData[1] && canvasData[1].trim() !== ""} canvasDataValue={canvasData[1] || ""} onClick={() => setSelectedBlockId(1)} />
               <Block index={1} data={BLOCKS.find(b => b.id === 4)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-1 print:col-span-2 print:col-start-3 print:row-start-1" isActive={selectedBlockId === 4} hasContent={!!canvasData[4] && canvasData[4].trim() !== ""} canvasDataValue={canvasData[4] || ""} onClick={() => setSelectedBlockId(4)} />
               <Block index={2} data={BLOCKS.find(b => b.id === 8)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-2 print:col-span-2 print:col-start-3 print:row-start-2" isActive={selectedBlockId === 8} hasContent={!!canvasData[8] && canvasData[8].trim() !== ""} canvasDataValue={canvasData[8] || ""} onClick={() => setSelectedBlockId(8)} />
@@ -803,7 +804,7 @@ const LeanCanvasApp = () => {
               <Block index={6} data={BLOCKS.find(b => b.id === 2)} additionalClasses="md:col-span-2 md:col-start-9 md:row-span-2 print:col-span-2 print:col-start-9 print:row-span-2" isActive={selectedBlockId === 2} hasContent={!!canvasData[2] && canvasData[2].trim() !== ""} canvasDataValue={canvasData[2] || ""} onClick={() => setSelectedBlockId(2)} />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-10 print:grid-cols-10 gap-5">
+            <div key={`${canvasEntryKey}-bottom`} className="grid grid-cols-1 md:grid-cols-10 print:grid-cols-10 gap-5">
               <Block index={7} data={BLOCKS.find(b => b.id === 7)} additionalClasses="md:col-span-5 md:h-[200px] print:h-[190px]" isActive={selectedBlockId === 7} hasContent={!!canvasData[7] && canvasData[7].trim() !== ""} canvasDataValue={canvasData[7] || ""} onClick={() => setSelectedBlockId(7)} />
               <Block index={8} data={BLOCKS.find(b => b.id === 6)} additionalClasses="md:col-span-5 md:h-[200px] print:h-[190px]" isActive={selectedBlockId === 6} hasContent={!!canvasData[6] && canvasData[6].trim() !== ""} canvasDataValue={canvasData[6] || ""} onClick={() => setSelectedBlockId(6)} />
             </div>
