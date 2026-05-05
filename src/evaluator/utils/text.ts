@@ -95,7 +95,7 @@ export function containsConcreteQuantity(text: string): boolean {
   // Percentage values
   const hasPct = /\d[\d.,]*\s*%/.test(text);
   // Time-denominated quantities
-  const hasTime = /\d+\s*(hora|horas|día|dias|dias|semana|semanas|mes|meses|año|anos|años)s?\b/i.test(text);
+  const hasTime = /\d+\s*(hora|horas|día|días|semana|semanas|mes|meses|año|años)s?\b/i.test(text);
   // Counts of real-world entities
   const hasCount = /\d+\s*(usuario|usuarios|cliente|clientes|empresa|empresas|persona|personas|empleado|empleados)\b/i.test(text);
   // Rate notation: e.g. "99€/mes", "$49/year"

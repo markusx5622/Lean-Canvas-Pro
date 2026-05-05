@@ -52,9 +52,9 @@ export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
       'todos', 'cualquiera', 'todo el mundo', 'gente', 'personas en general',
     ],
     concrete: [
-      'pyme', 'startup', 'b2b', 'b2c', 'autónomo', 'autonomo', 'freelance',
+      'pyme', 'startup', 'b2b', 'b2c', 'autónomo', 'freelance',
       'profesional', 'director', 'gerente', 'cto', 'ceo', 'sector',
-      'industria', 'empleados', 'años', 'anos', 'facturación', 'facturacion',
+      'industria', 'empleados', 'años', 'facturación',
     ],
   },
 
