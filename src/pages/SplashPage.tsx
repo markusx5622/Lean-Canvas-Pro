@@ -7,6 +7,13 @@ import {
 } from 'lucide-react';
 import { ParticleBackground } from '../ParticleBackground';
 
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const DOT_PATTERN_STYLE: React.CSSProperties = {
+  backgroundImage: 'radial-gradient(circle at 70% 50%, white 1px, transparent 1px)',
+  backgroundSize: '24px 24px',
+};
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface SplashPageProps {
@@ -70,9 +77,14 @@ function FeatureCard({
 
 // ── Primary CTA button ────────────────────────────────────────────────────────
 
-function PrimaryButton({ onClick, prefersReducedMotion, label = 'Empezar gratis', size = 'md' }: {
-  onClick: () => void; prefersReducedMotion: boolean | null | undefined; label?: string; size?: 'md' | 'lg';
-}) {
+interface PrimaryButtonProps {
+  onClick: () => void;
+  prefersReducedMotion: boolean | null | undefined;
+  label?: string;
+  size?: 'md' | 'lg';
+}
+
+function PrimaryButton({ onClick, prefersReducedMotion, label = 'Empezar gratis', size = 'md' }: PrimaryButtonProps) {
   const px = size === 'lg' ? 'px-10' : 'px-8';
   const py = size === 'lg' ? 'py-4 text-[16px]' : 'py-4';
   return (
@@ -333,7 +345,7 @@ export function SplashPage({ theme, onEnter, prefersReducedMotion }: SplashPageP
         {/* ── Por qué es diferente ── */}
         <Section className="mb-24">
           <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl p-8 md:p-12 relative overflow-hidden">
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 70% 50%, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+            <div className="absolute inset-0 opacity-10" style={DOT_PATTERN_STYLE} />
             <div className="relative">
               <p className="text-xs font-extrabold uppercase tracking-widest text-indigo-200 mb-3">Por qué es diferente</p>
               <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white tracking-tight mb-6">
