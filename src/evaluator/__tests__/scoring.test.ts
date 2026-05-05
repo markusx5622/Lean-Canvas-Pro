@@ -2,7 +2,7 @@
 // Lean Canvas Pro — Heuristic Evaluator  · __tests__/scoring.test.ts
 // ============================================================
 import { describe, it, expect } from 'vitest';
-import { computeCompletenessScore, computeClarityScore, aggregateSubscores } from '../scoring';
+import { computeCompletenessScore, computeClarityScore, computeSpecificityScore, aggregateSubscores } from '../scoring';
 
 // ── computeCompletenessScore ──────────────────────────────────
 
@@ -109,33 +109,101 @@ describe('computeClarityScore', () => {
   });
 });
 
+// ── computeSpecificityScore ───────────────────────────────────
+
+describe('computeSpecificityScore', () => {
+  it('returns 0 for empty text', () => {
+    expect(computeSpecificityScore('', {})).toBe(0);
+  });
+
+  it('starts at 30 base for neutral text with no config', () => {
+    // "texto" has 1 word - let's use something with enough words
+    const result = computeSpecificityScore('texto relevante sin números ni señales específicas extra', {});
+    expect(result).toBeGreaterThanOrEqual(20);
+    expect(result).toBeLessThanOrEqual(50);
+  });
+
+  it('boosts score when concrete quantity (€) is present', () => {
+    const withQty   = computeSpecificityScore('El coste es 50€ al mes por empresa', {});
+    const withoutQty = computeSpecificityScore('El coste es elevado por empresa', {});
+    expect(withQty).toBeGreaterThan(withoutQty);
+  });
+
+  it('boosts score when concrete quantity (%) is present', () => {
+    const withPct = computeSpecificityScore('La tasa de conversión es del 5%', {});
+    const without = computeSpecificityScore('La tasa de conversión es alta', {});
+    expect(withPct).toBeGreaterThan(without);
+  });
+
+  it('gives partial boost for plain numbers (no unit)', () => {
+    const withNum    = computeSpecificityScore('Hay 3 problemas identificados en total', {});
+    const withQty    = computeSpecificityScore('Pierden 3 horas semanales por empresa', {});
+    // plain number < concrete quantity
+    expect(withQty).toBeGreaterThan(withNum);
+  });
+
+  it('penalises when requiresNumbers=true but no numbers found', () => {
+    const withReq    = computeSpecificityScore('texto sin números relevantes aquí', { requiresNumbers: true });
+    const withoutReq = computeSpecificityScore('texto sin números relevantes aquí', { requiresNumbers: false });
+    expect(withReq).toBeLessThan(withoutReq);
+  });
+
+  it('boosts score for concrete keyword matches', () => {
+    const concreteKws = ['seo', 'sem', 'linkedin'];
+    const specific = computeSpecificityScore('Usamos seo orgánico y linkedin outreach como canales', { concreteKeywords: concreteKws, concreteThreshold: 2 });
+    const vague    = computeSpecificityScore('Usamos marketing digital y redes sociales', { concreteKeywords: concreteKws, concreteThreshold: 2 });
+    expect(specific).toBeGreaterThan(vague);
+  });
+
+  it('penalises hedge/broad-audience language', () => {
+    const hedged  = computeSpecificityScore('quizás todo el mundo podría usarlo', {});
+    const precise = computeSpecificityScore('contadores autónomos con cartera de 20 clientes', {});
+    expect(precise).toBeGreaterThan(hedged);
+  });
+
+  it('never returns below 0', () => {
+    const heavily_vague = computeSpecificityScore('quizás todo el mundo cualquier persona tal vez a lo mejor', { requiresNumbers: true });
+    expect(heavily_vague).toBeGreaterThanOrEqual(0);
+  });
+
+  it('never returns above 100', () => {
+    const text = 'seo sem linkedin google ads facebook ads 50€ 20% 3 horas 500 usuarios';
+    const result = computeSpecificityScore(text, {
+      concreteKeywords: ['seo', 'sem', 'linkedin', 'google ads', 'facebook ads'],
+      concreteThreshold: 2,
+    });
+    expect(result).toBeLessThanOrEqual(100);
+  });
+});
+
 // ── aggregateSubscores ────────────────────────────────────────
 
 describe('aggregateSubscores', () => {
-  it('returns 0/0 for empty input', () => {
-    expect(aggregateSubscores([])).toEqual({ completenessScore: 0, clarityScore: 0 });
+  it('returns 0/0/0 for empty input', () => {
+    expect(aggregateSubscores([])).toEqual({ completenessScore: 0, clarityScore: 0, specificityScore: 0 });
   });
 
   it('returns exact values for single item', () => {
-    expect(aggregateSubscores([{ completenessScore: 80, clarityScore: 60 }]))
-      .toEqual({ completenessScore: 80, clarityScore: 60 });
+    expect(aggregateSubscores([{ completenessScore: 80, clarityScore: 60, specificityScore: 50 }]))
+      .toEqual({ completenessScore: 80, clarityScore: 60, specificityScore: 50 });
   });
 
   it('averages correctly across multiple blocks', () => {
     const blocks = [
-      { completenessScore: 100, clarityScore: 80 },
-      { completenessScore: 60,  clarityScore: 40 },
+      { completenessScore: 100, clarityScore: 80, specificityScore: 60 },
+      { completenessScore: 60,  clarityScore: 40, specificityScore: 40 },
     ];
-    expect(aggregateSubscores(blocks)).toEqual({ completenessScore: 80, clarityScore: 60 });
+    expect(aggregateSubscores(blocks)).toEqual({ completenessScore: 80, clarityScore: 60, specificityScore: 50 });
   });
 
   it('includes zero-score (unfilled) blocks in the average', () => {
     const blocks = [
-      { completenessScore: 90, clarityScore: 90 },
-      { completenessScore: 0,  clarityScore: 0 },
+      { completenessScore: 90, clarityScore: 90, specificityScore: 90 },
+      { completenessScore: 0,  clarityScore: 0,  specificityScore: 0  },
     ];
     const result = aggregateSubscores(blocks);
     expect(result.completenessScore).toBe(45);
     expect(result.clarityScore).toBe(45);
+    expect(result.specificityScore).toBe(45);
   });
 });

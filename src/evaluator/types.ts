@@ -62,6 +62,12 @@ export interface BlockFeedback {
    * 0 = very vague, 100 = highly specific.
    */
   clarityScore: Score;
+  /**
+   * How quantified and concrete the content is: rewards numbers,
+   * concrete units, named channels/tools, specific role titles, etc.
+   * 0 = entirely abstract, 100 = highly actionable and measurable.
+   */
+  specificityScore: Score;
   issues: Issue[];
   strengths: Strength[];
   /** One-line summary for this block */
@@ -98,6 +104,18 @@ export interface GlobalSummary {
    * Reflects how specific and non-generic the content is overall.
    */
   clarityScore: Score;
+  /**
+   * Average specificity subscore across all 9 blocks [0–100].
+   * Reflects how quantified and actionable the content is (numbers,
+   * concrete channel names, specific segment descriptors, etc.).
+   */
+  specificityScore: Score;
+  /**
+   * Internal consistency of the canvas [0–100].
+   * Starts at 100 and is reduced by each cross-block issue found.
+   * A score below 60 signals important strategic misalignments.
+   */
+  consistencyScore: Score;
   /**
    * One-line VC-style verdict based on overallScore:
    *   ≥ 80 → "Sólido"  |  60–79 → "Prometedor"  |  40–59 → "En desarrollo"  |  < 40 → "Necesita trabajo"

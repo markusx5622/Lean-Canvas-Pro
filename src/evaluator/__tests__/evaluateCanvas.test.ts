@@ -72,6 +72,53 @@ describe('evaluateCanvas — cross-block coherence', () => {
     expect(result.summary.crossBlockIssues.some(i => i.code === 'COSTS_WITHOUT_REVENUE')).toBe(true);
   });
 
+  it('detects CHANNELS_WITHOUT_SEGMENT when channels are filled but segment is empty', () => {
+    const canvas: CanvasData = {
+      1: 'Los equipos de ventas pierden horas en tareas manuales repetitivas.',
+      4: 'App de automatización con dashboard e integración CRM.',
+      5: 'SEO orgánico, LinkedIn outreach y email marketing dirigido.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'CHANNELS_WITHOUT_SEGMENT')).toBe(true);
+  });
+
+  it('detects UVP_WITHOUT_SEGMENT when UVP is filled but segment is empty', () => {
+    const canvas: CanvasData = {
+      1: 'Los equipos de ventas pierden horas en tareas manuales repetitivas.',
+      3: 'Automatiza el 80% de las tareas de seguimiento de ventas en minutos.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'UVP_WITHOUT_SEGMENT')).toBe(true);
+  });
+
+  it('detects METRICS_WITHOUT_REVENUE when metrics are filled but revenue is empty', () => {
+    const canvas: CanvasData = {
+      1: 'Los equipos de ventas pierden horas en tareas manuales repetitivas.',
+      2: 'Equipos de ventas B2B de startups de 10-50 empleados.',
+      8: 'CAC, LTV, MRR, tasa de activación y churn mensual.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'METRICS_WITHOUT_REVENUE')).toBe(true);
+  });
+
+  it('detects UNFAIR_ADVANTAGE_TOO_GENERIC when UFA only has copyable attributes', () => {
+    const canvas: CanvasData = {
+      1: 'Los equipos pierden horas en tareas manuales costosas.',
+      4: 'App con automatización y flujo de trabajo integrado.',
+      9: 'Nuestro equipo tiene mucha experiencia, dedicación y pasión por el producto.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'UNFAIR_ADVANTAGE_TOO_GENERIC')).toBe(true);
+  });
+
+  it('does NOT detect UNFAIR_ADVANTAGE_TOO_GENERIC when UFA mentions a real moat', () => {
+    const canvas: CanvasData = {
+      9: 'Tenemos una patente registrada y acceso exclusivo a datos únicos del sector.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'UNFAIR_ADVANTAGE_TOO_GENERIC')).toBe(false);
+  });
+
   it('does not emit cross-block issues for a coherent partial canvas', () => {
     const canvas: CanvasData = {
       1: 'El cliente pierde tiempo en procesos manuales.',
@@ -82,6 +129,62 @@ describe('evaluateCanvas — cross-block coherence', () => {
     };
     const result = evaluateCanvas(canvas);
     expect(result.summary.crossBlockIssues).toHaveLength(0);
+  });
+});
+
+// ── Consistency score ─────────────────────────────────────────
+
+describe('evaluateCanvas — consistencyScore', () => {
+  it('returns 0 when fewer than 3 blocks are filled', () => {
+    const canvas: CanvasData = {
+      4: 'Plataforma SaaS con dashboard.',
+    };
+    expect(evaluateCanvas(canvas).summary.consistencyScore).toBe(0);
+  });
+
+  it('returns 100 for a canvas with no cross-block issues', () => {
+    const canvas: CanvasData = {
+      1: 'El cliente pierde tiempo en procesos manuales repetitivos.',
+      2: 'Pymes de 10-50 empleados del sector contable en España.',
+      3: 'Ahorra 5 horas semanales eliminando gestión manual.',
+      4: 'App con automatización y flujo de trabajo integrado.',
+      6: 'Suscripción mensual de 49 €/mes por empresa.',
+      7: 'Servidores 500 €/mes, soporte 1.000 €/mes.',
+    };
+    expect(evaluateCanvas(canvas).summary.consistencyScore).toBe(100);
+  });
+
+  it('is lower when cross-block issues exist', () => {
+    // Canvas with SOLUTION_WITHOUT_PROBLEM (critical) and CHANNELS_WITHOUT_SEGMENT (warning)
+    const canvas: CanvasData = {
+      2: 'Pymes de 10-50 empleados del sector contable en España.',
+      4: 'App con dashboard, automatización y módulo de informes.',
+      5: 'SEO, LinkedIn y email marketing mensual.',
+      6: 'Suscripción mensual de 49 €/mes por empresa.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.consistencyScore).toBeLessThan(100);
+  });
+});
+
+// ── Specificity score in summary ──────────────────────────────
+
+describe('evaluateCanvas — specificityScore in summary', () => {
+  it('returns 0 for empty canvas', () => {
+    expect(evaluateCanvas({}).summary.specificityScore).toBe(0);
+  });
+
+  it('is higher for quantified content than for vague content', () => {
+    const vagueCanvas: CanvasData = {
+      1: 'Hay varios problemas en general para todos los usuarios etc.',
+      6: 'Vamos a cobrar dinero de alguna forma por las ventas.',
+    };
+    const specificCanvas: CanvasData = {
+      1: 'El cliente pierde 4 horas semanales en conciliación bancaria manual.',
+      6: 'Suscripción SaaS de 49 €/mes por empresa, con plan anual a 490 €/año.',
+    };
+    expect(evaluateCanvas(specificCanvas).summary.specificityScore)
+      .toBeGreaterThan(evaluateCanvas(vagueCanvas).summary.specificityScore);
   });
 });
 

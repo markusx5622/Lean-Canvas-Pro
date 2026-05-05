@@ -14,6 +14,12 @@ export interface BlockKeywords {
   positive: string[];
   /** Words that suggest the block may be misunderstood or too generic */
   generic: string[];
+  /**
+   * Terms that signal quantified, actionable, concrete content
+   * (e.g. specific channel names, metric acronyms, role titles, units).
+   * Used by computeSpecificityScore to reward precision.
+   */
+  concrete: string[];
 }
 
 export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
@@ -26,6 +32,11 @@ export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
     ],
     generic: [
       'algo', 'cosas', 'etc', 'varios', 'muchos', 'general',
+    ],
+    concrete: [
+      'hora', 'horas', 'minuto', 'día', 'dia', 'semana', 'mes',
+      '%', 'euros', '€', '$', 'veces', 'coste', 'empleado', 'empresa',
+      'promedio', 'al mes', 'a la semana', 'por usuario',
     ],
   },
 
@@ -40,6 +51,11 @@ export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
     generic: [
       'todos', 'cualquiera', 'todo el mundo', 'gente', 'personas en general',
     ],
+    concrete: [
+      'pyme', 'startup', 'b2b', 'b2c', 'autónomo', 'autonomo', 'freelance',
+      'profesional', 'director', 'gerente', 'cto', 'ceo', 'sector',
+      'industria', 'empleados', 'años', 'anos', 'facturación', 'facturacion',
+    ],
   },
 
   // 3 – Propuesta de Valor Única
@@ -53,6 +69,11 @@ export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
       'plataforma', 'herramienta', 'aplicación', 'servicio', 'producto',
       'bueno', 'mejorar', 'innovador',
     ],
+    concrete: [
+      '%', 'veces', 'horas', 'minutos', 'euros', '€', '$',
+      'automáticamente', 'automaticamente', 'sin fricción', 'sin friccion',
+      'más rápido', 'mas rapido', 'reducción', 'reduccion', 'ahorro de',
+    ],
   },
 
   // 4 – Solución
@@ -64,6 +85,12 @@ export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
     ],
     generic: [
       'plataforma', 'app', 'software', 'sistema', 'herramienta',
+    ],
+    concrete: [
+      'api', 'dashboard', 'algoritmo', 'módulo', 'modulo',
+      'automatización', 'automatizacion', 'integración', 'integracion',
+      'notificación', 'notificacion', 'informe', 'reporte', 'panel',
+      'flujo de trabajo', 'sincronización', 'sincronizacion',
     ],
   },
 
@@ -78,6 +105,11 @@ export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
     generic: [
       'marketing', 'redes', 'internet', 'online',
     ],
+    concrete: [
+      'seo', 'sem', 'google ads', 'facebook ads', 'linkedin', 'twitter',
+      'instagram', 'youtube', 'email marketing', 'newsletter', 'appstore',
+      'play store', 'blog', 'webinar', 'outreach', 'cold email',
+    ],
   },
 
   // 6 – Flujo de Ingresos
@@ -89,6 +121,11 @@ export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
     ],
     generic: [
       'cobrar', 'dinero', 'ganar', 'ventas',
+    ],
+    concrete: [
+      '€', '$', '%', 'precio', 'ticket medio', 'mensual', 'anual',
+      'por usuario', 'por empresa', 'tarifa', 'plan', 'tier',
+      'freemium', 'mrr', 'arpu', '/mes', '/año', '/ano',
     ],
   },
 
@@ -102,6 +139,11 @@ export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
     generic: [
       'costes', 'gastos', 'dinero', 'presupuesto',
     ],
+    concrete: [
+      '€', '$', 'salario', 'servidor', 'cloud', 'aws', 'gcp', 'azure',
+      'hosting', 'burn rate', 'runway', 'mensual', '/mes', 'infraestructura',
+      'contratación', 'contratacion',
+    ],
   },
 
   // 8 – Métricas Clave
@@ -113,6 +155,11 @@ export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
     ],
     generic: [
       'ventas', 'clientes', 'usuarios', 'satisfacción',
+    ],
+    concrete: [
+      'cac', 'ltv', 'mrr', 'arr', 'churn', 'nps', 'dau', 'mau',
+      '%', 'conversion', 'retención', 'retencion', 'activación', 'activacion',
+      'objetivo', 'target', 'tasa de',
     ],
   },
 
@@ -126,6 +173,11 @@ export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
     ],
     generic: [
       'experiencia', 'conocimiento', 'pasión', 'dedicación', 'equipo',
+    ],
+    concrete: [
+      'patente', 'propiedad intelectual', 'exclusivo', 'contrato exclusivo',
+      'datos únicos', 'datos unicos', 'comunidad', 'algoritmo',
+      'regulación', 'regulacion', 'barrera', 'red de contactos', 'moat',
     ],
   },
 };
