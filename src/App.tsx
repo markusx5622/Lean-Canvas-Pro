@@ -240,6 +240,12 @@ const LeanCanvasApp = () => {
     }
   }, [theme]);
 
+  useEffect(() => {
+    const shouldLock = showSplash || showAboutDialog || !!globalAiFeedback;
+    document.body.style.overflow = shouldLock ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [showSplash, showAboutDialog, globalAiFeedback]);
+
   const evaluateGlobalContext = async () => {
     if (filledBlocks === 0) return;
     setGlobalAiLoading(true);
@@ -392,7 +398,7 @@ const LeanCanvasApp = () => {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 0.98, filter: 'blur(8px)' }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-[500] flex flex-col pt-16 md:pt-24 items-center bg-[#F4F5F8] dark:bg-slate-950 overflow-y-auto overflow-x-hidden hide-scrollbar"
+            className="fixed inset-0 z-[500] flex flex-col pt-16 md:pt-24 items-center bg-[#F4F5F8] dark:bg-slate-950 overflow-y-auto overflow-x-hidden overscroll-contain hide-scrollbar"
           >
              {/* Background decorative elements */}
              <ParticleBackground theme={theme} />
@@ -716,7 +722,7 @@ const LeanCanvasApp = () => {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                   </button>
                 </div>
-                <div className="p-8 max-h-[70vh] overflow-y-auto">
+                <div className="p-8 max-h-[70vh] overflow-y-auto overscroll-contain custom-scrollbar">
                   <div className="prose prose-slate dark:prose-invert prose-indigo max-w-none text-[15px] leading-relaxed whitespace-pre-wrap font-medium">
                     {globalAiFeedback}
                   </div>
@@ -795,7 +801,7 @@ const LeanCanvasApp = () => {
                     </button>
                   </div>
 
-                  <div className="mb-6 overflow-y-auto shrink-0 max-h-[170px] custom-scrollbar pr-3">
+                  <div className="mb-6 overflow-y-auto shrink-0 max-h-[170px] custom-scrollbar overscroll-contain pr-3">
                     <AnimatePresence mode="wait">
                       <motion.div 
                         key={activeTab}
