@@ -24,9 +24,10 @@ interface SplashPageProps {
 
 // ── Reusable section wrapper with scroll-triggered animation ──────────────────
 
-function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+function Section({ children, className = '', id }: { children: React.ReactNode; className?: string; id?: string }) {
   return (
     <motion.div
+      id={id}
       initial={{ y: 32, opacity: 0 }}
       whileInView={{ y: 0, opacity: 1 }}
       viewport={{ once: true, amount: 0.15 }}
@@ -252,7 +253,7 @@ export function SplashPage({ theme, onEnter, prefersReducedMotion }: SplashPageP
         </Section>
 
         {/* ── Cómo funciona ── */}
-        <Section className="mb-24">
+        <Section id="como-funciona" className="mb-24">
           <SectionHeading
             eyebrow="Cómo funciona"
             title="De cero a modelo validado en 4 pasos"
@@ -281,7 +282,7 @@ export function SplashPage({ theme, onEnter, prefersReducedMotion }: SplashPageP
         </Section>
 
         {/* ── Características ── */}
-        <Section className="mb-24">
+        <Section id="caracteristicas" className="mb-24">
           <SectionHeading
             eyebrow="Características"
             title="Todo lo que necesitas para validar tu idea"
@@ -529,29 +530,24 @@ export function SplashPage({ theme, onEnter, prefersReducedMotion }: SplashPageP
               <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
                 Producto
               </p>
-              {([
-                { label: 'Características', isAction: false },
-                { label: 'Cómo funciona', isAction: false },
-                { label: 'Empezar gratis', isAction: true },
-              ] as { label: string; isAction: boolean }[]).map(({ label, isAction }) => (
-                isAction ? (
-                  <button
-                    key={label}
-                    onClick={onEnter}
-                    className="text-left text-[13px] text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium w-fit"
-                  >
-                    {label}
-                  </button>
-                ) : (
-                  <a
-                    key={label}
-                    href="#"
-                    className="text-[13px] text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium w-fit"
-                  >
-                    {label}
-                  </a>
-                )
-              ))}
+              <a
+                href="#caracteristicas"
+                className="text-[13px] text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium w-fit"
+              >
+                Características
+              </a>
+              <a
+                href="#como-funciona"
+                className="text-[13px] text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium w-fit"
+              >
+                Cómo funciona
+              </a>
+              <button
+                onClick={onEnter}
+                className="text-left text-[13px] text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium w-fit"
+              >
+                Empezar gratis
+              </button>
             </div>
 
             {/* Legal column */}
