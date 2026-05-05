@@ -1,30 +1,30 @@
 # 🚀 Lean Canvas Pro  
-*Plataforma estratégica de modelado de negocio y validación AI para Startups*
+*Plataforma estratégica de modelado de negocio y validación heurística para Startups*
 
 ![Status](https://img.shields.io/badge/Status-Active-success)
 ![License](https://img.shields.io/badge/License-Proprietary_&_All_Rights_Reserved-red)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
 ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
-![Auditor Local](https://img.shields.io/badge/AI-Auditor_Estrategico_Local-brightgreen)
+![Auditor Local](https://img.shields.io/badge/Motor-Heur%C3%ADstico_Local-brightgreen)
 
 ## 🎯 Sobre el Proyecto
 
-**Lean Canvas Pro** es una suite profesional diseñada para ser el núcleo decisivo en la etapa temprana (*Early Stage*) de toda Startup. Desarrollada para acompañar a founders, directivos y CEOs hacia el éxito, esta plataforma permite construir modelos de negocio de manera iterativa, estructurada y profesional, respaldados activamente por auditorías heurísticas de nivel "Venture Capital" ejecutadas 100% localmente.
+**Lean Canvas Pro** es una suite profesional diseñada para ser el núcleo decisivo en la etapa temprana (*Early Stage*) de toda Startup. Desarrollada para acompañar a founders, directivos y CEOs hacia el éxito, esta plataforma permite construir modelos de negocio de manera iterativa, estructurada y profesional, respaldados activamente por auditorías heurísticas ejecutadas 100% localmente en el navegador.
 
 ## ✨ Características Principales
 
 - 📋 **Modelado Estratégico Dinámico:** Construcción ágil, intuitiva y visual de los 9 bloques fundamentales del modelo *Lean Canvas*.
-- 🤖 **Auditoría VC con Motor Heurístico Local:** Motor estratégico 100% local que actúa como un inversor de riesgo (Venture Capital). Evalúa bloques individuales o el proyecto al completo dando feedback sobre CAC, LTV, cuota de mercado, viabilidad técnica, riesgos clave y sugerencias de pivoteo. Sin dependencias de APIs externas.
-- 🔒 **Persistencia y Privacidad Local:** Los datos de negocio se cifran y organizan en almacenamiento local. Los secretos industriales y datos de la startup pertenecen a los directivos.
+- 🤖 **Auditoría Estratégica con Motor Heurístico Local:** Motor estratégico 100% local que evalúa bloques individuales o el proyecto al completo dando feedback sobre CAC, LTV, coherencia entre bloques, viabilidad del modelo y prioridades de mejora. Sin dependencias de APIs externas.
+- 🔒 **Persistencia y Privacidad Local:** Los datos de negocio se almacenan en el almacenamiento local del navegador y nunca abandonan tu dispositivo. Los secretos industriales y datos de la startup pertenecen a los directivos.
 - 🌓 **Diseño Adaptativo y Accesible:** Interfaz inmersiva enfocada a la productividad continua; modos claro y oscuro pulidos para evitar la fatiga en las sesiones largas de brainstorming.
-- 📁 **Centro de Gestión Integral:** Administración de múltiples ideas y proyectos, con facilidades de importación, exportación, y reportes en PDF listos para enseñar a inversores reales.
+- 📁 **Centro de Gestión Integral:** Administración de múltiples ideas y proyectos, con facilidades de importación, exportación en JSON e impresión del lienzo directamente desde el navegador.
 
 ## 🛠️ Stack Tecnológico y Arquitectura
 
 - **Frontend:** React 18, TypeScript, Tailwind CSS, Framer Motion (para transiciones hápticas visuales), Lucide Icons.
 - **Backend:** Servidor en Node.js mediante Express con Vite en modo middleware (*Full-Stack*).
-- **Inteligencia Artificial:** Motor heurístico local (`src/evaluator`) que analiza el canvas al instante: puntuación, fortalezas, inconsistencias entre bloques y prioridades de mejora. Sin dependencias de APIs externas.
+- **Motor Heurístico:** Motor heurístico local (`src/evaluator`) que analiza el canvas al instante: puntuación, fortalezas, inconsistencias entre bloques y prioridades de mejora. Sin dependencias de APIs externas.
 
 ## 👨‍💻 Autor e Ingeniería
 
