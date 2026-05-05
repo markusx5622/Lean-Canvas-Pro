@@ -13,6 +13,8 @@ import { AuthPage } from './components/auth/AuthPage';
 import { useCanvases } from './hooks/useCanvases';
 import type { Project, CanvasData } from './hooks/useCanvases';
 import { exportCanvasToPdf } from './lib/exportPdf';
+import { ShareModal } from './components/ShareModal';
+import { SharedCanvasView } from './components/SharedCanvasView';
 
 const VALID_BLOCK_IDS: BlockId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 function asBlockId(id: number): BlockId | null {
@@ -229,6 +231,7 @@ const LeanCanvasApp = () => {
   const [auditResult, setAuditResult] = useState<EvaluationResult | null>(null);
   const [blockAuditResult, setBlockAuditResult] = useState<BlockFeedback | null>(null);
   const [showAboutDialog, setShowAboutDialog] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [canvasEntryKey, setCanvasEntryKey] = useState(0);
   const [pdfExporting, setPdfExporting] = useState(false);
@@ -722,6 +725,14 @@ const LeanCanvasApp = () => {
             <button onClick={handleExportPdf} disabled={pdfExporting} className="flex items-center gap-2 px-4 py-[7px] bg-indigo-600 text-white font-bold rounded-[10px] hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap text-[13px] tracking-tight disabled:opacity-70 disabled:cursor-not-allowed">
               {pdfExporting ? <Loader2 size={15} strokeWidth={2.5} className="animate-spin" /> : <FileDown size={15} strokeWidth={2.5} />} <span className="hidden sm:inline">{pdfExporting ? 'Generando...' : 'Exportar PDF'}</span>
             </button>
+            <button
+              onClick={() => setShowShareModal(true)}
+              title="Compartir canvas (solo lectura)"
+              className="flex items-center gap-2 px-3 py-[7px] text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-[10px] transition-all border border-transparent hover:border-indigo-200/80 dark:hover:border-indigo-500/20 active:scale-95 whitespace-nowrap text-[13px] font-bold"
+            >
+              <Share2 size={15} strokeWidth={2.5} />
+              <span className="hidden lg:inline">Compartir</span>
+            </button>
             <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
             <button
               onClick={signOut}
@@ -946,6 +957,17 @@ const LeanCanvasApp = () => {
                 </div>
               </motion.div>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* === Share Modal === */}
+        <AnimatePresence>
+          {showShareModal && activeProject && (
+            <ShareModal
+              canvasId={activeProject.id}
+              canvasName={activeProject.name}
+              onClose={() => setShowShareModal(false)}
+            />
           )}
         </AnimatePresence>
 
@@ -1195,9 +1217,22 @@ const LeanCanvasApp = () => {
 // === Auth gate ===
 // This is the component rendered by main.tsx. It shows the auth screen when the
 // user is not authenticated and the full workspace once they are signed in.
+// Routes /share/:token to the read-only SharedCanvasView without requiring auth.
 const App = () => {
   const { user, loading, session } = useAuth();
   const [theme] = useLocalStorage<'light' | 'dark'>('lean-canvas-pro-theme', 'light');
+
+  // Minimal client-side routing: detect /share/:token paths.
+  const shareToken = (() => {
+    const match = window.location.pathname.match(
+      /^\/share\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i
+    );
+    return match ? match[1] : null;
+  })();
+
+  if (shareToken) {
+    return <SharedCanvasView token={shareToken} />;
+  }
 
   if (loading) {
     // Minimal loading state — avoid flash of wrong screen.
