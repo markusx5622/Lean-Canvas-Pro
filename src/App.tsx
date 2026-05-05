@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { 
   Users, AlertCircle, Lightbulb, Rocket, TrendingUp, Share2, ShieldCheck, DollarSign, CreditCard,
   Printer, Trash2, MessageSquare, BookOpen, CheckCircle2, Download, Upload, Plus, Edit2, FolderOpen, Sun, Moon,
@@ -225,6 +225,7 @@ const LeanCanvasApp = () => {
   const [showAboutDialog, setShowAboutDialog] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
   const canvasData = activeProject?.data || {};
@@ -421,7 +422,7 @@ const LeanCanvasApp = () => {
                 <div className="absolute inset-0 bg-indigo-500 blur-xl opacity-20 dark:opacity-30 rounded-[28px]"></div>
                 <div className="relative bg-white dark:bg-slate-800/80 backdrop-blur-xl p-5 rounded-[28px] shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex items-center justify-center">
                     <motion.div
-                      animate={{ y: [0, -7, 0] }}
+                      animate={prefersReducedMotion ? {} : { y: [0, -7, 0] }}
                       transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
                     >
                       <Rocket size={44} className="text-indigo-600 dark:text-indigo-400" strokeWidth={1.5} />
@@ -456,7 +457,7 @@ const LeanCanvasApp = () => {
                   <div className="relative w-full sm:w-auto">
                     <motion.div
                       className="absolute inset-0 rounded-2xl bg-indigo-500"
-                      animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0, 0.35] }}
+                      animate={prefersReducedMotion ? {} : { scale: [1, 1.12, 1], opacity: [0.35, 0, 0.35] }}
                       transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
                       style={{ pointerEvents: 'none' }}
                     />
