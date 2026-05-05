@@ -3,9 +3,11 @@ import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { 
   Users, AlertCircle, Lightbulb, Rocket, TrendingUp, Share2, ShieldCheck, DollarSign, CreditCard,
   Printer, Trash2, MessageSquare, BookOpen, CheckCircle2, Download, Upload, Plus, Edit2, FolderOpen, Sun, Moon,
-  Sparkles, Loader2, Bot, Info, Code, Linkedin
+  Sparkles, BarChart2, Info, Code, Linkedin
 } from 'lucide-react';
 import { ParticleBackground } from './ParticleBackground';
+import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from './evaluator';
+import type { EvaluationResult, BlockFeedback } from './evaluator';
 
 // === Tipos & utilidades ===
 interface CanvasData {
@@ -219,10 +221,8 @@ const LeanCanvasApp = () => {
   const [editorText, setEditorText] = useState("");
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('lean-canvas-pro-theme', 'light');
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
-  const [globalAiLoading, setGlobalAiLoading] = useState(false);
-  const [globalAiFeedback, setGlobalAiFeedback] = useState<string | null>(null);
+  const [auditResult, setAuditResult] = useState<EvaluationResult | null>(null);
+  const [blockAuditResult, setBlockAuditResult] = useState<BlockFeedback | null>(null);
   const [showAboutDialog, setShowAboutDialog] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [canvasEntryKey, setCanvasEntryKey] = useState(0);
@@ -244,34 +244,17 @@ const LeanCanvasApp = () => {
   }, [theme]);
 
   useEffect(() => {
-    const shouldLock = showSplash || showAboutDialog || !!globalAiFeedback;
+    const shouldLock = showSplash || showAboutDialog || !!auditResult;
     if (!shouldLock) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
-  }, [showSplash, showAboutDialog, globalAiFeedback]);
+  }, [showSplash, showAboutDialog, auditResult]);
 
-  const evaluateGlobalContext = async () => {
+  const runCanvasAudit = () => {
     if (filledBlocks === 0) return;
-    setGlobalAiLoading(true);
-    setGlobalAiFeedback(null);
-    try {
-      const resp = await fetch("/api/evaluate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ canvasData, blockId: null })
-      });
-      const data = await resp.json();
-      if (data.result) {
-        setGlobalAiFeedback(data.result);
-      } else {
-        setGlobalAiFeedback("Error: " + (data.error || "Algo salió mal"));
-      }
-    } catch (e) {
-      setGlobalAiFeedback("Error de conexión");
-    } finally {
-      setGlobalAiLoading(false);
-    }
+    const result = evaluateCanvas(canvasData as Record<number, string>);
+    setAuditResult(result);
   };
 
   useEffect(() => {
@@ -279,31 +262,14 @@ const LeanCanvasApp = () => {
       setEditorText(canvasData[selectedBlockId] || "");
       setActiveTab('guide');
       setSaveStatus('idle');
-      setAiFeedback(null);
+      setBlockAuditResult(null);
     }
   }, [selectedBlockId, activeProjectId]);
 
-  const evaluateBlock = async () => {
+  const runBlockAudit = () => {
     if (!editorText.trim() || !selectedBlockId) return;
-    setAiLoading(true);
-    setAiFeedback(null);
-    try {
-      const resp = await fetch("/api/evaluate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ canvasData: editorText, blockId: selectedBlockId })
-      });
-      const data = await resp.json();
-      if (data.result) {
-        setAiFeedback(data.result);
-      } else {
-        setAiFeedback("Error: " + (data.error || "Algo salió mal"));
-      }
-    } catch (e) {
-      setAiFeedback("Error de conexión con el AI Copilot");
-    } finally {
-      setAiLoading(false);
-    }
+    const result = evaluateBlockHeuristic(selectedBlockId as 1|2|3|4|5|6|7|8|9, { ...canvasData, [selectedBlockId]: editorText } as Record<number, string>);
+    setBlockAuditResult(result);
   };
 
   useEffect(() => {
@@ -454,7 +420,7 @@ const LeanCanvasApp = () => {
                   >Pro</motion.span>
                 </h1>
                 <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed mb-12">
-                  La suite definitiva para startups en etapas tempranas. Modela tu negocio, pivota rápido y <strong className="text-slate-900 dark:text-white">valida tu modelo con Inteligencia Artificial</strong> mediante nuestra exclusiva "Auditoría VC".
+                  La suite definitiva para startups en etapas tempranas. Modela tu negocio, pivota rápido y <strong className="text-slate-900 dark:text-white">audita tu modelo con un motor heurístico local</strong> mediante nuestra exclusiva "Auditoría Estratégica".
                 </p>
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
@@ -520,11 +486,11 @@ const LeanCanvasApp = () => {
                   >
                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-blue-500/5 dark:to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                      <div className="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20">
-                       <Bot size={24} strokeWidth={2.5} />
+                       <BarChart2 size={24} strokeWidth={2.5} />
                      </div>
-                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3 relative z-10">Auditoría de IA y Venture Capital</h3>
+                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3 relative z-10">Auditoría Estratégica Local</h3>
                      <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium relative z-10">
-                       Sube de nivel con un asistente experto que analizará tus hipótesis, sugiriendo mejoras críticas como un inversor real.
+                       Motor heurístico 100% local que analiza tu canvas al instante: puntuación, fortalezas, inconsistencias entre bloques y prioridades de mejora. Sin APIs externas.
                      </p>
                   </motion.div>
                   {/* Card 3 */}
@@ -664,13 +630,13 @@ const LeanCanvasApp = () => {
 
           {/* Acciones Globales */}
           <div className="flex items-center gap-1.5 w-full md:w-auto justify-end">
-            <button onClick={evaluateGlobalContext} 
-              disabled={globalAiLoading || filledBlocks === 0}
-              title="Analizar Modelo Completo con AI VC"
+            <button onClick={runCanvasAudit} 
+              disabled={filledBlocks === 0}
+              title="Ejecutar Auditoría Estratégica Local"
               className="flex items-center gap-2 p-2 px-3 text-indigo-600 dark:text-indigo-400 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 rounded-lg transition-all border border-indigo-100 dark:border-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-[13px] font-bold active:scale-95"
             >
-              {globalAiLoading ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin" /> : <Bot size={16} strokeWidth={2.5} />}
-              <span className="hidden lg:inline">Auditoría Startup IA</span>
+              <ShieldCheck size={16} strokeWidth={2.5} />
+              <span className="hidden lg:inline">Auditoría Estratégica</span>
             </button>
             <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
             <button onClick={() => setShowAboutDialog(true)} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700 active:scale-90">
@@ -714,11 +680,11 @@ const LeanCanvasApp = () => {
                     <h2 className="font-display text-2xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight">Sobre este proyecto</h2>
                     
                     <p className="text-[14px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium mb-4">
-                      Lean Canvas Pro es una poderosa plataforma de modelado de negocio y validación temprana de ideas. Permite construir lienzos estratégicos, auditar hipótesis con Inteligencia Artificial como si de un "venture capital" se tratase y exportar la información del modelo rápidamente.
+                      Lean Canvas Pro es una poderosa plataforma de modelado de negocio y validación temprana de ideas. Permite construir lienzos estratégicos, auditar hipótesis con un motor heurístico local y exportar la información del modelo rápidamente.
                     </p>
 
                     <p className="text-[14px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                      Desarrollado por <strong className="text-slate-900 dark:text-white">Marc Cubero</strong> en el ecosistema emprendedor y de innovación de la <strong className="text-slate-900 dark:text-white">Universidad Europea de Valencia</strong>. El enfoque es práctico y profesional: una herramienta pensada para acompañar a directivos, CEOs y founders desde su "Early stage" al éxito en España. Aporta verdadero valor al ecosistema aportando métricas y validación basadas en Inteligencia Artificial; todo ello respaldando la toma de decisiones con datos sólidos de mercado, en vez de sustituirla.
+                      Desarrollado por <strong className="text-slate-900 dark:text-white">Marc Cubero</strong> en el ecosistema emprendedor y de innovación de la <strong className="text-slate-900 dark:text-white">Universidad Europea de Valencia</strong>. El enfoque es práctico y profesional: una herramienta pensada para acompañar a directivos, CEOs y founders desde su "Early stage" al éxito en España. Aporta verdadero valor al ecosistema con métricas y auditorías heurísticas 100% locales; todo ello respaldando la toma de decisiones con análisis estructurado, sin depender de APIs externas.
                     </p>
                 </div>
                 
@@ -743,41 +709,166 @@ const LeanCanvasApp = () => {
         </AnimatePresence>
 
         <AnimatePresence>
-          {globalAiFeedback && (
-            <motion.div 
+          {auditResult && (
+            <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm"
-              onClick={() => setGlobalAiFeedback(null)}
+              onClick={() => setAuditResult(null)}
             >
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
                 className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-700"
               >
+                {/* Header */}
                 <div className="bg-indigo-600 p-5 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                      <Bot className="text-white" size={24} />
+                      <ShieldCheck className="text-white" size={24} />
                     </div>
                     <div>
                       <h3 className="text-white font-extrabold text-lg flex items-center gap-2">
-                        Auditoría AI de VC <Sparkles size={16} className="text-indigo-200" />
+                        Auditoría Estratégica <Sparkles size={16} className="text-indigo-200" />
                       </h3>
-                      <p className="text-indigo-100 text-[13px] font-medium">Revisión integral de tu modelo de negocio</p>
+                      <p className="text-indigo-100 text-[13px] font-medium">Motor heurístico local · Sin IA externa</p>
                     </div>
                   </div>
-                  <button onClick={() => setGlobalAiFeedback(null)} className="text-white/70 hover:text-white p-2 transition-colors">
+                  <button onClick={() => setAuditResult(null)} className="text-white/70 hover:text-white p-2 transition-colors">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                   </button>
                 </div>
-                <div className="p-8 max-h-[70vh] overflow-y-auto overscroll-contain custom-scrollbar">
-                  <div className="prose prose-slate dark:prose-invert prose-indigo max-w-none text-[15px] leading-relaxed whitespace-pre-wrap font-medium">
-                    {globalAiFeedback}
+
+                <div className="p-6 max-h-[70vh] overflow-y-auto overscroll-contain">
+
+                  {/* Score Overview */}
+                  <div className="flex items-center gap-5 mb-5 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <div className="text-center shrink-0">
+                      <div className={`text-5xl font-extrabold ${auditResult.summary.overallScore >= 80 ? 'text-emerald-600' : auditResult.summary.overallScore >= 60 ? 'text-indigo-600' : auditResult.summary.overallScore >= 40 ? 'text-amber-500' : 'text-rose-500'}`}>
+                        {auditResult.summary.overallScore}
+                      </div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">/ 100</div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-[11px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-full ${auditResult.summary.overallScore >= 80 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : auditResult.summary.overallScore >= 60 ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : auditResult.summary.overallScore >= 40 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300'}`}>
+                          {auditResult.summary.verdict}
+                        </span>
+                        <span className="text-[11px] text-slate-400 font-medium">{auditResult.summary.filledBlocks}/9 bloques</span>
+                      </div>
+                      <p className="text-[13px] text-slate-700 dark:text-slate-200 font-medium leading-snug">{auditResult.summary.headline}</p>
+                    </div>
                   </div>
+
+                  {/* Subscore bars */}
+                  <div className="mb-5 grid grid-cols-2 gap-2.5">
+                    {[
+                      { label: 'Completitud', value: auditResult.summary.completenessScore },
+                      { label: 'Claridad', value: auditResult.summary.clarityScore },
+                      { label: 'Concreción', value: auditResult.summary.specificityScore },
+                      { label: 'Coherencia', value: auditResult.summary.consistencyScore },
+                      { label: 'Preparación', value: auditResult.summary.strategicReadinessScore },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
+                        <div className="flex justify-between mb-1.5">
+                          <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</span>
+                          <span className="text-[10px] font-extrabold text-slate-700 dark:text-slate-200">{value}</span>
+                        </div>
+                        <div className="h-1 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
+                          <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${value}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Next Priority */}
+                  <div className="mb-5 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/30 rounded-xl">
+                    <div className="text-[10px] font-extrabold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1.5">🎯 Próxima acción prioritaria</div>
+                    <p className="text-[13px] text-slate-800 dark:text-slate-200 font-medium leading-relaxed">{auditResult.summary.nextPriority}</p>
+                  </div>
+
+                  {/* Strengths */}
+                  {auditResult.summary.topStrengths.length > 0 && (
+                    <div className="mb-5">
+                      <h4 className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2.5">✅ Fortalezas</h4>
+                      <div className="flex flex-col gap-2">
+                        {auditResult.summary.topStrengths.map((s, i) => (
+                          <div key={i} className="flex items-start gap-2.5 text-[13px] text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-500/20 rounded-xl p-3">
+                            <CheckCircle2 size={14} className="shrink-0 mt-0.5 text-emerald-500" strokeWidth={2.5} />
+                            <span className="font-medium leading-snug">{s.message}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Top Issues */}
+                  {auditResult.summary.topIssues.length > 0 && (
+                    <div className="mb-5">
+                      <h4 className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2.5">⚠️ Hallazgos principales</h4>
+                      <div className="flex flex-col gap-2">
+                        {auditResult.summary.topIssues.map((issue, i) => (
+                          <div key={i} className={`rounded-xl p-3 border text-[13px] ${issue.severity === 'critical' ? 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300' : issue.severity === 'warning' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300' : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'}`}>
+                            <div className="flex items-start gap-2.5">
+                              <AlertCircle size={14} className="shrink-0 mt-0.5" strokeWidth={2.5} />
+                              <div>
+                                <p className="font-medium leading-snug">{issue.message}</p>
+                                {issue.hint && <p className="mt-1 text-[12px] opacity-80 font-medium">{issue.hint}</p>}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cross-block Issues */}
+                  {auditResult.summary.crossBlockIssues.length > 0 && (
+                    <div className="mb-5">
+                      <h4 className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2.5">🔗 Inconsistencias entre bloques</h4>
+                      <div className="flex flex-col gap-2">
+                        {auditResult.summary.crossBlockIssues.map((issue, i) => (
+                          <div key={i} className={`rounded-xl p-3 border text-[13px] ${issue.severity === 'critical' ? 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300'}`}>
+                            <p className="font-medium leading-snug">{issue.message}</p>
+                            {issue.hint && <p className="mt-1 text-[12px] opacity-80 font-medium">{issue.hint}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recommendation */}
+                  <div className="mb-5 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-500/20 rounded-xl">
+                    <div className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1.5">💡 Recomendación estratégica</div>
+                    <p className="text-[13px] text-slate-800 dark:text-slate-200 font-medium leading-relaxed">{auditResult.summary.recommendation}</p>
+                  </div>
+
+                  {/* Per-block quick results */}
+                  <div>
+                    <h4 className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2.5">📊 Resultados por bloque</h4>
+                    <div className="flex flex-col gap-1.5">
+                      {auditResult.blocks.map((block) => (
+                        <div key={block.blockId} className="flex items-center gap-3 p-2.5 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-100 dark:border-slate-700">
+                          <span className="text-[12px] font-bold text-slate-700 dark:text-slate-200 flex-1 truncate">{block.blockName}</span>
+                          {block.filled ? (
+                            <>
+                              <div className="w-24 h-1 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden shrink-0">
+                                <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${block.score}%` }} />
+                              </div>
+                              <span className={`text-[11px] font-extrabold w-8 text-right shrink-0 ${block.score >= 70 ? 'text-emerald-600' : block.score >= 40 ? 'text-amber-500' : 'text-rose-500'}`}>{block.score}</span>
+                            </>
+                          ) : (
+                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">Vacío</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 px-8 border-t border-slate-100 dark:border-slate-700 flex justify-end">
-                  <button 
-                    onClick={() => setGlobalAiFeedback(null)} 
+
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 px-6 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                  <button
+                    onClick={() => setAuditResult(null)}
                     className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors text-[14px]"
                   >
                     Entendido
@@ -893,12 +984,12 @@ const LeanCanvasApp = () => {
                       </label>
                       <div className="h-5 flex items-center justify-end gap-3">
                         <button 
-                          onClick={evaluateBlock}
-                          disabled={aiLoading || !editorText.trim()}
+                          onClick={runBlockAudit}
+                          disabled={!editorText.trim()}
                         className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                         >
-                          {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                          Validar con IA
+                          <ShieldCheck size={12} />
+                          Auditar bloque
                         </button>
                         {saveStatus === 'saving' && <span className="text-[10px] font-bold text-slate-400 animate-pulse uppercase tracking-wider">Guardando...</span>}
                         {saveStatus === 'saved' && <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100"><CheckCircle2 size={12} strokeWidth={2.5}/> Listo</span>}
@@ -908,25 +999,47 @@ const LeanCanvasApp = () => {
                     <textarea
                       id="editorCanvas"
                       className={`flex-1 w-full p-4 bg-slate-50/80 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-[14px] font-medium text-slate-800 dark:text-slate-200 leading-relaxed focus:bg-white focus:dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:dark:ring-offset-slate-900 ${selectedBlock.ringColor} focus:border-transparent transition-all resize-none placeholder-slate-400 dark:placeholder-slate-500 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]`}
-                      placeholder="Escribe tus ideas aquí...&#10;Haz clic en 'Validar con IA' para recibir feedback al instante."
+                      placeholder="Escribe tus ideas aquí...&#10;Haz clic en 'Auditar bloque' para recibir análisis al instante."
                       value={editorText}
                       onChange={(e) => setEditorText(e.target.value)}
                     />
 
                     <AnimatePresence>
-                      {aiFeedback && (
-                        <motion.div 
+                      {blockAuditResult && (
+                        <motion.div
                           initial={{ opacity: 0, y: 10, height: 0 }}
                           animate={{ opacity: 1, y: 0, height: 'auto' }}
                           exit={{ opacity: 0, y: 10, height: 0 }}
-                          className="mt-4 p-4 bg-indigo-50/80 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-500/30 rounded-xl"
+                          className="mt-4 p-4 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden"
                         >
-                          <div className="flex items-center gap-2 mb-2 text-indigo-700 dark:text-indigo-400 font-bold text-[11px] uppercase tracking-wider">
-                            <Bot size={14} /> AI Copilot Feedback
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400 font-bold text-[11px] uppercase tracking-wider">
+                              <ShieldCheck size={13} /> Análisis del bloque
+                            </div>
+                            <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full ${blockAuditResult.score >= 70 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : blockAuditResult.score >= 40 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300'}`}>
+                              Score: {blockAuditResult.score}
+                            </span>
                           </div>
-                          <div className="text-[13px] text-slate-700 dark:text-slate-300 leading-relaxed font-medium whitespace-pre-wrap">
-                            {aiFeedback}
-                          </div>
+                          {blockAuditResult.strengths.length > 0 && (
+                            <div className="mb-2 flex flex-col gap-1.5">
+                              {blockAuditResult.strengths.map((s, i) => (
+                                <div key={i} className="flex items-start gap-2 text-[12px] text-emerald-700 dark:text-emerald-300 font-medium">
+                                  <CheckCircle2 size={12} className="shrink-0 mt-0.5 text-emerald-500" strokeWidth={2.5} />
+                                  <span>{s.message}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {blockAuditResult.issues.length > 0 && (
+                            <div className="flex flex-col gap-1.5">
+                              {blockAuditResult.issues.slice(0, 3).map((issue, i) => (
+                                <div key={i} className="flex items-start gap-2 text-[12px] font-medium">
+                                  <AlertCircle size={12} className={`shrink-0 mt-0.5 ${issue.severity === 'critical' ? 'text-rose-500' : issue.severity === 'warning' ? 'text-amber-500' : 'text-slate-400'}`} strokeWidth={2.5} />
+                                  <span className="text-slate-700 dark:text-slate-300">{issue.message}{issue.hint ? ` — ${issue.hint}` : ''}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </motion.div>
                       )}
                     </AnimatePresence>
