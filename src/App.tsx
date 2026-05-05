@@ -159,6 +159,7 @@ const LeanCanvasApp = () => {
   const [globalAiLoading, setGlobalAiLoading] = useState(false);
   const [globalAiFeedback, setGlobalAiFeedback] = useState<string | null>(null);
   const [showAboutDialog, setShowAboutDialog] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
@@ -166,6 +167,13 @@ const LeanCanvasApp = () => {
 
   const filledBlocks = Object.values(canvasData).filter(val => typeof val === 'string' && val.trim().length > 0).length;
   const progressPercentage = Math.round((filledBlocks / 9) * 100);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -386,6 +394,55 @@ const LeanCanvasApp = () => {
 
   return (
     <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 flex justify-center pb-16 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
+      
+      <AnimatePresence>
+        {showSplash && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, filter: 'blur(10px)', scale: 1.05 }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="fixed inset-0 z-[500] flex flex-col items-center justify-center bg-[#F4F5F8] dark:bg-slate-950"
+          >
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.6, type: "spring", bounce: 0.4 }}
+              className="relative"
+            >
+              <div className="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 dark:opacity-30 rounded-full scale-150 animate-pulse"></div>
+              <div className="relative bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700 flex items-center justify-center">
+                  <Rocket size={48} className="text-indigo-600 dark:text-indigo-400" strokeWidth={1.5} />
+              </div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="mt-8 text-center px-4"
+            >
+              <h1 className="font-display text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
+                Lean Canvas <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Pro</span>
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 font-bold tracking-widest uppercase text-xs mb-8">
+                Modelado de negocio estratégico
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+              className="flex items-center gap-2"
+            >
+               <div className="w-1.5 h-1.5 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+               <div className="w-1.5 h-1.5 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+               <div className="w-1.5 h-1.5 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce"></div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleImportJson} />
 
       <style dangerouslySetInnerHTML={{__html: `
