@@ -1,20 +1,44 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🚀 Lean Canvas Pro  
+*Plataforma estratégica de modelado de negocio y validación AI para Startups*
 
-# Run and deploy your AI Studio app
+![Status](https://img.shields.io/badge/Status-Active-success)
+![License](https://img.shields.io/badge/License-Proprietary_&_All_Rights_Reserved-red)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
+![Google Gemini](https://img.shields.io/badge/AI-Google_Gemini-blue?logo=google)
 
-This contains everything you need to run your app locally.
+## 🎯 Sobre el Proyecto
 
-View your app in AI Studio: https://ai.studio/apps/7ca676f1-afbb-4fca-a944-ad83d7ef7f07
+**Lean Canvas Pro** es una suite profesional diseñada para ser el núcleo decisivo en la etapa temprana (*Early Stage*) de toda Startup. Desarrollada para acompañar a founders, directivos y CEOs hacia el éxito, esta plataforma permite construir modelos de negocio de manera iterativa, estructurada y profesional, respaldados activamente por auditorías de Inteligencia Artificial avanzadas de nivel "Venture Capital".
 
-## Run Locally
+## ✨ Características Principales
 
-**Prerequisites:**  Node.js
+- 📋 **Modelado Estratégico Dinámico:** Construcción ágil, intuitiva y visual de los 9 bloques fundamentales del modelo *Lean Canvas*.
+- 🤖 **Auditoría VC con Inteligencia Artificial:** Integración *Full-Stack* con **Google Gemini AI**. El modelo analiza contextos empresariales y actúa como un inversor de riesgo (Venture Capital), evaluando bloques individuales o el proyecto al completo para dar feedback sobre CAC, LTV, cuota de mercado, viabilidad técnica, riesgos clave y sugerencias de pivoteo inmediato.
+- 🔒 **Persistencia y Privacidad Local:** Los datos de negocio se cifran y organizan en almacenamiento local. Los secretos industriales y datos de la startup pertenecen a los directivos.
+- 🌓 **Diseño Adaptativo y Accesible:** Interfaz inmersiva enfocada a la productividad continua; modos claro y oscuro pulidos para evitar la fatiga en las sesiones largas de brainstorming.
+- 📁 **Centro de Gestión Integral:** Administración de múltiples ideas y proyectos, con facilidades de importación, exportación, y reportes en PDF listos para enseñar a inversores reales.
 
+## 🛠️ Stack Tecnológico y Arquitectura
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- **Frontend:** React 18, TypeScript, Tailwind CSS, Framer Motion (para transiciones hápticas visuales), Lucide Icons.
+- **Backend:** Servidor en Node.js mediante Express con Vite en modo middleware (*Full-Stack*).
+- **Inteligencia Artificial:** Interfaz central con el modelo `gemini-2.5-flash` mediante `@google/genai` garantizando un flujo seguro de directrices restrictas desde el lado del servidor, previniendo fuga de prompts maestros.
+
+## 👨‍💻 Autor e Ingeniería
+
+Diseñado y desarrollado de manera empírica en el ecosistema de talento e innovación por **Marc Cubero Cantavella** desde el campo de la *Ingeniería de Organización Industrial* aplicados sobre la **Universidad Europea de Valencia**. 
+
+[🔗 Conectar con Marc Cubero en LinkedIn](https://www.linkedin.com/in/marc-cubero-cantavella-bb04542a7)
+
+## ⚖️ Licencia y Propiedad Intelectual
+
+**© 2026 Marc Cubero Cantavella. Todos los derechos reservados.**
+
+Esta plataforma, su código fuente, arquitectura, diseño y concepto son propiedad exclusiva e intelectual de su creador.
+
+🔹 **Puedes** acceder y usar la aplicación funcional en la web de forma abierta para construir tus modelos y dar vida a tus Startups.  
+❌ **No puedes** descargar, clonar, copiar, distribuir, revender, modificar ni realizar obras derivadas de este código fuente o del diseño para fines comerciales ni no comerciales sin la autorización directa, mediante firma, de Marc Cubero. 
+
+> *La visibilidad de este código fuente en repositorios como GitHub sirve con fines exclusivos de portafolio y evidencia de capacidad técnica. No se ampara de ninguna manera bajo terminologías Open Source.* Por favor, ver el archivo `LICENSE` completo del repositorio para detalles legales.
