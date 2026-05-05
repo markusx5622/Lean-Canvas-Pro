@@ -143,7 +143,7 @@ export function Toolbar({
             initial={{ width: 0 }}
             animate={{ width: `${progressPercentage}%` }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
-            className={`h-full ${progressPercentage === 100 ? 'bg-emerald-500 shadow-[0_0_10px_rgb(16,185,129,0.5)]' : 'bg-slate-900'}`}
+            className={`h-full ${progressPercentage === 100 ? 'bg-emerald-500 shadow-[0_0_10px_rgb(16,185,129,0.5)]' : 'bg-indigo-600 dark:bg-indigo-500'}`}
           />
         </div>
       </div>
