@@ -1,0 +1,357 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { AnimatePresence, useReducedMotion } from 'motion/react';
+import { useAuth } from '../contexts/AuthContext';
+import { useCanvases } from '../hooks/useCanvases';
+import { useLocalStorage } from '../hooks/useLocalStorage';
+import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from '../evaluator';
+import type { EvaluationResult, BlockFeedback, BlockId } from '../evaluator';
+import { exportCanvasToPdf } from '../lib/exportPdf';
+import { ParticleBackground } from '../ParticleBackground';
+import { Toolbar } from '../components/toolbar/Toolbar';
+import { CanvasGrid } from '../components/canvas/CanvasGrid';
+import { EditorPanel } from '../components/editor/EditorPanel';
+import { MobileEditor } from '../components/editor/MobileEditor';
+import { AboutDialog } from '../components/dialogs/AboutDialog';
+import { AuditDialog } from '../components/dialogs/AuditDialog';
+import { ShareModal } from '../components/ShareModal';
+import { SplashPage } from './SplashPage';
+import { BLOCKS } from '../data/blocks';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const VALID_BLOCK_IDS: BlockId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+function asBlockId(id: number): BlockId | null {
+  return (VALID_BLOCK_IDS as number[]).includes(id) ? (id as BlockId) : null;
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export function WorkspacePage() {
+  const { user, signOut } = useAuth();
+  const {
+    projects,
+    loading: canvasLoading,
+    createProject,
+    renameProject,
+    deleteProject,
+    clearProject,
+    updateBlock,
+    importProject,
+  } = useCanvases();
+
+  const [activeProjectId, setActiveProjectId] = useLocalStorage<string>('lean-canvas-pro-active', '');
+  const [selectedBlockId, setSelectedBlockId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'guide' | 'examples'>('guide');
+  const [editorText, setEditorText] = useState('');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('lean-canvas-pro-theme', 'light');
+  const [auditResult, setAuditResult] = useState<EvaluationResult | null>(null);
+  const [blockAuditResult, setBlockAuditResult] = useState<BlockFeedback | null>(null);
+  const [showAboutDialog, setShowAboutDialog] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  const [canvasEntryKey, setCanvasEntryKey] = useState(0);
+  const [pdfExporting, setPdfExporting] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  /** Tracks any unsaved text so it can be flushed immediately on block/project switch. */
+  const dirtyRef = useRef<{ projectId: string; blockId: number; text: string } | null>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  const activeProject = projects.find((p) => p.id === activeProjectId) || projects[0];
+  const canvasData = activeProject?.data || {};
+
+  const filledBlocks = Object.values(canvasData).filter(
+    (val) => typeof val === 'string' && (val as string).trim().length > 0
+  ).length;
+  const progressPercentage = Math.round((filledBlocks / 9) * 100);
+
+  // ── Effects ─────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  // Keep activeProjectId valid whenever the project list changes.
+  useEffect(() => {
+    if (!canvasLoading && projects.length > 0) {
+      if (!projects.some((p) => p.id === activeProjectId)) {
+        setActiveProjectId(projects[0].id);
+      }
+    }
+  // Intentionally omit activeProjectId to avoid a loop.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvasLoading, projects]);
+
+  useEffect(() => {
+    const shouldLock = showSplash || showAboutDialog || !!auditResult;
+    if (!shouldLock) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [showSplash, showAboutDialog, auditResult]);
+
+  /** Immediately persists any dirty text (used when switching context). */
+  const flushPendingSave = useCallback(() => {
+    const pending = dirtyRef.current;
+    if (!pending) return;
+    dirtyRef.current = null;
+    updateBlock(pending.projectId, pending.blockId, pending.text).catch((err) => {
+      console.error('[autosave] Background flush failed:', err);
+    });
+  }, [updateBlock]);
+
+  useEffect(() => {
+    if (selectedBlockId) {
+      flushPendingSave();
+      setEditorText(canvasData[selectedBlockId] || '');
+      setActiveTab('guide');
+      setSaveStatus('idle');
+      setBlockAuditResult(null);
+    }
+  }, [selectedBlockId, activeProjectId, flushPendingSave]);
+
+  // Autosave: debounced 800 ms.
+  useEffect(() => {
+    if (!selectedBlockId || !activeProject) return;
+    const currentData = canvasData[selectedBlockId] || '';
+    if (editorText === currentData) {
+      dirtyRef.current = null;
+      return;
+    }
+
+    dirtyRef.current = { projectId: activeProjectId, blockId: selectedBlockId, text: editorText };
+    setSaveStatus('saving');
+
+    const timerId = setTimeout(() => {
+      const pending = dirtyRef.current;
+      if (!pending) return;
+      dirtyRef.current = null;
+      updateBlock(pending.projectId, pending.blockId, pending.text)
+        .then(() => {
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus((s) => (s === 'saved' ? 'idle' : s)), 2000);
+        })
+        .catch((err: unknown) => {
+          console.error('[autosave] Save failed:', err);
+          setSaveStatus('error');
+          setTimeout(() => setSaveStatus((s) => (s === 'error' ? 'idle' : s)), 3000);
+        });
+    }, 800);
+
+    return () => clearTimeout(timerId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorText, updateBlock]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────────
+
+  const handleCreateProject = () => {
+    const newId = createProject();
+    setActiveProjectId(newId);
+    setSelectedBlockId(null);
+  };
+
+  const handleRenameProject = () => {
+    const newName = window.prompt('Nombre del proyecto:', activeProject.name);
+    if (newName && newName.trim()) {
+      renameProject(activeProjectId, newName.trim());
+    }
+  };
+
+  const handleDeleteProject = () => {
+    if (projects.length <= 1) {
+      alert('No puedes borrar tu único lienzo.');
+      return;
+    }
+    if (window.confirm(`¿Eliminar '${activeProject.name}'?`)) {
+      const remaining = projects.filter((p) => p.id !== activeProjectId);
+      deleteProject(activeProjectId);
+      setActiveProjectId(remaining[0].id);
+      setSelectedBlockId(null);
+    }
+  };
+
+  const handleClearCanvas = () => {
+    if (window.confirm('¿Seguro que quieres borrar este lienzo? Se perderá todo el texto actual.')) {
+      clearProject(activeProjectId);
+      if (selectedBlockId) setEditorText('');
+    }
+  };
+
+  const handleExportJson = () => {
+    if (!activeProject) return;
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(activeProject, null, 2));
+    const a = document.createElement('a');
+    a.href = dataStr;
+    a.download = `canvas-${activeProject.name.replace(/\s+/g, '-').toLowerCase()}.json`;
+    a.click();
+  };
+
+  const handleImportJson = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedData = JSON.parse(event.target?.result as string);
+        if (importedData && typeof importedData === 'object' && importedData.data) {
+          const newId = importProject(`${importedData.name || 'Importado'}`, importedData.data);
+          setActiveProjectId(newId);
+          setSelectedBlockId(null);
+        }
+      } catch {
+        alert('Error al leer el archivo JSON.');
+      }
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleExportPdf = async () => {
+    if (!activeProject || pdfExporting) return;
+    setPdfExporting(true);
+    try {
+      await exportCanvasToPdf(activeProject);
+    } catch (err) {
+      console.error('[exportPdf] Failed to generate PDF:', err);
+      alert('No se pudo generar el PDF. Inténtalo de nuevo.');
+    } finally {
+      setPdfExporting(false);
+    }
+  };
+
+  const runCanvasAudit = () => {
+    if (filledBlocks === 0) return;
+    const result = evaluateCanvas(canvasData as Record<number, string>);
+    setAuditResult(result);
+  };
+
+  const runBlockAudit = () => {
+    if (!editorText.trim() || !selectedBlockId) return;
+    const blockId = asBlockId(selectedBlockId);
+    if (!blockId) return;
+    const result = evaluateBlockHeuristic(blockId, { ...canvasData, [blockId]: editorText } as Record<number, string>);
+    setBlockAuditResult(result);
+  };
+
+  const selectedBlock = BLOCKS.find((b) => b.id === selectedBlockId);
+
+  // Show spinner while cloud canvases are first fetched with no local cache.
+  if (canvasLoading && projects.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-900 flex items-center justify-center">
+        <svg className="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+        </svg>
+      </div>
+    );
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 flex justify-center pb-16 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
+      <ParticleBackground theme={theme} />
+
+      {/* Splash screen */}
+      <AnimatePresence>
+        {showSplash && (
+          <SplashPage
+            theme={theme}
+            prefersReducedMotion={prefersReducedMotion}
+            onEnter={() => { setShowSplash(false); setCanvasEntryKey((prev) => prev + 1); }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Hidden file input for JSON import */}
+      <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleImportJson} />
+
+      <style dangerouslySetInnerHTML={{ __html: '::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }' }} />
+
+      <div className="w-full max-w-[1360px] px-4 md:px-8 py-5 flex flex-col gap-6 relative">
+
+        <Toolbar
+          projects={projects}
+          activeProjectId={activeProjectId}
+          onSelectProject={(id) => { setActiveProjectId(id); setSelectedBlockId(null); }}
+          filledBlocks={filledBlocks}
+          progressPercentage={progressPercentage}
+          pdfExporting={pdfExporting}
+          theme={theme}
+          user={user}
+          prefersReducedMotion={prefersReducedMotion}
+          onCreateProject={handleCreateProject}
+          onRenameProject={handleRenameProject}
+          onDeleteProject={handleDeleteProject}
+          onAudit={runCanvasAudit}
+          onToggleAbout={() => setShowAboutDialog(true)}
+          onToggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          onExportJson={handleExportJson}
+          onImportJson={() => fileInputRef.current?.click()}
+          onExportPdf={handleExportPdf}
+          onShare={() => setShowShareModal(true)}
+          onSignOut={signOut}
+          onLogoClick={() => setShowSplash(true)}
+        />
+
+        {/* Dialogs */}
+        <AnimatePresence>
+          {showAboutDialog && <AboutDialog onClose={() => setShowAboutDialog(false)} />}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {auditResult && <AuditDialog auditResult={auditResult} onClose={() => setAuditResult(null)} />}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showShareModal && activeProject && (
+            <ShareModal
+              canvasId={activeProject.id}
+              canvasName={activeProject.name}
+              onClose={() => setShowShareModal(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Main layout: canvas grid + editor panel */}
+        <div className="flex flex-col lg:flex-row gap-5 items-stretch relative md:px-2 pt-2">
+          <CanvasGrid
+            canvasData={canvasData}
+            selectedBlockId={selectedBlockId}
+            canvasEntryKey={canvasEntryKey}
+            onSelectBlock={setSelectedBlockId}
+          />
+
+          <EditorPanel
+            selectedBlock={selectedBlock}
+            editorText={editorText}
+            onChangeText={setEditorText}
+            activeTab={activeTab}
+            onChangeTab={setActiveTab}
+            saveStatus={saveStatus}
+            blockAuditResult={blockAuditResult}
+            onAuditBlock={runBlockAudit}
+          />
+        </div>
+
+        {/* Mobile editor bottom sheet */}
+        {selectedBlockId && selectedBlock && (
+          <MobileEditor
+            selectedBlock={selectedBlock}
+            editorText={editorText}
+            onChangeText={setEditorText}
+            onClose={() => setSelectedBlockId(null)}
+          />
+        )}
+
+      </div>
+    </div>
+  );
+}
