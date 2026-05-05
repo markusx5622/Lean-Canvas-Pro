@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { 
   Users, AlertCircle, Lightbulb, Rocket, TrendingUp, Share2, ShieldCheck, DollarSign, CreditCard,
-  Printer, Trash2, MessageSquare, BookOpen, CheckCircle2, Download, Upload, Plus, Edit2, FolderOpen, Sun, Moon,
-  Sparkles, BarChart2, Info, Code, Linkedin, LogOut
+  Trash2, MessageSquare, BookOpen, CheckCircle2, Download, Upload, Plus, Edit2, FolderOpen, Sun, Moon,
+  Sparkles, BarChart2, Info, Code, Linkedin, LogOut, FileDown, Loader2
 } from 'lucide-react';
 import { ParticleBackground } from './ParticleBackground';
 import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from './evaluator';
@@ -12,6 +12,7 @@ import { useAuth } from './contexts/AuthContext';
 import { AuthPage } from './components/auth/AuthPage';
 import { useCanvases } from './hooks/useCanvases';
 import type { Project, CanvasData } from './hooks/useCanvases';
+import { exportCanvasToPdf } from './lib/exportPdf';
 
 const VALID_BLOCK_IDS: BlockId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 function asBlockId(id: number): BlockId | null {
@@ -159,14 +160,14 @@ const Block = ({ data, additionalClasses = "", index, isActive, hasContent, canv
           : 'bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgb(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.10)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] border border-slate-200/80 dark:border-slate-700 hover:border-slate-300/80 dark:hover:border-slate-600'
         } ${additionalClasses}`}
     >
-      <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 group-hover:opacity-100 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none no-print border-none transition-all duration-500`} />
+      <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 group-hover:opacity-100 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none border-none transition-all duration-500`} />
 
       <div className="p-5 relative h-full flex flex-col z-10 w-full">
         <div className="flex items-start justify-between mb-4">
           <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 ${data.iconColor}`}>
              {data.icon}
           </div>
-          <span className="bg-slate-100/80 dark:bg-slate-700/80 text-slate-400 dark:text-slate-500 font-bold text-[10px] w-6 h-6 flex items-center justify-center rounded-full no-print border border-slate-200/50 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
+          <span className="bg-slate-100/80 dark:bg-slate-700/80 text-slate-400 dark:text-slate-500 font-bold text-[10px] w-6 h-6 flex items-center justify-center rounded-full border border-slate-200/50 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
             {data.order}
           </span>
         </div>
@@ -189,10 +190,10 @@ const Block = ({ data, additionalClasses = "", index, isActive, hasContent, canv
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="group h-full flex flex-col relative"
               >
-                <p className="text-[12.5px] text-slate-400 dark:text-slate-500 leading-snug line-clamp-4 group-hover:opacity-0 transition-opacity duration-300 print:hidden font-medium">
+                <p className="text-[12.5px] text-slate-400 dark:text-slate-500 leading-snug line-clamp-4 group-hover:opacity-0 transition-opacity duration-300 font-medium">
                   {data.description}
                 </p>
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 no-print">
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                    <span className="flex items-center gap-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg py-1.5 px-3.5 rounded-full text-[11px] font-bold tracking-wide transition-transform group-hover:scale-105 duration-300">
                       <Edit2 size={12} strokeWidth={2.5} /> Escribir
                    </span>
@@ -230,6 +231,7 @@ const LeanCanvasApp = () => {
   const [showAboutDialog, setShowAboutDialog] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [canvasEntryKey, setCanvasEntryKey] = useState(0);
+  const [pdfExporting, setPdfExporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Tracks any unsaved text so it can be flushed immediately on block/project switch. */
   const dirtyRef = useRef<{ projectId: string; blockId: number; text: string } | null>(null);
@@ -402,6 +404,19 @@ const LeanCanvasApp = () => {
     };
     reader.readAsText(file);
     if(fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleExportPdf = async () => {
+    if (!activeProject || pdfExporting) return;
+    setPdfExporting(true);
+    try {
+      await exportCanvasToPdf(activeProject);
+    } catch (err) {
+      console.error('[exportPdf] Failed to generate PDF:', err);
+      alert('No se pudo generar el PDF. Inténtalo de nuevo.');
+    } finally {
+      setPdfExporting(false);
+    }
   };
 
   const selectedBlock = BLOCKS.find(b => b.id === selectedBlockId);
@@ -592,25 +607,17 @@ const LeanCanvasApp = () => {
       <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleImportJson} />
 
       <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          @page { size: landscape; margin: 10mm; }
-          body { background: white !important; margin: 0; padding: 0; }
-          .no-print { display: none !important; }
-          .print-full-width { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-          .ring-2 { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
-          .shadow-sm, .shadow-lg, .shadow-xl { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
-        }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
       `}} />
 
-      <div className="w-full max-w-[1360px] px-4 md:px-8 py-5 flex flex-col gap-6 print-full-width relative">
+      <div className="w-full max-w-[1360px] px-4 md:px-8 py-5 flex flex-col gap-6 relative">
         
         {/* === TOP TOOLBAR === */}
         <motion.div 
           initial={{ y: -20, opacity: 0 }} autoFocus animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, ease: "easeOut" }}
-          className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border text-sm border-slate-200/60 dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-[20px] p-3 px-5 flex flex-col md:flex-row items-center justify-between gap-4 no-print sticky top-4 z-[100]"
+          className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border text-sm border-slate-200/60 dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-[20px] p-3 px-5 flex flex-col md:flex-row items-center justify-between gap-4 sticky top-4 z-[100]"
         >
           {/* Logo & Dropdown */}
           <div className="flex items-center gap-3 w-full md:w-auto">
@@ -712,8 +719,8 @@ const LeanCanvasApp = () => {
               <Upload size={18} strokeWidth={2.5} />
             </button>
             <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
-            <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-[7px] bg-indigo-600 text-white font-bold rounded-[10px] hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap text-[13px] tracking-tight">
-              <Printer size={15} strokeWidth={2.5} /> <span className="hidden sm:inline">Exportar PDF</span>
+            <button onClick={handleExportPdf} disabled={pdfExporting} className="flex items-center gap-2 px-4 py-[7px] bg-indigo-600 text-white font-bold rounded-[10px] hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap text-[13px] tracking-tight disabled:opacity-70 disabled:cursor-not-allowed">
+              {pdfExporting ? <Loader2 size={15} strokeWidth={2.5} className="animate-spin" /> : <FileDown size={15} strokeWidth={2.5} />} <span className="hidden sm:inline">{pdfExporting ? 'Generando...' : 'Exportar PDF'}</span>
             </button>
             <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
             <button
@@ -726,11 +733,6 @@ const LeanCanvasApp = () => {
             </button>
           </div>
         </motion.div>
-
-        <div className="hidden print:block mb-6 text-center border-b pb-4 mt-6 border-slate-200 dark:border-slate-700">
-            <h1 className="font-display text-4xl font-extrabold text-slate-900 dark:text-white uppercase tracking-widest mb-2">{activeProject.name}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold">Lienzo Lean Startups</p>
-        </div>
 
         <AnimatePresence>
           {showAboutDialog && (
@@ -953,25 +955,25 @@ const LeanCanvasApp = () => {
           {/* El Lienzo (10 Columns Perfect Harmony) */}
           <div className="flex-[1.5] xl:flex-[2] w-full flex flex-col gap-5">
             
-            <div key={canvasEntryKey} className="grid grid-cols-1 md:grid-cols-10 md:grid-rows-[minmax(230px,auto)_minmax(230px,auto)] print:grid-cols-10 print:grid-rows-[270px_270px] gap-5">
-              <Block index={0} data={BLOCKS.find(b => b.id === 1)} additionalClasses="md:col-span-2 md:row-span-2 print:col-span-2 print:row-span-2" isActive={selectedBlockId === 1} hasContent={!!canvasData[1] && canvasData[1].trim() !== ""} canvasDataValue={canvasData[1] || ""} onClick={() => setSelectedBlockId(1)} />
-              <Block index={1} data={BLOCKS.find(b => b.id === 4)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-1 print:col-span-2 print:col-start-3 print:row-start-1" isActive={selectedBlockId === 4} hasContent={!!canvasData[4] && canvasData[4].trim() !== ""} canvasDataValue={canvasData[4] || ""} onClick={() => setSelectedBlockId(4)} />
-              <Block index={2} data={BLOCKS.find(b => b.id === 8)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-2 print:col-span-2 print:col-start-3 print:row-start-2" isActive={selectedBlockId === 8} hasContent={!!canvasData[8] && canvasData[8].trim() !== ""} canvasDataValue={canvasData[8] || ""} onClick={() => setSelectedBlockId(8)} />
-              <Block index={3} data={BLOCKS.find(b => b.id === 3)} additionalClasses="md:col-span-2 md:col-start-5 md:row-span-2 print:col-span-2 print:col-start-5 print:row-span-2" isActive={selectedBlockId === 3} hasContent={!!canvasData[3] && canvasData[3].trim() !== ""} canvasDataValue={canvasData[3] || ""} onClick={() => setSelectedBlockId(3)} />
-              <Block index={4} data={BLOCKS.find(b => b.id === 9)} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-1 print:col-span-2 print:col-start-7 print:row-start-1" isActive={selectedBlockId === 9} hasContent={!!canvasData[9] && canvasData[9].trim() !== ""} canvasDataValue={canvasData[9] || ""} onClick={() => setSelectedBlockId(9)} />
-              <Block index={5} data={BLOCKS.find(b => b.id === 5)} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-2 print:col-span-2 print:col-start-7 print:row-start-2" isActive={selectedBlockId === 5} hasContent={!!canvasData[5] && canvasData[5].trim() !== ""} canvasDataValue={canvasData[5] || ""} onClick={() => setSelectedBlockId(5)} />
-              <Block index={6} data={BLOCKS.find(b => b.id === 2)} additionalClasses="md:col-span-2 md:col-start-9 md:row-span-2 print:col-span-2 print:col-start-9 print:row-span-2" isActive={selectedBlockId === 2} hasContent={!!canvasData[2] && canvasData[2].trim() !== ""} canvasDataValue={canvasData[2] || ""} onClick={() => setSelectedBlockId(2)} />
+            <div key={canvasEntryKey} className="grid grid-cols-1 md:grid-cols-10 md:grid-rows-[minmax(230px,auto)_minmax(230px,auto)] gap-5">
+              <Block index={0} data={BLOCKS.find(b => b.id === 1)} additionalClasses="md:col-span-2 md:row-span-2" isActive={selectedBlockId === 1} hasContent={!!canvasData[1] && canvasData[1].trim() !== ""} canvasDataValue={canvasData[1] || ""} onClick={() => setSelectedBlockId(1)} />
+              <Block index={1} data={BLOCKS.find(b => b.id === 4)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-1" isActive={selectedBlockId === 4} hasContent={!!canvasData[4] && canvasData[4].trim() !== ""} canvasDataValue={canvasData[4] || ""} onClick={() => setSelectedBlockId(4)} />
+              <Block index={2} data={BLOCKS.find(b => b.id === 8)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-2" isActive={selectedBlockId === 8} hasContent={!!canvasData[8] && canvasData[8].trim() !== ""} canvasDataValue={canvasData[8] || ""} onClick={() => setSelectedBlockId(8)} />
+              <Block index={3} data={BLOCKS.find(b => b.id === 3)} additionalClasses="md:col-span-2 md:col-start-5 md:row-span-2" isActive={selectedBlockId === 3} hasContent={!!canvasData[3] && canvasData[3].trim() !== ""} canvasDataValue={canvasData[3] || ""} onClick={() => setSelectedBlockId(3)} />
+              <Block index={4} data={BLOCKS.find(b => b.id === 9)} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-1" isActive={selectedBlockId === 9} hasContent={!!canvasData[9] && canvasData[9].trim() !== ""} canvasDataValue={canvasData[9] || ""} onClick={() => setSelectedBlockId(9)} />
+              <Block index={5} data={BLOCKS.find(b => b.id === 5)} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-2" isActive={selectedBlockId === 5} hasContent={!!canvasData[5] && canvasData[5].trim() !== ""} canvasDataValue={canvasData[5] || ""} onClick={() => setSelectedBlockId(5)} />
+              <Block index={6} data={BLOCKS.find(b => b.id === 2)} additionalClasses="md:col-span-2 md:col-start-9 md:row-span-2" isActive={selectedBlockId === 2} hasContent={!!canvasData[2] && canvasData[2].trim() !== ""} canvasDataValue={canvasData[2] || ""} onClick={() => setSelectedBlockId(2)} />
             </div>
 
-            <div key={`${canvasEntryKey}-bottom`} className="grid grid-cols-1 md:grid-cols-10 print:grid-cols-10 gap-5">
-              <Block index={7} data={BLOCKS.find(b => b.id === 7)} additionalClasses="md:col-span-5 md:h-[200px] print:h-[190px]" isActive={selectedBlockId === 7} hasContent={!!canvasData[7] && canvasData[7].trim() !== ""} canvasDataValue={canvasData[7] || ""} onClick={() => setSelectedBlockId(7)} />
-              <Block index={8} data={BLOCKS.find(b => b.id === 6)} additionalClasses="md:col-span-5 md:h-[200px] print:h-[190px]" isActive={selectedBlockId === 6} hasContent={!!canvasData[6] && canvasData[6].trim() !== ""} canvasDataValue={canvasData[6] || ""} onClick={() => setSelectedBlockId(6)} />
+            <div key={`${canvasEntryKey}-bottom`} className="grid grid-cols-1 md:grid-cols-10 gap-5">
+              <Block index={7} data={BLOCKS.find(b => b.id === 7)} additionalClasses="md:col-span-5 md:h-[200px]" isActive={selectedBlockId === 7} hasContent={!!canvasData[7] && canvasData[7].trim() !== ""} canvasDataValue={canvasData[7] || ""} onClick={() => setSelectedBlockId(7)} />
+              <Block index={8} data={BLOCKS.find(b => b.id === 6)} additionalClasses="md:col-span-5 md:h-[200px]" isActive={selectedBlockId === 6} hasContent={!!canvasData[6] && canvasData[6].trim() !== ""} canvasDataValue={canvasData[6] || ""} onClick={() => setSelectedBlockId(6)} />
             </div>
 
           </div>
 
           {/* Panel Lateral Animado del Editor (Desktop) */}
-          <div className="no-print lg:w-[440px] shrink-0 sticky top-[100px] h-[calc(100vh-130px)] hidden md:block overflow-hidden relative rounded-[28px]">
+          <div className="lg:w-[440px] shrink-0 sticky top-[100px] h-[calc(100vh-130px)] hidden md:block overflow-hidden relative rounded-[28px]">
             <AnimatePresence mode="wait">
               {selectedBlock ? (
                 <motion.div 
@@ -1143,7 +1145,7 @@ const LeanCanvasApp = () => {
           {selectedBlockId && selectedBlock && (
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="md:hidden fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex flex-col justify-end no-print cursor-pointer" 
+              className="md:hidden fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex flex-col justify-end cursor-pointer" 
               onClick={() => setSelectedBlockId(null)}
             >
                 <motion.div 
