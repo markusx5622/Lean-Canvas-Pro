@@ -324,7 +324,7 @@ function computeStrategicReadinessScore(
   if (/cac|ltv/i.test(metricas)) score += 10;
 
   // Competitive awareness in Problem block
-  if (hasAnyKeyword(problema, ['alternativas', 'workaround', 'como resuelven', 'competidores', 'solución actual'])) {
+  if (hasAnyKeyword(problema, ['alternativas', 'workaround', 'cómo resuelven', 'competidores', 'solución actual'])) {
     score += 8;
   }
 
