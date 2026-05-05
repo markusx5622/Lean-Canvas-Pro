@@ -28,7 +28,8 @@ export interface UseCanvasesReturn {
   renameProject: (id: string, name: string) => void;
   deleteProject: (id: string) => void;
   clearProject: (id: string) => void;
-  updateBlock: (projectId: string, blockId: number, text: string) => void;
+  /** Updates a block locally and persists to Supabase. Returns the cloud-write promise so callers can handle errors. */
+  updateBlock: (projectId: string, blockId: number, text: string) => Promise<void>;
   importProject: (name: string, data: CanvasData) => string;
 }
 
@@ -238,9 +239,9 @@ export function useCanvases(): UseCanvasesReturn {
   );
 
   const updateBlock = useCallback(
-    (projectId: string, blockId: number, text: string) => {
+    (projectId: string, blockId: number, text: string): Promise<void> => {
       const project = projectsRef.current.find((p) => p.id === projectId);
-      if (!project) return;
+      if (!project) return Promise.resolve();
       const newData = { ...project.data, [blockId]: text };
       updateProjects((prev) =>
         prev.map((p) =>
@@ -249,9 +250,9 @@ export function useCanvases(): UseCanvasesReturn {
             : p
         )
       );
-      updateCanvas(projectId, {
+      return updateCanvas(projectId, {
         data: projectDataToRecord(newData),
-      }).catch(console.error);
+      });
     },
     [updateProjects]
   );
