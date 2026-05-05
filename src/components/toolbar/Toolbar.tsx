@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import {
-  Rocket, Plus, Edit2, Trash2, ShieldCheck, Info, Sun, Moon,
-  Download, Upload, FileDown, Share2, LogOut, Loader2,
+  Rocket, Plus, Edit2, Trash2, ShieldCheck, Settings,
+  FileDown, Share2, LogOut, Loader2,
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Project } from '../../hooks/useCanvases';
@@ -16,17 +16,13 @@ export interface ToolbarProps {
   filledBlocks: number;
   progressPercentage: number;
   pdfExporting: boolean;
-  theme: 'light' | 'dark';
   user: User | null;
   prefersReducedMotion: boolean | null | undefined;
   onCreateProject: () => void;
   onRenameProject: () => void;
   onDeleteProject: () => void;
   onAudit: () => void;
-  onToggleAbout: () => void;
-  onToggleTheme: () => void;
-  onExportJson: () => void;
-  onImportJson: () => void;
+  onOpenSettings: () => void;
   onExportPdf: () => void;
   onShare: () => void;
   onSignOut: () => void;
@@ -42,17 +38,13 @@ export function Toolbar({
   filledBlocks,
   progressPercentage,
   pdfExporting,
-  theme,
   user,
   prefersReducedMotion,
   onCreateProject,
   onRenameProject,
   onDeleteProject,
   onAudit,
-  onToggleAbout,
-  onToggleTheme,
-  onExportJson,
-  onImportJson,
+  onOpenSettings,
   onExportPdf,
   onShare,
   onSignOut,
@@ -169,21 +161,14 @@ export function Toolbar({
 
         <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-0.5" />
 
-        {/* Utility icons */}
-        <div className="flex items-center gap-0.5">
-          <button onClick={onToggleAbout} title="Acerca de" className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-all active:scale-90">
-            <Info size={16} strokeWidth={2} />
-          </button>
-          <button onClick={onToggleTheme} title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'} className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-all active:scale-90">
-            {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
-          </button>
-          <button title="Exportar JSON" onClick={onExportJson} className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-all active:scale-90">
-            <Download size={16} strokeWidth={2} />
-          </button>
-          <button title="Importar JSON" onClick={onImportJson} className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-all active:scale-90">
-            <Upload size={16} strokeWidth={2} />
-          </button>
-        </div>
+        {/* Settings */}
+        <button
+          onClick={onOpenSettings}
+          title="Ajustes"
+          className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-all active:scale-90"
+        >
+          <Settings size={16} strokeWidth={2} />
+        </button>
 
         <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-0.5" />
 
