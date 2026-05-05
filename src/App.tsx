@@ -169,13 +169,6 @@ const LeanCanvasApp = () => {
   const progressPercentage = Math.round((filledBlocks / 9) * 100);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 2500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -399,46 +392,105 @@ const LeanCanvasApp = () => {
         {showSplash && (
           <motion.div
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, filter: 'blur(10px)', scale: 1.05 }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="fixed inset-0 z-[500] flex flex-col items-center justify-center bg-[#F4F5F8] dark:bg-slate-950"
+            exit={{ opacity: 0, scale: 0.98, filter: 'blur(8px)' }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-[500] flex flex-col pt-16 md:pt-24 items-center bg-[#F4F5F8] dark:bg-slate-950 overflow-y-auto"
           >
-            <motion.div 
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.6, type: "spring", bounce: 0.4 }}
-              className="relative"
-            >
-              <div className="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 dark:opacity-30 rounded-full scale-150 animate-pulse"></div>
-              <div className="relative bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700 flex items-center justify-center">
-                  <Rocket size={48} className="text-indigo-600 dark:text-indigo-400" strokeWidth={1.5} />
-              </div>
-            </motion.div>
-            
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="mt-8 text-center px-4"
-            >
-              <h1 className="font-display text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
-                Lean Canvas <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Pro</span>
-              </h1>
-              <p className="text-slate-500 dark:text-slate-400 font-bold tracking-widest uppercase text-xs mb-8">
-                Modelado de negocio estratégico
-              </p>
-            </motion.div>
+             {/* Background decorative elements */}
+             <div className="absolute inset-0 overflow-hidden pointer-events-none">
+               <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-[120px]"></div>
+               <div className="absolute top-[30%] -right-[15%] w-[40%] h-[60%] rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-[120px]"></div>
+               <div className="absolute bottom-[0%] left-[20%] w-[60%] h-[40%] rounded-full bg-purple-500/10 dark:bg-purple-500/5 blur-[120px]"></div>
+             </div>
 
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
-              className="flex items-center gap-2"
-            >
-               <div className="w-1.5 h-1.5 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-               <div className="w-1.5 h-1.5 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-               <div className="w-1.5 h-1.5 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce"></div>
-            </motion.div>
+            <div className="max-w-5xl w-full px-6 flex flex-col items-center relative z-10 pb-20">
+              <motion.div 
+                initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.7, type: "spring", bounce: 0.4 }}
+                className="relative mb-8"
+              >
+                <div className="absolute inset-0 bg-indigo-500 blur-xl opacity-20 dark:opacity-30 rounded-[28px]"></div>
+                <div className="relative bg-white dark:bg-slate-800/80 backdrop-blur-xl p-5 rounded-[28px] shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex items-center justify-center">
+                    <Rocket size={44} className="text-indigo-600 dark:text-indigo-400" strokeWidth={1.5} />
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+                className="text-center w-full"
+              >
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-bold text-xs tracking-wide uppercase mb-6 border border-indigo-100 dark:border-indigo-500/20">
+                  <Sparkles size={14} /> Nueva Generación de Lean Canvas
+                </div>
+                <h1 className="font-display text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6 leading-tight">
+                  Lean Canvas <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Pro</span>
+                </h1>
+                <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed mb-12">
+                  La suite definitiva para startups en etapas tempranas. Modela tu negocio, pivota rápido y <strong className="text-slate-900 dark:text-white">valida tu modelo con Inteligencia Artificial</strong> mediante nuestra exclusiva "Auditoría VC".
+                </p>
+                
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
+                  <button 
+                    onClick={() => setShowSplash(false)}
+                    className="group relative flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-all hover:scale-105 hover:shadow-[0_10px_40px_-5px_rgba(79,70,229,0.4)] overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+                    <span className="relative">Entrar al Espacio de Trabajo</span>
+                    <svg className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                  </button>
+                  <a 
+                    href="https://github.com/markusx5622/Lean-Canvas-Pro" 
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 hover:shadow-sm"
+                  >
+                    <Code size={20} className="text-slate-400" />
+                    <span>Ver Repositorio</span>
+                  </a>
+                </div>
+              </motion.div>
+
+              {/* Grid of Features Below */}
+              <motion.div
+                 initial={{ y: 30, opacity: 0 }}
+                 animate={{ y: 0, opacity: 1 }}
+                 transition={{ delay: 0.4, duration: 0.7 }}
+                 className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full"
+              >
+                  {/* Card 1 */}
+                  <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 p-8 rounded-3xl relative overflow-hidden group">
+                     <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-5">
+                       <CheckCircle2 size={24} strokeWidth={2.5} />
+                     </div>
+                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3">9 Bloques Estratégicos</h3>
+                     <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium">
+                       Estructura completa para desglosar tu modelo de negocio de manera visual e iterativa en una sola pantalla interactiva.
+                     </p>
+                  </div>
+                  {/* Card 2 */}
+                  <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 p-8 rounded-3xl relative overflow-hidden group">
+                     <div className="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-5">
+                       <Bot size={24} strokeWidth={2.5} />
+                     </div>
+                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3">Auditoría de IA y Venture Capital</h3>
+                     <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium">
+                       Sube de nivel con un asistente experto que analizará tus hipótesis, sugiriendo mejoras críticas como un inversor real.
+                     </p>
+                  </div>
+                  {/* Card 3 */}
+                  <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 p-8 rounded-3xl relative overflow-hidden group">
+                     <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-5">
+                       <ShieldCheck size={24} strokeWidth={2.5} />
+                     </div>
+                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3">Privacidad Garantizada</h3>
+                     <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium">
+                       Tu propiedad intelectual es vital. Los lienzos se encriptan y guardan localmente para tu total tranquilidad.
+                     </p>
+                  </div>
+              </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
