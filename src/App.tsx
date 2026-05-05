@@ -620,7 +620,7 @@ const LeanCanvasApp = () => {
         {/* === TOP TOOLBAR === */}
         <motion.div 
           initial={{ y: -20, opacity: 0 }} autoFocus animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, ease: "easeOut" }}
-          className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border text-sm border-slate-200/60 dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-[20px] p-3 px-5 flex flex-col md:flex-row items-center justify-between gap-4 sticky top-4 z-[100]"
+          className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border text-sm border-slate-200/60 dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-[20px] py-3.5 px-5 flex flex-col md:flex-row items-center justify-between gap-3 sticky top-4 z-[100]"
         >
           {/* Logo & Dropdown */}
           <div className="flex items-center gap-3 w-full md:w-auto">
@@ -676,7 +676,7 @@ const LeanCanvasApp = () => {
                </div>
             </div>
             
-            <div className="h-8 w-px bg-slate-200/60 dark:bg-slate-700 mx-1 hidden lg:block"></div>
+            <div className="h-8 w-px bg-slate-200/60 dark:bg-slate-700 mx-0.5 hidden lg:block"></div>
             
             <button onClick={handleCreateProject} className="hidden lg:flex items-center gap-2 px-3 py-[7px] bg-slate-50 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-[10px] hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all whitespace-nowrap text-[13px] tracking-tight border border-slate-200/80 dark:border-slate-700 shadow-sm active:scale-95">
                <Plus size={15} strokeWidth={2.5} /> Nuevo
@@ -684,7 +684,7 @@ const LeanCanvasApp = () => {
           </div>
 
           {/* Progreso del Lienzo */}
-          <div className="hidden md:flex flex-col items-center flex-1 max-w-[280px]">
+          <div className="hidden md:flex flex-col items-center flex-1 max-w-[240px]">
             <div className="flex w-full justify-between mb-[6px] text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
               <span>Validación de la Startup</span>
               <span className={progressPercentage === 100 ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-300'}>{progressPercentage}%</span>
@@ -698,49 +698,63 @@ const LeanCanvasApp = () => {
           </div>
 
           {/* Acciones Globales */}
-          <div className="flex items-center gap-1.5 w-full md:w-auto justify-end">
-            <button onClick={runCanvasAudit} 
+          <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+            {/* Audit — secondary CTA */}
+            <button onClick={runCanvasAudit}
               disabled={filledBlocks === 0}
               title="Ejecutar Auditoría Estratégica Local"
-              className="flex items-center gap-2 p-2 px-3 text-indigo-600 dark:text-indigo-400 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 rounded-lg transition-all border border-indigo-100 dark:border-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-[13px] font-bold active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-2 text-indigo-600 dark:text-indigo-400 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 rounded-[10px] transition-all border border-indigo-100 dark:border-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-[12px] font-bold active:scale-95"
             >
-              <ShieldCheck size={16} strokeWidth={2.5} />
+              <ShieldCheck size={15} strokeWidth={2.5} />
               <span className="hidden lg:inline">Auditoría Estratégica</span>
             </button>
-            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
-            <button onClick={() => setShowAboutDialog(true)} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700 active:scale-90">
-              <Info size={18} strokeWidth={2.5} />
-            </button>
-            <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700 active:scale-90">
-              {theme === 'dark' ? <Sun size={18} strokeWidth={2.5} /> : <Moon size={18} strokeWidth={2.5} />}
-            </button>
-            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
-            <button title="Exportar JSON" onClick={handleExportJson} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-lg transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700 active:scale-90">
-              <Download size={18} strokeWidth={2.5} />
-            </button>
-            <button title="Importar JSON" onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-lg transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700 active:scale-90">
-              <Upload size={18} strokeWidth={2.5} />
-            </button>
-            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
-            <button onClick={handleExportPdf} disabled={pdfExporting} className="flex items-center gap-2 px-4 py-[7px] bg-indigo-600 text-white font-bold rounded-[10px] hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap text-[13px] tracking-tight disabled:opacity-70 disabled:cursor-not-allowed">
-              {pdfExporting ? <Loader2 size={15} strokeWidth={2.5} className="animate-spin" /> : <FileDown size={15} strokeWidth={2.5} />} <span className="hidden sm:inline">{pdfExporting ? 'Generando...' : 'Exportar PDF'}</span>
+
+            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-0.5"></div>
+
+            {/* Utility icons — grouped cluster */}
+            <div className="flex items-center gap-0.5">
+              <button onClick={() => setShowAboutDialog(true)} title="Acerca de" className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-all active:scale-90">
+                <Info size={16} strokeWidth={2} />
+              </button>
+              <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'} className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-all active:scale-90">
+                {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+              </button>
+              <button title="Exportar JSON" onClick={handleExportJson} className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-all active:scale-90">
+                <Download size={16} strokeWidth={2} />
+              </button>
+              <button title="Importar JSON" onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-all active:scale-90">
+                <Upload size={16} strokeWidth={2} />
+              </button>
+            </div>
+
+            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-0.5"></div>
+
+            {/* Primary CTA + Share */}
+            <button onClick={handleExportPdf} disabled={pdfExporting} className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 text-white font-bold rounded-[10px] hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap text-[13px] tracking-tight disabled:opacity-70 disabled:cursor-not-allowed">
+              {pdfExporting ? <Loader2 size={14} strokeWidth={2.5} className="animate-spin" /> : <FileDown size={14} strokeWidth={2.5} />}
+              <span className="hidden sm:inline">{pdfExporting ? 'Generando...' : 'Exportar PDF'}</span>
             </button>
             <button
               onClick={() => setShowShareModal(true)}
               title="Compartir canvas (solo lectura)"
-              className="flex items-center gap-2 px-3 py-[7px] text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-[10px] transition-all border border-transparent hover:border-indigo-200/80 dark:hover:border-indigo-500/20 active:scale-95 whitespace-nowrap text-[13px] font-bold"
+              className="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-[10px] transition-all border border-slate-200/60 dark:border-slate-700 hover:border-indigo-200/80 dark:hover:border-indigo-500/20 active:scale-95"
             >
               <Share2 size={15} strokeWidth={2.5} />
-              <span className="hidden lg:inline">Compartir</span>
             </button>
-            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
+
+            <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-0.5"></div>
+
+            {/* User / sign-out */}
             <button
               onClick={signOut}
               title={`Cerrar sesión (${user?.email})`}
-              className="flex items-center gap-2 px-3 py-[7px] text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-[10px] transition-all border border-transparent hover:border-rose-200/80 dark:hover:border-rose-500/20 active:scale-95 whitespace-nowrap text-[13px] font-bold"
+              className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-[10px] transition-all border border-transparent hover:border-rose-200/80 dark:hover:border-rose-500/20 active:scale-95"
             >
-              <LogOut size={15} strokeWidth={2.5} />
-              <span className="hidden lg:inline max-w-[120px] truncate">{user?.email}</span>
+              <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shrink-0">
+                <span className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 leading-none">{user?.email?.charAt(0).toUpperCase()}</span>
+              </div>
+              <span className="hidden lg:inline max-w-[100px] truncate text-[12px] font-semibold">{user?.email}</span>
+              <LogOut size={13} strokeWidth={2} className="shrink-0 opacity-50" />
             </button>
           </div>
         </motion.div>
