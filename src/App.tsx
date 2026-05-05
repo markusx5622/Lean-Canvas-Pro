@@ -242,8 +242,10 @@ const LeanCanvasApp = () => {
 
   useEffect(() => {
     const shouldLock = showSplash || showAboutDialog || !!globalAiFeedback;
-    document.body.style.overflow = shouldLock ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    if (!shouldLock) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
   }, [showSplash, showAboutDialog, globalAiFeedback]);
 
   const evaluateGlobalContext = async () => {
