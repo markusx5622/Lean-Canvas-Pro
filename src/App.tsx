@@ -5,6 +5,7 @@ import {
   Printer, Trash2, MessageSquare, BookOpen, CheckCircle2, Download, Upload, Plus, Edit2, FolderOpen, Sun, Moon,
   Sparkles, Loader2, Bot, Info, Code, Linkedin
 } from 'lucide-react';
+import { ParticleBackground } from './ParticleBackground';
 
 // === Tipos & utilidades ===
 interface CanvasData {
@@ -138,6 +139,69 @@ const BLOCKS = [
     ]
   }
 ];
+
+// == Ui Block Component ==
+const Block = ({ data, additionalClasses = "", index, isActive, hasContent, canvasDataValue, onClick }: { data: any, additionalClasses?: string, index: number, isActive: boolean, hasContent: boolean, canvasDataValue: string, onClick: () => void }) => {
+  return (
+    <motion.div 
+      layoutId={`block-${data.id}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.05, ease: "easeOut" }}
+      whileHover={!isActive ? { y: -2, scale: 1.01 } : {}}
+      onClick={onClick}
+      className={`relative flex flex-col cursor-pointer overflow-hidden rounded-[20px] transition-all duration-300
+        ${isActive 
+          ? `bg-white dark:bg-slate-800 shadow-[0_15px_40px_-5px_rgba(0,0,0,0.12)] dark:shadow-[0_15px_40px_-5px_rgba(0,0,0,0.4)] ring-2 ring-offset-2 dark:ring-offset-slate-900 ${data.ringColor} z-20` 
+          : 'bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-slate-200/80 dark:border-slate-700'
+        } ${additionalClasses}`}
+    >
+      <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none no-print border-none transition-all duration-500`} />
+
+      <div className="p-5 relative h-full flex flex-col z-10 w-full">
+        <div className="flex items-start justify-between mb-4">
+          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 ${data.iconColor}`}>
+             {data.icon}
+          </div>
+          <span className="bg-slate-100/80 dark:bg-slate-700/80 text-slate-400 dark:text-slate-500 font-bold text-[10px] w-6 h-6 flex items-center justify-center rounded-full no-print border border-slate-200/50 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
+            {data.order}
+          </span>
+        </div>
+
+        <h3 className="font-display text-[16px] font-extrabold text-slate-900 dark:text-white tracking-tight mb-2.5">{data.title}</h3>
+
+        <div className="flex-1 overflow-hidden relative">
+          <AnimatePresence mode="wait">
+            {hasContent ? (
+              <motion.div 
+                key="content"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="text-[13.5px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium h-full pr-1"
+              >
+                {canvasDataValue}
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="placeholder"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="group h-full flex flex-col relative"
+              >
+                <p className="text-[12.5px] text-slate-400 dark:text-slate-500 leading-snug line-clamp-4 group-hover:opacity-0 transition-opacity duration-300 print:hidden font-medium">
+                  {data.description}
+                </p>
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 no-print">
+                   <span className="flex items-center gap-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg py-1.5 px-3.5 rounded-full text-[11px] font-bold tracking-wide transition-transform group-hover:scale-105 duration-300">
+                      <Edit2 size={12} strokeWidth={2.5} /> Escribir
+                   </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 const LeanCanvasApp = () => {
   const defaultProjectId = `project-${Date.now()}`;
@@ -317,71 +381,68 @@ const LeanCanvasApp = () => {
     if(fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // == Ui Block Component ==
-  const Block = ({ data, additionalClasses = "", index }: { data: any, additionalClasses?: string, index: number }) => {
-    const isActive = selectedBlockId === data.id;
-    const hasContent = !!canvasData[data.id] && canvasData[data.id].trim() !== "";
-    
-    return (
-      <motion.div 
-        layoutId={`block-${data.id}`}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: index * 0.05, ease: "easeOut" }}
-        whileHover={!isActive ? { y: -2, scale: 1.01 } : {}}
-        onClick={() => setSelectedBlockId(data.id)}
-        className={`relative flex flex-col cursor-pointer overflow-hidden rounded-[20px] transition-all duration-300
-          ${isActive 
-            ? `bg-white dark:bg-slate-800 shadow-[0_15px_40px_-5px_rgba(0,0,0,0.12)] dark:shadow-[0_15px_40px_-5px_rgba(0,0,0,0.4)] ring-2 ring-offset-2 dark:ring-offset-slate-900 ${data.ringColor} z-20` 
-            : 'bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-slate-200/80 dark:border-slate-700'
-          } ${additionalClasses}`}
-      >
-        <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none no-print border-none transition-all duration-500`} />
+// == Ui Block Component ==
+const Block = ({ data, additionalClasses = "", index, isActive, hasContent, canvasDataValue, onClick }: { data: any, additionalClasses?: string, index: number, isActive: boolean, hasContent: boolean, canvasDataValue: string, onClick: () => void }) => {
+  return (
+    <motion.div 
+      layoutId={`block-${data.id}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.05, ease: "easeOut" }}
+      whileHover={!isActive ? { y: -2, scale: 1.01 } : {}}
+      onClick={onClick}
+      className={`relative flex flex-col cursor-pointer overflow-hidden rounded-[20px] transition-all duration-300
+        ${isActive 
+          ? `bg-white dark:bg-slate-800 shadow-[0_15px_40px_-5px_rgba(0,0,0,0.12)] dark:shadow-[0_15px_40px_-5px_rgba(0,0,0,0.4)] ring-2 ring-offset-2 dark:ring-offset-slate-900 ${data.ringColor} z-20` 
+          : 'bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-slate-200/80 dark:border-slate-700'
+        } ${additionalClasses}`}
+    >
+      <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none no-print border-none transition-all duration-500`} />
 
-        <div className="p-5 relative h-full flex flex-col z-10 w-full">
-          <div className="flex items-start justify-between mb-4">
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 ${data.iconColor}`}>
-               {data.icon}
-            </div>
-            <span className="bg-slate-100/80 dark:bg-slate-700/80 text-slate-400 dark:text-slate-500 font-bold text-[10px] w-6 h-6 flex items-center justify-center rounded-full no-print border border-slate-200/50 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
-              {data.order}
-            </span>
+      <div className="p-5 relative h-full flex flex-col z-10 w-full">
+        <div className="flex items-start justify-between mb-4">
+          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 ${data.iconColor}`}>
+             {data.icon}
           </div>
-
-          <h3 className="font-display text-[16px] font-extrabold text-slate-900 dark:text-white tracking-tight mb-2.5">{data.title}</h3>
-
-          <div className="flex-1 overflow-hidden relative">
-            <AnimatePresence mode="wait">
-              {hasContent ? (
-                <motion.div 
-                  key="content"
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="text-[13.5px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium h-full pr-1"
-                >
-                  {canvasData[data.id]}
-                </motion.div>
-              ) : (
-                <motion.div 
-                  key="placeholder"
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="group h-full flex flex-col relative"
-                >
-                  <p className="text-[12.5px] text-slate-400 dark:text-slate-500 leading-snug line-clamp-4 group-hover:opacity-0 transition-opacity duration-300 print:hidden font-medium">
-                    {data.description}
-                  </p>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 no-print">
-                     <span className="flex items-center gap-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg py-1.5 px-3.5 rounded-full text-[11px] font-bold tracking-wide transition-transform group-hover:scale-105 duration-300">
-                        <Edit2 size={12} strokeWidth={2.5} /> Escribir
-                     </span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <span className="bg-slate-100/80 dark:bg-slate-700/80 text-slate-400 dark:text-slate-500 font-bold text-[10px] w-6 h-6 flex items-center justify-center rounded-full no-print border border-slate-200/50 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
+            {data.order}
+          </span>
         </div>
-      </motion.div>
-    );
-  };
+
+        <h3 className="font-display text-[16px] font-extrabold text-slate-900 dark:text-white tracking-tight mb-2.5">{data.title}</h3>
+
+        <div className="flex-1 overflow-hidden relative">
+          <AnimatePresence mode="wait">
+            {hasContent ? (
+              <motion.div 
+                key="content"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="text-[13.5px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium h-full pr-1"
+              >
+                {canvasDataValue}
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="placeholder"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="group h-full flex flex-col relative"
+              >
+                <p className="text-[12.5px] text-slate-400 dark:text-slate-500 leading-snug line-clamp-4 group-hover:opacity-0 transition-opacity duration-300 print:hidden font-medium">
+                  {data.description}
+                </p>
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 no-print">
+                   <span className="flex items-center gap-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg py-1.5 px-3.5 rounded-full text-[11px] font-bold tracking-wide transition-transform group-hover:scale-105 duration-300">
+                      <Edit2 size={12} strokeWidth={2.5} /> Escribir
+                   </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
   const selectedBlock = BLOCKS.find(b => b.id === selectedBlockId);
 
@@ -397,7 +458,8 @@ const LeanCanvasApp = () => {
             className="fixed inset-0 z-[500] flex flex-col pt-16 md:pt-24 items-center bg-[#F4F5F8] dark:bg-slate-950 overflow-y-auto"
           >
              {/* Background decorative elements */}
-             <div className="absolute inset-0 overflow-hidden pointer-events-none">
+             <ParticleBackground theme={theme} />
+             <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
                <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-[120px]"></div>
                <div className="absolute top-[30%] -right-[15%] w-[40%] h-[60%] rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-[120px]"></div>
                <div className="absolute bottom-[0%] left-[20%] w-[60%] h-[40%] rounded-full bg-purple-500/10 dark:bg-purple-500/5 blur-[120px]"></div>
@@ -433,22 +495,26 @@ const LeanCanvasApp = () => {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
-                  <button 
+                  <motion.button 
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setShowSplash(false)}
-                    className="group relative flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-all hover:scale-105 hover:shadow-[0_10px_40px_-5px_rgba(79,70,229,0.4)] overflow-hidden"
+                    className="group relative flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-colors shadow-[0_10px_30px_-5px_rgba(79,70,229,0.3)] hover:shadow-[0_15px_40px_-5px_rgba(79,70,229,0.5)] overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
                     <span className="relative">Entrar al Espacio de Trabajo</span>
-                    <svg className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                  </button>
-                  <a 
+                    <svg className="relative w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                  </motion.button>
+                  <motion.a 
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     href="https://github.com/markusx5622/Lean-Canvas-Pro" 
                     target="_blank" rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 hover:shadow-sm"
+                    className="flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md"
                   >
-                    <Code size={20} className="text-slate-400" />
+                    <Code size={20} className="text-slate-400 dark:text-slate-500" />
                     <span>Ver Repositorio</span>
-                  </a>
+                  </motion.a>
                 </div>
               </motion.div>
 
@@ -460,35 +526,64 @@ const LeanCanvasApp = () => {
                  className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full"
               >
                   {/* Card 1 */}
-                  <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 p-8 rounded-3xl relative overflow-hidden group">
-                     <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-5">
+                  <motion.div 
+                    whileHover={{ y: -8, scale: 1.02 }}
+                    className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 p-8 rounded-3xl relative overflow-hidden group shadow-sm hover:shadow-xl dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition-shadow duration-300"
+                  >
+                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-indigo-500/0 to-indigo-500/5 dark:to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                     <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20">
                        <CheckCircle2 size={24} strokeWidth={2.5} />
                      </div>
-                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3">9 Bloques Estratégicos</h3>
-                     <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium">
+                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3 relative z-10">9 Bloques Estratégicos</h3>
+                     <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium relative z-10">
                        Estructura completa para desglosar tu modelo de negocio de manera visual e iterativa en una sola pantalla interactiva.
                      </p>
-                  </div>
+                  </motion.div>
                   {/* Card 2 */}
-                  <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 p-8 rounded-3xl relative overflow-hidden group">
-                     <div className="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-5">
+                  <motion.div 
+                    whileHover={{ y: -8, scale: 1.02 }}
+                    className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 p-8 rounded-3xl relative overflow-hidden group shadow-sm hover:shadow-xl dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition-shadow duration-300"
+                  >
+                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-blue-500/5 dark:to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                     <div className="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20">
                        <Bot size={24} strokeWidth={2.5} />
                      </div>
-                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3">Auditoría de IA y Venture Capital</h3>
-                     <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium">
+                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3 relative z-10">Auditoría de IA y Venture Capital</h3>
+                     <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium relative z-10">
                        Sube de nivel con un asistente experto que analizará tus hipótesis, sugiriendo mejoras críticas como un inversor real.
                      </p>
-                  </div>
+                  </motion.div>
                   {/* Card 3 */}
-                  <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 p-8 rounded-3xl relative overflow-hidden group">
-                     <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-5">
+                  <motion.div 
+                    whileHover={{ y: -8, scale: 1.02 }}
+                    className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 p-8 rounded-3xl relative overflow-hidden group shadow-sm hover:shadow-xl dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition-shadow duration-300"
+                  >
+                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 via-emerald-500/0 to-emerald-500/5 dark:to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                     <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-500/20">
                        <ShieldCheck size={24} strokeWidth={2.5} />
                      </div>
-                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3">Privacidad Garantizada</h3>
-                     <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium">
+                     <h3 className="font-bold text-slate-900 dark:text-white text-[17px] mb-3 relative z-10">Privacidad Garantizada</h3>
+                     <p className="text-slate-600 dark:text-slate-400 text-[14px] leading-relaxed font-medium relative z-10">
                        Tu propiedad intelectual es vital. Los lienzos se encriptan y guardan localmente para tu total tranquilidad.
                      </p>
-                  </div>
+                  </motion.div>
+              </motion.div>
+              
+              {/* Footer */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.8 }}
+                className="mt-20 pt-8 border-t border-slate-200/60 dark:border-slate-800 w-full flex flex-col md:flex-row items-center justify-between gap-4 text-slate-500 dark:text-slate-500 text-[13px] font-medium"
+              >
+                 <div className="flex items-center gap-1.5">
+                   <Rocket size={14} className="text-slate-400 dark:text-slate-600" />
+                   <span>Lean Canvas Pro © {new Date().getFullYear()}</span>
+                 </div>
+                 <div className="flex items-center gap-6">
+                    <a href="https://github.com/markusx5622/Lean-Canvas-Pro" target="_blank" rel="noopener noreferrer" className="hover:text-slate-800 dark:hover:text-slate-300 transition-colors">GitHub</a>
+                    <a href="https://www.linkedin.com/in/marc-cubero-cantavella-bb04542a7" target="_blank" rel="noopener noreferrer" className="hover:text-slate-800 dark:hover:text-slate-300 transition-colors">LinkedIn</a>
+                 </div>
               </motion.div>
             </div>
           </motion.div>
@@ -520,9 +615,15 @@ const LeanCanvasApp = () => {
         >
           {/* Logo & Dropdown */}
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="bg-slate-900 dark:bg-slate-700 text-white p-2 rounded-[14px] shadow-sm shrink-0 relative overflow-hidden">
-               <Rocket size={18} strokeWidth={2.5} className="relative z-10" />
-            </div>
+            <motion.button 
+              onClick={() => setShowSplash(true)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-slate-900 dark:bg-slate-700 text-white p-2 rounded-[14px] shadow-sm shrink-0 relative overflow-hidden group cursor-pointer"
+            >
+               <div className="absolute inset-0 bg-indigo-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+               <Rocket size={18} strokeWidth={2.5} className="relative z-10 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-indigo-300 transition-all duration-300" />
+            </motion.button>
             <div className="flex flex-col relative w-full group">
                <div className="text-[9px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 mb-[2px] ml-[5px]">
                  Workspace
@@ -534,7 +635,7 @@ const LeanCanvasApp = () => {
                      onChange={(e) => { setActiveProjectId(e.target.value); setSelectedBlockId(null); }}
                      className="font-display appearance-none bg-transparent text-slate-800 dark:text-slate-200 font-extrabold text-[15px] py-1 pl-2 pr-8 focus:outline-none min-w-[150px] cursor-pointer tracking-tight"
                    >
-                     {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                     {projects.map(p => <option key={p.id} value={p.id} className="dark:bg-slate-800 dark:text-slate-200">{p.name}</option>)}
                    </select>
                    <div className="pointer-events-none absolute right-2 text-slate-400 dark:text-slate-500 transition-colors group-hover:text-slate-600 dark:group-hover:text-slate-400">
                       <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
@@ -703,18 +804,18 @@ const LeanCanvasApp = () => {
           <div className="flex-[1.5] xl:flex-[2] w-full flex flex-col gap-5">
             
             <div className="grid grid-cols-1 md:grid-cols-10 md:grid-rows-[minmax(190px,auto)_minmax(190px,auto)] print:grid-cols-10 print:grid-rows-[250px_250px] gap-5">
-              <Block index={0} data={BLOCKS.find(b => b.id === 1)} additionalClasses="md:col-span-2 md:row-span-2 print:col-span-2 print:row-span-2" />
-              <Block index={1} data={BLOCKS.find(b => b.id === 4)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-1 print:col-span-2 print:col-start-3 print:row-start-1" />
-              <Block index={2} data={BLOCKS.find(b => b.id === 8)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-2 print:col-span-2 print:col-start-3 print:row-start-2" />
-              <Block index={3} data={BLOCKS.find(b => b.id === 3)} additionalClasses="md:col-span-2 md:col-start-5 md:row-span-2 print:col-span-2 print:col-start-5 print:row-span-2" />
-              <Block index={4} data={BLOCKS.find(b => b.id === 9)} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-1 print:col-span-2 print:col-start-7 print:row-start-1" />
-              <Block index={5} data={BLOCKS.find(b => b.id === 5)} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-2 print:col-span-2 print:col-start-7 print:row-start-2" />
-              <Block index={6} data={BLOCKS.find(b => b.id === 2)} additionalClasses="md:col-span-2 md:col-start-9 md:row-span-2 print:col-span-2 print:col-start-9 print:row-span-2" />
+              <Block index={0} data={BLOCKS.find(b => b.id === 1)} additionalClasses="md:col-span-2 md:row-span-2 print:col-span-2 print:row-span-2" isActive={selectedBlockId === 1} hasContent={!!canvasData[1] && canvasData[1].trim() !== ""} canvasDataValue={canvasData[1] || ""} onClick={() => setSelectedBlockId(1)} />
+              <Block index={1} data={BLOCKS.find(b => b.id === 4)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-1 print:col-span-2 print:col-start-3 print:row-start-1" isActive={selectedBlockId === 4} hasContent={!!canvasData[4] && canvasData[4].trim() !== ""} canvasDataValue={canvasData[4] || ""} onClick={() => setSelectedBlockId(4)} />
+              <Block index={2} data={BLOCKS.find(b => b.id === 8)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-2 print:col-span-2 print:col-start-3 print:row-start-2" isActive={selectedBlockId === 8} hasContent={!!canvasData[8] && canvasData[8].trim() !== ""} canvasDataValue={canvasData[8] || ""} onClick={() => setSelectedBlockId(8)} />
+              <Block index={3} data={BLOCKS.find(b => b.id === 3)} additionalClasses="md:col-span-2 md:col-start-5 md:row-span-2 print:col-span-2 print:col-start-5 print:row-span-2" isActive={selectedBlockId === 3} hasContent={!!canvasData[3] && canvasData[3].trim() !== ""} canvasDataValue={canvasData[3] || ""} onClick={() => setSelectedBlockId(3)} />
+              <Block index={4} data={BLOCKS.find(b => b.id === 9)} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-1 print:col-span-2 print:col-start-7 print:row-start-1" isActive={selectedBlockId === 9} hasContent={!!canvasData[9] && canvasData[9].trim() !== ""} canvasDataValue={canvasData[9] || ""} onClick={() => setSelectedBlockId(9)} />
+              <Block index={5} data={BLOCKS.find(b => b.id === 5)} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-2 print:col-span-2 print:col-start-7 print:row-start-2" isActive={selectedBlockId === 5} hasContent={!!canvasData[5] && canvasData[5].trim() !== ""} canvasDataValue={canvasData[5] || ""} onClick={() => setSelectedBlockId(5)} />
+              <Block index={6} data={BLOCKS.find(b => b.id === 2)} additionalClasses="md:col-span-2 md:col-start-9 md:row-span-2 print:col-span-2 print:col-start-9 print:row-span-2" isActive={selectedBlockId === 2} hasContent={!!canvasData[2] && canvasData[2].trim() !== ""} canvasDataValue={canvasData[2] || ""} onClick={() => setSelectedBlockId(2)} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-10 print:grid-cols-10 gap-5">
-              <Block index={7} data={BLOCKS.find(b => b.id === 7)} additionalClasses="md:col-span-5 md:h-[160px] print:h-[150px]" />
-              <Block index={8} data={BLOCKS.find(b => b.id === 6)} additionalClasses="md:col-span-5 md:h-[160px] print:h-[150px]" />
+              <Block index={7} data={BLOCKS.find(b => b.id === 7)} additionalClasses="md:col-span-5 md:h-[160px] print:h-[150px]" isActive={selectedBlockId === 7} hasContent={!!canvasData[7] && canvasData[7].trim() !== ""} canvasDataValue={canvasData[7] || ""} onClick={() => setSelectedBlockId(7)} />
+              <Block index={8} data={BLOCKS.find(b => b.id === 6)} additionalClasses="md:col-span-5 md:h-[160px] print:h-[150px]" isActive={selectedBlockId === 6} hasContent={!!canvasData[6] && canvasData[6].trim() !== ""} canvasDataValue={canvasData[6] || ""} onClick={() => setSelectedBlockId(6)} />
             </div>
 
           </div>
