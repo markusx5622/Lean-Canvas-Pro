@@ -289,14 +289,15 @@ const LeanCanvasApp = () => {
   useEffect(() => {
     if (selectedBlockId) {
       // Flush any unsaved text from the previous block before loading the new one.
+      // Fire-and-forget: local state is already updated synchronously inside updateBlock,
+      // so the new block loads consistently regardless of when the Supabase write settles.
       flushPendingSave();
       setEditorText(canvasData[selectedBlockId] || "");
       setActiveTab('guide');
       setSaveStatus('idle');
       setBlockAuditResult(null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedBlockId, activeProjectId]);
+  }, [selectedBlockId, activeProjectId, flushPendingSave]);
 
   const runBlockAudit = () => {
     if (!editorText.trim() || !selectedBlockId) return;
@@ -308,8 +309,9 @@ const LeanCanvasApp = () => {
 
   // Autosave: debounced 800 ms. Awaits the Supabase write before marking 'saved'
   // so that failures are surfaced rather than silently swallowed.
-  // Only [editorText] is in the deps array — selectedBlockId / activeProjectId are
-  // captured via dirtyRef to avoid restarting the timer on unrelated renders.
+  // selectedBlockId / activeProjectId / canvasData are intentionally omitted from
+  // deps: they are captured via dirtyRef at write-time to avoid restarting the
+  // debounce on every render. updateBlock is stable (useCallback with stable deps).
   useEffect(() => {
     if (!selectedBlockId || !activeProject) return;
     const currentData = canvasData[selectedBlockId] || "";
@@ -339,7 +341,7 @@ const LeanCanvasApp = () => {
 
     return () => clearTimeout(timerId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editorText]);
+  }, [editorText, updateBlock]);
 
   // == Funciones de Gestión ==
   const handleCreateProject = () => {
