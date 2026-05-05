@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import {
   Rocket, Sparkles, CheckCircle2, BarChart2, ShieldCheck, Code,
   Users, Zap, Layers, Download, Share2, Clock, ArrowRight,
-  FileText, MousePointerClick, Target, BookOpen,
+  FileText, MousePointerClick, Target, BookOpen, Github, ExternalLink,
 } from 'lucide-react';
 import { ParticleBackground } from '../ParticleBackground';
 
@@ -480,21 +480,112 @@ export function SplashPage({ theme, onEnter, prefersReducedMotion }: SplashPageP
         </Section>
 
         {/* ── Footer ── */}
-        <motion.div
+        <motion.footer
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8, duration: 0.8 }}
-          className="mt-4 pt-8 border-t border-slate-200/60 dark:border-slate-800 w-full flex flex-col md:flex-row items-center justify-between gap-4 text-slate-500 dark:text-slate-500 text-[13px] font-medium"
+          className="mt-4 pt-10 border-t border-slate-200/60 dark:border-slate-800 w-full"
         >
-          <div className="flex items-center gap-1.5">
-            <Rocket size={14} className="text-slate-400 dark:text-slate-600" />
-            <span>Lean Canvas Pro © {new Date().getFullYear()}</span>
+          {/* Main footer grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 pb-10">
+
+            {/* Brand column */}
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
+                  <Rocket size={16} className="text-white" strokeWidth={2} />
+                </div>
+                <span className="font-display font-extrabold text-slate-800 dark:text-white text-[15px]">
+                  Lean Canvas Pro
+                </span>
+              </div>
+              <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-[220px]">
+                La suite definitiva para modelar, auditar y compartir tu modelo de negocio. 100% open source.
+              </p>
+              <div className="flex items-center gap-3 mt-1">
+                <a
+                  href="https://github.com/markusx5622/Lean-Canvas-Pro"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub"
+                  className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  <Github size={15} />
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/marc-cubero-cantavella-bb04542a7"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                  className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  <ExternalLink size={15} />
+                </a>
+              </div>
+            </div>
+
+            {/* Producto column */}
+            <div className="flex flex-col gap-3">
+              <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
+                Producto
+              </p>
+              {([
+                { label: 'Características', isAction: false },
+                { label: 'Cómo funciona', isAction: false },
+                { label: 'Empezar gratis', isAction: true },
+              ] as { label: string; isAction: boolean }[]).map(({ label, isAction }) => (
+                isAction ? (
+                  <button
+                    key={label}
+                    onClick={onEnter}
+                    className="text-left text-[13px] text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium w-fit"
+                  >
+                    {label}
+                  </button>
+                ) : (
+                  <a
+                    key={label}
+                    href="#"
+                    className="text-[13px] text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium w-fit"
+                  >
+                    {label}
+                  </a>
+                )
+              ))}
+            </div>
+
+            {/* Legal column */}
+            <div className="flex flex-col gap-3">
+              <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
+                Legal
+              </p>
+              {[
+                { label: 'Aviso Legal', href: '/legal' },
+                { label: 'Política de Privacidad', href: '/privacy' },
+                { label: 'Política de Cookies', href: '/cookies' },
+              ].map(({ label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  className="text-[13px] text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium w-fit"
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+
           </div>
-          <div className="flex items-center gap-6">
-            <a href="https://github.com/markusx5622/Lean-Canvas-Pro" target="_blank" rel="noopener noreferrer" className="hover:text-slate-800 dark:hover:text-slate-300 transition-colors">GitHub</a>
-            <a href="https://www.linkedin.com/in/marc-cubero-cantavella-bb04542a7" target="_blank" rel="noopener noreferrer" className="hover:text-slate-800 dark:hover:text-slate-300 transition-colors">LinkedIn</a>
+
+          {/* Bottom bar */}
+          <div className="border-t border-slate-200/60 dark:border-slate-800 pt-6 pb-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-slate-400 dark:text-slate-600">
+            <span>© {new Date().getFullYear()} Lean Canvas Pro — Licencia MIT</span>
+            <div className="flex items-center gap-4">
+              <a href="/legal" className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">Aviso Legal</a>
+              <a href="/privacy" className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">Privacidad</a>
+              <a href="/cookies" className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">Cookies</a>
+            </div>
           </div>
-        </motion.div>
+        </motion.footer>
       </div>
     </motion.div>
   );

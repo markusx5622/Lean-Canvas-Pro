@@ -3,6 +3,9 @@ import { useAuth } from './contexts/AuthContext';
 import { AuthPage } from './components/auth/AuthPage';
 import { SharedCanvasView } from './components/SharedCanvasView';
 import { WorkspacePage } from './pages/WorkspacePage';
+import { LegalPage } from './pages/LegalPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { CookiesPage } from './pages/CookiesPage';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 // Minimal client-side routing: detect /share/:token paths.
@@ -11,6 +14,14 @@ function getShareToken(): string | null {
     /^\/share\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i
   );
   return match ? match[1] : null;
+}
+
+function getLegalRoute(): 'legal' | 'privacy' | 'cookies' | null {
+  const path = window.location.pathname;
+  if (path === '/legal') return 'legal';
+  if (path === '/privacy') return 'privacy';
+  if (path === '/cookies') return 'cookies';
+  return null;
 }
 
 // ── App ───────────────────────────────────────────────────────────────────────
@@ -23,6 +34,11 @@ const App = () => {
   if (shareToken) {
     return <SharedCanvasView token={shareToken} />;
   }
+
+  const legalRoute = getLegalRoute();
+  if (legalRoute === 'legal') return <LegalPage />;
+  if (legalRoute === 'privacy') return <PrivacyPage />;
+  if (legalRoute === 'cookies') return <CookiesPage />;
 
   if (!isSupabaseConfigured) {
     return (
