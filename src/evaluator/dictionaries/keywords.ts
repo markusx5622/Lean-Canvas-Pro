@@ -3,6 +3,9 @@
 // ============================================================
 // Keyword lists drive the content-quality signal for each block.
 // They are accent-normalised at match time (see utils/text.ts).
+//
+// Block-level `generic` arrays use terms specific to each block's
+// context. Cross-cutting vague/generic patterns live in vagueTerms.ts.
 
 import type { BlockId } from '../types';
 
