@@ -415,11 +415,17 @@ const LeanCanvasApp = () => {
                 initial={{ scale: 0.8, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.7, type: "spring", bounce: 0.4 }}
-                className="relative mb-8"
+                whileHover={{ scale: 1.12, rotate: 10 }}
+                className="relative mb-8 cursor-pointer"
               >
                 <div className="absolute inset-0 bg-indigo-500 blur-xl opacity-20 dark:opacity-30 rounded-[28px]"></div>
                 <div className="relative bg-white dark:bg-slate-800/80 backdrop-blur-xl p-5 rounded-[28px] shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex items-center justify-center">
-                    <Rocket size={44} className="text-indigo-600 dark:text-indigo-400" strokeWidth={1.5} />
+                    <motion.div
+                      animate={{ y: [0, -7, 0] }}
+                      transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                    >
+                      <Rocket size={44} className="text-indigo-600 dark:text-indigo-400" strokeWidth={1.5} />
+                    </motion.div>
                 </div>
               </motion.div>
               
@@ -433,23 +439,41 @@ const LeanCanvasApp = () => {
                   <Sparkles size={14} /> Nueva Generación de Lean Canvas
                 </div>
                 <h1 className="font-display text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6 leading-tight">
-                  Lean Canvas <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Pro</span>
+                  Lean Canvas{' '}
+                  <motion.span
+                    className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500 inline-block"
+                    initial={{ opacity: 0, scale: 0.5, y: 12 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ delay: 0.35, duration: 0.6, type: "spring", bounce: 0.6 }}
+                    whileHover={{ scale: 1.1 }}
+                  >Pro</motion.span>
                 </h1>
                 <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed mb-12">
                   La suite definitiva para startups en etapas tempranas. Modela tu negocio, pivota rápido y <strong className="text-slate-900 dark:text-white">valida tu modelo con Inteligencia Artificial</strong> mediante nuestra exclusiva "Auditoría VC".
                 </p>
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
-                  <motion.button 
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setShowSplash(false)}
-                    className="group relative flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-colors shadow-[0_10px_30px_-5px_rgba(79,70,229,0.3)] hover:shadow-[0_15px_40px_-5px_rgba(79,70,229,0.5)] overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
-                    <span className="relative">Entrar al Espacio de Trabajo</span>
-                    <svg className="relative w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                  </motion.button>
+                  <div className="relative w-full sm:w-auto">
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl bg-indigo-500"
+                      animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0, 0.35] }}
+                      transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
+                      style={{ pointerEvents: 'none' }}
+                    />
+                    <motion.button 
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.55, duration: 0.5, type: "spring" }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setShowSplash(false)}
+                      className="group relative flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-colors shadow-[0_10px_30px_-5px_rgba(79,70,229,0.3)] hover:shadow-[0_15px_40px_-5px_rgba(79,70,229,0.5)] overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+                      <span className="relative">Entrar al Espacio de Trabajo</span>
+                      <svg className="relative w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                    </motion.button>
+                  </div>
                   <motion.a 
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
