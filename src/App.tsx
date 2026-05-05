@@ -148,15 +148,16 @@ const Block = ({ data, additionalClasses = "", index, isActive, hasContent, canv
       initial={{ opacity: 0, y: 50, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.55, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={!isActive ? { y: -2, scale: 1.01 } : {}}
+      whileHover={!isActive ? { y: -5, scale: 1.02, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } } : {}}
+      whileTap={!isActive ? { scale: 0.98, transition: { duration: 0.15 } } : {}}
       onClick={onClick}
-      className={`relative flex flex-col cursor-pointer overflow-hidden rounded-[20px] transition-all duration-300
+      className={`group relative flex flex-col cursor-pointer overflow-hidden rounded-[20px] transition-all duration-300
         ${isActive 
           ? `bg-white dark:bg-slate-800 shadow-[0_15px_40px_-5px_rgba(0,0,0,0.12)] dark:shadow-[0_15px_40px_-5px_rgba(0,0,0,0.4)] ring-2 ring-offset-2 dark:ring-offset-slate-900 ${data.ringColor} z-20` 
-          : 'bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-slate-200/80 dark:border-slate-700'
+          : 'bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgb(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.10)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] border border-slate-200/80 dark:border-slate-700 hover:border-slate-300/80 dark:hover:border-slate-600'
         } ${additionalClasses}`}
     >
-      <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none no-print border-none transition-all duration-500`} />
+      <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 group-hover:opacity-100 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none no-print border-none transition-all duration-500`} />
 
       <div className="p-5 relative h-full flex flex-col z-10 w-full">
         <div className="flex items-start justify-between mb-4">
@@ -601,15 +602,15 @@ const LeanCanvasApp = () => {
               />
               <motion.button 
                 onClick={() => setShowSplash(true)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-slate-900 dark:bg-slate-700 text-white p-2 rounded-[14px] shadow-sm relative group cursor-pointer overflow-hidden"
+                whileHover={{ scale: 1.12, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
+                whileTap={{ scale: 0.93, transition: { duration: 0.15 } }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-[14px] shadow-lg shadow-indigo-600/40 hover:shadow-xl hover:shadow-indigo-600/50 relative group cursor-pointer overflow-hidden transition-all duration-300"
               >
-                <div className="absolute inset-0 bg-indigo-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[14px]"></div>
                 <motion.div
-                  animate={prefersReducedMotion ? {} : { y: [0, -3, 0], rotate: [0, 10, 0] }}
-                  transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
-                  className="relative z-10 group-hover:text-indigo-300 transition-colors duration-300"
+                  animate={prefersReducedMotion ? {} : { y: [0, -3, 0], rotate: [0, 8, 0] }}
+                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                  className="relative z-10"
                 >
                   <Rocket size={18} strokeWidth={2.5} />
                 </motion.div>
@@ -634,15 +635,15 @@ const LeanCanvasApp = () => {
                  </div>
                  
                  <div className="flex items-center">
-                   <button onClick={handleRenameProject} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200 dark:hover:border-slate-700"><Edit2 size={13} strokeWidth={2.5} /></button>
-                   <button onClick={handleDeleteProject} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200 dark:hover:border-slate-700"><Trash2 size={13} strokeWidth={2.5} /></button>
+                   <button onClick={handleRenameProject} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200 dark:hover:border-slate-700 active:scale-90"><Edit2 size={13} strokeWidth={2.5} /></button>
+                   <button onClick={handleDeleteProject} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm shadow-transparent hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-transparent hover:border-slate-200 dark:hover:border-slate-700 active:scale-90"><Trash2 size={13} strokeWidth={2.5} /></button>
                  </div>
                </div>
             </div>
             
             <div className="h-8 w-px bg-slate-200/60 dark:bg-slate-700 mx-1 hidden lg:block"></div>
             
-            <button onClick={handleCreateProject} className="hidden lg:flex items-center gap-2 px-3 py-[7px] bg-slate-50 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-[10px] hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap text-[13px] tracking-tight border border-slate-200/80 dark:border-slate-700 shadow-sm">
+            <button onClick={handleCreateProject} className="hidden lg:flex items-center gap-2 px-3 py-[7px] bg-slate-50 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-[10px] hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all whitespace-nowrap text-[13px] tracking-tight border border-slate-200/80 dark:border-slate-700 shadow-sm active:scale-95">
                <Plus size={15} strokeWidth={2.5} /> Nuevo
             </button>
           </div>
@@ -663,27 +664,26 @@ const LeanCanvasApp = () => {
 
           {/* Acciones Globales */}
           <div className="flex items-center gap-1.5 w-full md:w-auto justify-end">
-            <button 
-              onClick={evaluateGlobalContext} 
+            <button onClick={evaluateGlobalContext} 
               disabled={globalAiLoading || filledBlocks === 0}
               title="Analizar Modelo Completo con AI VC"
-              className="flex items-center gap-2 p-2 px-3 text-indigo-600 dark:text-indigo-400 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 rounded-lg transition-all border border-indigo-100 dark:border-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-[13px] font-bold"
+              className="flex items-center gap-2 p-2 px-3 text-indigo-600 dark:text-indigo-400 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 rounded-lg transition-all border border-indigo-100 dark:border-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-[13px] font-bold active:scale-95"
             >
               {globalAiLoading ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin" /> : <Bot size={16} strokeWidth={2.5} />}
               <span className="hidden lg:inline">Auditoría Startup IA</span>
             </button>
             <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
-            <button onClick={() => setShowAboutDialog(true)} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
+            <button onClick={() => setShowAboutDialog(true)} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700 active:scale-90">
               <Info size={18} strokeWidth={2.5} />
             </button>
-            <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
+            <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700 active:scale-90">
               {theme === 'dark' ? <Sun size={18} strokeWidth={2.5} /> : <Moon size={18} strokeWidth={2.5} />}
             </button>
             <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
-            <button title="Exportar JSON" onClick={handleExportJson} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
+            <button title="Exportar JSON" onClick={handleExportJson} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-lg transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700 active:scale-90">
               <Download size={18} strokeWidth={2.5} />
             </button>
-            <button title="Importar JSON" onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors border border-transparent">
+            <button title="Importar JSON" onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-lg transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700 active:scale-90">
               <Upload size={18} strokeWidth={2.5} />
             </button>
             <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1"></div>
@@ -895,7 +895,7 @@ const LeanCanvasApp = () => {
                         <button 
                           onClick={evaluateBlock}
                           disabled={aiLoading || !editorText.trim()}
-                          className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                         >
                           {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
                           Validar con IA
