@@ -25,7 +25,9 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
   const filledBlocks = blocks.filter(b => b.filled).length;
   const completionPct = Math.round((filledBlocks / 9) * 100);
 
-  // Overall score = average of scores of *filled* blocks only (unfilled count as 0).
+  // Overall score = weighted average across all 9 blocks.
+  // Unfilled blocks contribute 0, so leaving blocks empty lowers the score
+  // and incentivises completing the full canvas.
   const totalScore = blocks.reduce((sum, b) => sum + b.score, 0);
   const overallScore = filledBlocks > 0 ? clamp(Math.round(totalScore / 9), 0, 100) : 0;
 
@@ -115,7 +117,7 @@ function detectCrossBlockIssues(canvasData: CanvasData): CrossBlockIssue[] {
   // Rule 4: Metrics exist but don't mention CAC/LTV when costs+revenues are both defined
   const hasCosts   = costes.trim().length > 0;
   const hasRevenue = ingresos.trim().length > 0;
-  const metricsMentionCacLtv = /cac|ltv|coste de adquisici/.test(metricas);
+  const metricsMentionCacLtv = /cac|ltv|coste de adquisición/.test(metricas);
   if (hasCosts && hasRevenue && metricas.trim().length > 0 && !metricsMentionCacLtv) {
     issues.push({
       code: 'MISSING_CAC_LTV_IN_METRICS',

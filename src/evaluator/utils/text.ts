@@ -86,5 +86,5 @@ export function containsNumbers(text: string): boolean {
  * with text). Useful to reward structured content.
  */
 export function looksStructured(text: string): boolean {
-  return /(\n|•|-|\d+\.)/.test(text);
+  return /(\n|•|^\s*-\s+|^\s*\d+\.\s+)/m.test(text);
 }
