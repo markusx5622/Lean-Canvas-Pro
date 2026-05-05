@@ -1,14 +1,44 @@
 import express, { NextFunction, Request, Response } from "express";
 import { createServer as createViteServer } from "vite";
+import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const isProd = process.env.NODE_ENV === "production";
+
 async function startServer() {
   const app = express();
   const PORT = parseInt(process.env.PORT || "3000", 10);
+
+  // Security headers via helmet (production only).
+  // In production we enforce a strict Content-Security-Policy suited for a
+  // Vite-built SPA (all JS/CSS are external hashed bundles – no inline code).
+  // Helmet is skipped in development so that Vite HMR (inline scripts,
+  // WebSocket connections) works without any extra configuration.
+  if (isProd) {
+    app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'"],
+            // data: is required for the SVG favicon embedded as a data URI
+            // in index.html (<link rel="icon" href="data:image/svg+xml,…">).
+            imgSrc: ["'self'", "data:"],
+            fontSrc: ["'self'"],
+            connectSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            frameAncestors: ["'none'"],
+            upgradeInsecureRequests: [],
+          },
+        },
+      })
+    );
+  }
 
   app.use(express.json());
 
@@ -18,7 +48,7 @@ async function startServer() {
   });
 
   // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+  if (!isProd) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
