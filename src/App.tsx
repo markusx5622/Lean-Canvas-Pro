@@ -324,19 +324,20 @@ const LeanCanvasApp = () => {
     dirtyRef.current = { projectId: activeProjectId, blockId: selectedBlockId, text: editorText };
     setSaveStatus('saving');
 
-    const timerId = setTimeout(async () => {
+    const timerId = setTimeout(() => {
       const pending = dirtyRef.current;
       if (!pending) return; // Already flushed by a block switch.
       dirtyRef.current = null;
-      try {
-        await updateBlock(pending.projectId, pending.blockId, pending.text);
-        setSaveStatus('saved');
-        setTimeout(() => setSaveStatus((s) => (s === 'saved' ? 'idle' : s)), 2000);
-      } catch (err) {
-        console.error('[autosave] Save failed:', err);
-        setSaveStatus('error');
-        setTimeout(() => setSaveStatus((s) => (s === 'error' ? 'idle' : s)), 3000);
-      }
+      updateBlock(pending.projectId, pending.blockId, pending.text)
+        .then(() => {
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus((s) => (s === 'saved' ? 'idle' : s)), 2000);
+        })
+        .catch((err: unknown) => {
+          console.error('[autosave] Save failed:', err);
+          setSaveStatus('error');
+          setTimeout(() => setSaveStatus((s) => (s === 'error' ? 'idle' : s)), 3000);
+        });
     }, 800);
 
     return () => clearTimeout(timerId);
