@@ -1224,7 +1224,9 @@ const App = () => {
 
   // Minimal client-side routing: detect /share/:token paths.
   const shareToken = (() => {
-    const match = window.location.pathname.match(/^\/share\/([0-9a-f-]{36})$/i);
+    const match = window.location.pathname.match(
+      /^\/share\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i
+    );
     return match ? match[1] : null;
   })();
 

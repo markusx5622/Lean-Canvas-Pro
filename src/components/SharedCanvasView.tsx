@@ -122,7 +122,7 @@ export function SharedCanvasView({ token }: { token: string }) {
     );
   }
 
-  const data = canvas.data as Record<string, string>;
+  const data = canvas.data as Record<string, string | undefined>;
 
   return (
     <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 overflow-x-hidden">

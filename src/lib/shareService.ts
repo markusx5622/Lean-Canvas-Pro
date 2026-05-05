@@ -12,7 +12,7 @@ export interface ShareRow {
 export interface SharedCanvasRow {
   id: string;
   name: string;
-  data: Record<string, string>;
+  data: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }

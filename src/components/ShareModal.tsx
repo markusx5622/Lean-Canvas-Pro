@@ -26,15 +26,8 @@ export function ShareModal({ canvasId, canvasName, onClose }: ShareModalProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for browsers without clipboard API
-      const input = document.createElement('input');
-      input.value = shareUrl;
-      document.body.appendChild(input);
-      input.select();
-      document.execCommand('copy');
-      document.body.removeChild(input);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      // Clipboard API failed (e.g. non-HTTPS or permission denied) — show the URL for manual copy
+      window.prompt('Copia el enlace manualmente:', shareUrl);
     }
   };
 
