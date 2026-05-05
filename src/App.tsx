@@ -59,7 +59,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 4, order: 4, title: "Solución", color: "from-amber-50 to-white dark:from-amber-950/30 dark:to-slate-900", iconColor: "text-amber-500 dark:text-amber-400", ringColor: "ring-amber-500/50 dark:ring-amber-500/40",
+    id: 4, order: 2, title: "Solución", color: "from-amber-50 to-white dark:from-amber-950/30 dark:to-slate-900", iconColor: "text-amber-500 dark:text-amber-400", ringColor: "ring-amber-500/50 dark:ring-amber-500/40",
     icon: <Lightbulb size={22} strokeWidth={2.5} />,
     description: "Define las características clave que resuelven los problemas principales.",
     details: "No intentes construir todo a la vez. Enfócate en las 3 funciones principales.",
@@ -79,7 +79,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 9, order: 9, title: "Ventaja Injusta", color: "from-blue-50 to-white dark:from-blue-950/30 dark:to-slate-900", iconColor: "text-blue-500 dark:text-blue-400", ringColor: "ring-blue-500/50 dark:ring-blue-500/40",
+    id: 9, order: 4, title: "Ventaja Injusta", color: "from-blue-50 to-white dark:from-blue-950/30 dark:to-slate-900", iconColor: "text-blue-500 dark:text-blue-400", ringColor: "ring-blue-500/50 dark:ring-blue-500/40",
     icon: <ShieldCheck size={22} strokeWidth={2.5} />,
     description: "Algo que no se puede copiar o comprar fácilmente por la competencia.",
     details: "Puede ser un equipo de expertos, patentes, una comunidad exclusiva o datos únicos que solo tú posees.",
@@ -89,7 +89,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 2, order: 2, title: "Segmentos", color: "from-emerald-50 to-white dark:from-emerald-950/30 dark:to-slate-900", iconColor: "text-emerald-500 dark:text-emerald-400", ringColor: "ring-emerald-500/50 dark:ring-emerald-500/40",
+    id: 2, order: 5, title: "Segmentos", color: "from-emerald-50 to-white dark:from-emerald-950/30 dark:to-slate-900", iconColor: "text-emerald-500 dark:text-emerald-400", ringColor: "ring-emerald-500/50 dark:ring-emerald-500/40",
     icon: <Users size={22} strokeWidth={2.5} />,
     description: "¿Quiénes son tus clientes? Identifica a tus Early Adopters iniciales.",
     details: "Los 'Early Adopters' son los que necesitan tu solución ahora mismo, aunque no sea perfecta. Encuéntralos primero.",
@@ -99,7 +99,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 8, order: 8, title: "Métricas Clave", color: "from-orange-50 to-white dark:from-orange-950/30 dark:to-slate-900", iconColor: "text-orange-500 dark:text-orange-400", ringColor: "ring-orange-500/50 dark:ring-orange-500/40",
+    id: 8, order: 6, title: "Métricas Clave", color: "from-orange-50 to-white dark:from-orange-950/30 dark:to-slate-900", iconColor: "text-orange-500 dark:text-orange-400", ringColor: "ring-orange-500/50 dark:ring-orange-500/40",
     icon: <TrendingUp size={22} strokeWidth={2.5} />,
     description: "Los números críticos que indican si el negocio está realmente funcionando.",
     details: "Elige métricas procesables como el CAC, LTV o tasas de retención.",
@@ -109,7 +109,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 5, order: 5, title: "Canales", color: "from-teal-50 to-white dark:from-teal-950/30 dark:to-slate-900", iconColor: "text-teal-500 dark:text-teal-400", ringColor: "ring-teal-500/50 dark:ring-teal-500/40",
+    id: 5, order: 7, title: "Canales", color: "from-teal-50 to-white dark:from-teal-950/30 dark:to-slate-900", iconColor: "text-teal-500 dark:text-teal-400", ringColor: "ring-teal-500/50 dark:ring-teal-500/40",
     icon: <Share2 size={22} strokeWidth={2.5} />,
     description: "Tu ruta al mercado. Cómo vas a captar y retener a tus clientes.",
     details: "Define tu estrategia de adquisición y distribución: inbound, outbound, o partners.",
@@ -119,7 +119,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 7, order: 7, title: "Costes", color: "from-slate-100 to-white dark:from-slate-800/50 dark:to-slate-900", iconColor: "text-slate-600 dark:text-slate-400", ringColor: "ring-slate-500/50 dark:ring-slate-500/40",
+    id: 7, order: 8, title: "Costes", color: "from-slate-100 to-white dark:from-slate-800/50 dark:to-slate-900", iconColor: "text-slate-600 dark:text-slate-400", ringColor: "ring-slate-500/50 dark:ring-slate-500/40",
     icon: <CreditCard size={22} strokeWidth={2.5} />,
     description: "Tus gastos principales para operar: servidores, marketing, salarios, etc.",
     details: "Clasifica en costos fijos y variables para calcular el punto de equilibrio.",
@@ -129,7 +129,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 6, order: 6, title: "Flujo de Ingresos", color: "from-cyan-50 to-white dark:from-cyan-950/30 dark:to-slate-900", iconColor: "text-cyan-500 dark:text-cyan-400", ringColor: "ring-cyan-500/50 dark:ring-cyan-500/40",
+    id: 6, order: 9, title: "Flujo de Ingresos", color: "from-cyan-50 to-white dark:from-cyan-950/30 dark:to-slate-900", iconColor: "text-cyan-500 dark:text-cyan-400", ringColor: "ring-cyan-500/50 dark:ring-cyan-500/40",
     icon: <DollarSign size={22} strokeWidth={2.5} />,
     description: "Cómo vas a ganar dinero: suscripciones, pago por uso o márgenes de venta.",
     details: "Define tu modelo de monetización. La forma más directa de validar una startup es lograr que alguien pague.",
@@ -587,15 +587,33 @@ const LeanCanvasApp = () => {
         >
           {/* Logo & Dropdown */}
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <motion.button 
-              onClick={() => setShowSplash(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-slate-900 dark:bg-slate-700 text-white p-2 rounded-[14px] shadow-sm shrink-0 relative overflow-hidden group cursor-pointer"
-            >
-               <div className="absolute inset-0 bg-indigo-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
-               <Rocket size={18} strokeWidth={2.5} className="relative z-10 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-indigo-300 transition-all duration-300" />
-            </motion.button>
+            <div className="relative shrink-0">
+              <motion.div
+                className="absolute inset-0 rounded-[14px] bg-indigo-500 pointer-events-none"
+                animate={prefersReducedMotion ? {} : { scale: [1, 1.55, 1.55], opacity: [0.5, 0, 0] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}
+              />
+              <motion.div
+                className="absolute inset-0 rounded-[14px] bg-indigo-400 pointer-events-none"
+                animate={prefersReducedMotion ? {} : { scale: [1, 1.35, 1.35], opacity: [0.3, 0, 0] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeOut", delay: 0.7 }}
+              />
+              <motion.button 
+                onClick={() => setShowSplash(true)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-slate-900 dark:bg-slate-700 text-white p-2 rounded-[14px] shadow-sm relative group cursor-pointer overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-indigo-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                <motion.div
+                  animate={prefersReducedMotion ? {} : { y: [0, -3, 0], rotate: [0, 10, 0] }}
+                  transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
+                  className="relative z-10 group-hover:text-indigo-300 transition-colors duration-300"
+                >
+                  <Rocket size={18} strokeWidth={2.5} />
+                </motion.div>
+              </motion.button>
+            </div>
             <div className="flex flex-col relative w-full group">
                <div className="text-[9px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 mb-[2px] ml-[5px]">
                  Workspace
@@ -775,7 +793,7 @@ const LeanCanvasApp = () => {
           {/* El Lienzo (10 Columns Perfect Harmony) */}
           <div className="flex-[1.5] xl:flex-[2] w-full flex flex-col gap-5">
             
-            <div className="grid grid-cols-1 md:grid-cols-10 md:grid-rows-[minmax(190px,auto)_minmax(190px,auto)] print:grid-cols-10 print:grid-rows-[250px_250px] gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-10 md:grid-rows-[minmax(230px,auto)_minmax(230px,auto)] print:grid-cols-10 print:grid-rows-[270px_270px] gap-5">
               <Block index={0} data={BLOCKS.find(b => b.id === 1)} additionalClasses="md:col-span-2 md:row-span-2 print:col-span-2 print:row-span-2" isActive={selectedBlockId === 1} hasContent={!!canvasData[1] && canvasData[1].trim() !== ""} canvasDataValue={canvasData[1] || ""} onClick={() => setSelectedBlockId(1)} />
               <Block index={1} data={BLOCKS.find(b => b.id === 4)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-1 print:col-span-2 print:col-start-3 print:row-start-1" isActive={selectedBlockId === 4} hasContent={!!canvasData[4] && canvasData[4].trim() !== ""} canvasDataValue={canvasData[4] || ""} onClick={() => setSelectedBlockId(4)} />
               <Block index={2} data={BLOCKS.find(b => b.id === 8)} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-2 print:col-span-2 print:col-start-3 print:row-start-2" isActive={selectedBlockId === 8} hasContent={!!canvasData[8] && canvasData[8].trim() !== ""} canvasDataValue={canvasData[8] || ""} onClick={() => setSelectedBlockId(8)} />
@@ -786,8 +804,8 @@ const LeanCanvasApp = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-10 print:grid-cols-10 gap-5">
-              <Block index={7} data={BLOCKS.find(b => b.id === 7)} additionalClasses="md:col-span-5 md:h-[160px] print:h-[150px]" isActive={selectedBlockId === 7} hasContent={!!canvasData[7] && canvasData[7].trim() !== ""} canvasDataValue={canvasData[7] || ""} onClick={() => setSelectedBlockId(7)} />
-              <Block index={8} data={BLOCKS.find(b => b.id === 6)} additionalClasses="md:col-span-5 md:h-[160px] print:h-[150px]" isActive={selectedBlockId === 6} hasContent={!!canvasData[6] && canvasData[6].trim() !== ""} canvasDataValue={canvasData[6] || ""} onClick={() => setSelectedBlockId(6)} />
+              <Block index={7} data={BLOCKS.find(b => b.id === 7)} additionalClasses="md:col-span-5 md:h-[200px] print:h-[190px]" isActive={selectedBlockId === 7} hasContent={!!canvasData[7] && canvasData[7].trim() !== ""} canvasDataValue={canvasData[7] || ""} onClick={() => setSelectedBlockId(7)} />
+              <Block index={8} data={BLOCKS.find(b => b.id === 6)} additionalClasses="md:col-span-5 md:h-[200px] print:h-[190px]" isActive={selectedBlockId === 6} hasContent={!!canvasData[6] && canvasData[6].trim() !== ""} canvasDataValue={canvasData[6] || ""} onClick={() => setSelectedBlockId(6)} />
             </div>
 
           </div>
