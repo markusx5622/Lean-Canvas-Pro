@@ -326,7 +326,9 @@ export function WorkspacePage() {
               initialValue={activeProject.name}
               confirmLabel="Guardar"
               onConfirm={(newName) => {
-                renameProject(activeProjectId, newName);
+                if (newName !== activeProject.name) {
+                  renameProject(activeProjectId, newName);
+                }
                 setShowRenameDialog(false);
               }}
               onCancel={() => setShowRenameDialog(false)}

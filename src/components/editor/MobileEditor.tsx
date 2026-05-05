@@ -78,7 +78,7 @@ export function MobileEditor({
             </button>
           </div>
 
-          {/* Tab content */}
+          {/* Tab content — 22vh gives enough room for guide/examples without pushing the textarea off screen */}
           <div className="mb-4 overflow-y-auto shrink-0 max-h-[22vh] overscroll-contain pr-1">
             <AnimatePresence mode="wait">
               <motion.div

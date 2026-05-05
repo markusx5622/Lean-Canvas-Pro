@@ -29,8 +29,9 @@ export function PromptDialog({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Small delay so the animation starts before focusing
-    const id = setTimeout(() => inputRef.current?.focus(), 80);
+    // Slight delay (80 ms) so the entry animation starts before the keyboard is triggered
+    const FOCUS_DELAY_MS = 80;
+    const id = setTimeout(() => inputRef.current?.focus(), FOCUS_DELAY_MS);
     return () => clearTimeout(id);
   }, []);
 
