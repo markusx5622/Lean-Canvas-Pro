@@ -294,7 +294,7 @@ export function Toolbar({
           onClick={onOpenSettings}
           aria-label={`Usuario: ${user?.email} · Abrir ajustes`}
           title={`Usuario: ${user?.email}`}
-          className="flex items-center p-1 rounded-[10px] transition-all hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95"
+          className="mr-0.5 flex items-center p-1 rounded-[10px] transition-all hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95"
         >
           <div aria-hidden="true" className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shrink-0">
             <span className="text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400 leading-none">
