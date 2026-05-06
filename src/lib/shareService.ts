@@ -35,13 +35,17 @@ export async function createShare(canvasId: string): Promise<ShareRow> {
 
 /** Retrieve the active share for a canvas (if one exists). */
 export async function getShareForCanvas(canvasId: string): Promise<ShareRow | null> {
+  // Use .limit(1) instead of .maybeSingle() to avoid PostgREST
+  // Accept: application/vnd.pgrst.object+json semantics, which can
+  // return a 406/404 error on some Supabase versions when 0 rows match.
   const { data, error } = await supabase
     .from('canvas_shares')
     .select('id, canvas_id, token, created_at')
     .eq('canvas_id', canvasId)
-    .maybeSingle();
+    .limit(1);
   if (error) throw error;
-  return data as ShareRow | null;
+  if (!data || data.length === 0) return null;
+  return data[0] as ShareRow;
 }
 
 /** Delete a share record, effectively revoking the link. */

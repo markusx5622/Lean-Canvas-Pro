@@ -213,10 +213,14 @@ export function Toolbar({
       </div>
 
       {/* Progress bar */}
-      <div className="hidden md:flex flex-col items-center flex-1 max-w-[240px]">
-        <div className="flex w-full justify-between mb-[6px] text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest" aria-hidden="true">
-          <span>Validación de la Startup</span>
-          <span className={progressPercentage === 100 ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-300'}>{progressPercentage}%</span>
+      <div className="hidden md:flex flex-col flex-1 max-w-[280px] gap-1.5 px-1">
+        <div className="flex w-full items-center justify-between gap-3" aria-hidden="true">
+          <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">
+            Validación de la Startup
+          </span>
+          <span className={`text-[12px] font-extrabold shrink-0 tabular-nums ${progressPercentage === 100 ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-300'}`}>
+            {progressPercentage}%
+          </span>
         </div>
         <div
           role="progressbar"

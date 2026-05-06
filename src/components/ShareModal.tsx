@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link2, Copy, Trash2, Loader2, CheckCircle2, AlertCircle, EyeOff } from 'lucide-react';
+import { Link2, Copy, Trash2, Loader2, CheckCircle2, AlertCircle, EyeOff, RefreshCw } from 'lucide-react';
 import type { UseCanvasSharingReturn } from '../hooks/useCanvasSharing';
 import { ConfirmDialog } from './dialogs/ConfirmDialog';
 
@@ -11,7 +11,7 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ canvasName, sharing, onClose }: ShareModalProps) {
-  const { share, loading, creating, revoking, error, generateLink, revokeLink } = sharing;
+  const { share, loading, creating, revoking, error, generateLink, revokeLink, refetch } = sharing;
 
   const [copied, setCopied] = useState(false);
   const [showManualCopy, setShowManualCopy] = useState(false);
@@ -99,7 +99,15 @@ export function ShareModal({ canvasName, sharing, onClose }: ShareModalProps) {
                 className="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-500/10 rounded-xl border border-rose-100 dark:border-rose-500/20 text-rose-700 dark:text-rose-400 text-[12.5px] font-medium"
               >
                 <AlertCircle size={14} strokeWidth={2.5} className="shrink-0" />
-                {error}
+                <span className="flex-1">{error}</span>
+                <button
+                  onClick={refetch}
+                  aria-label="Reintentar"
+                  title="Reintentar"
+                  className="shrink-0 p-1 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors"
+                >
+                  <RefreshCw size={13} strokeWidth={2.5} />
+                </button>
               </motion.div>
             )}
           </AnimatePresence>

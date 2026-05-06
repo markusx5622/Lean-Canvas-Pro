@@ -15,6 +15,7 @@ export interface UseCanvasSharingReturn {
   error: string | null;
   generateLink: () => Promise<void>;
   revokeLink: () => Promise<void>;
+  refetch: () => void;
 }
 
 /**
@@ -27,22 +28,31 @@ export function useCanvasSharing(canvasId: string | undefined): UseCanvasSharing
   const [creating, setCreating] = useState(false);
   const [revoking, setRevoking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Increment to trigger a manual re-fetch without changing canvasId.
+  const [fetchTick, setFetchTick] = useState(0);
 
   useEffect(() => {
     if (!canvasId) {
       setShare(null);
+      setError(null);
       return;
     }
+    let cancelled = false;
     setLoading(true);
     setError(null);
     getShareForCanvas(canvasId)
-      .then((row) => setShare(row))
+      .then((row) => { if (!cancelled) setShare(row); })
       .catch((err: unknown) => {
-        console.error('[useCanvasSharing] Failed to fetch share:', err);
-        setError('No se pudo cargar el estado de compartir.');
+        if (!cancelled) {
+          console.error('[useCanvasSharing] Failed to fetch share:', err);
+          setError('No se pudo cargar el estado de compartir.');
+        }
       })
-      .finally(() => setLoading(false));
-  }, [canvasId]);
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [canvasId, fetchTick]);
+
+  const refetch = useCallback(() => setFetchTick((t) => t + 1), []);
 
   const generateLink = useCallback(async () => {
     if (!canvasId || creating) return;
@@ -76,5 +86,5 @@ export function useCanvasSharing(canvasId: string | undefined): UseCanvasSharing
     }
   }, [share, revoking]);
 
-  return { share, loading, creating, revoking, error, generateLink, revokeLink };
+  return { share, loading, creating, revoking, error, generateLink, revokeLink, refetch };
 }
