@@ -1,9 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, MessageSquare, Rocket, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { BookOpen, MessageSquare, Rocket, ShieldCheck, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import type { BlockDefinition } from '../../data/blocks';
 import type { BlockFeedback } from '../../evaluator/types';
-import { FolderOpen } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -16,6 +15,7 @@ interface EditorPanelProps {
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   blockAuditResult: BlockFeedback | null;
   onAuditBlock: () => void;
+  onClose: () => void;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -29,6 +29,7 @@ export function EditorPanel({
   saveStatus,
   blockAuditResult,
   onAuditBlock,
+  onClose,
 }: EditorPanelProps) {
   return (
     <div className="lg:w-[440px] shrink-0 sticky top-[100px] h-[calc(100vh-130px)] hidden md:block overflow-hidden relative rounded-[28px]">
@@ -36,13 +37,22 @@ export function EditorPanel({
         {selectedBlock ? (
           <motion.div
             key="editor"
-            initial={{ opacity: 0, x: 200, scale: 0.95 }}
+            initial={{ opacity: 0, x: 40, scale: 0.97 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 200, scale: 0.95 }}
+            exit={{ opacity: 0, x: 40, scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 350, damping: 30 }}
             className="bg-white dark:bg-slate-800 border rounded-[28px] border-slate-200/80 dark:border-slate-700 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] p-7 flex flex-col h-full w-full relative overflow-hidden"
           >
             <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${selectedBlock.color}`} />
+
+            {/* Close / back to overview button */}
+            <button
+              onClick={onClose}
+              aria-label="Volver a la vista general"
+              className="absolute top-4 right-4 z-20 flex items-center gap-1.5 text-[11px] font-bold text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 px-2.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 transition-all active:scale-95"
+            >
+              <ArrowLeft size={12} strokeWidth={2.5} /> Vista general
+            </button>
 
             {/* Block header */}
             <div className="flex items-start gap-4 mb-6 shrink-0 pt-2">
@@ -197,26 +207,7 @@ export function EditorPanel({
               </AnimatePresence>
             </div>
           </motion.div>
-        ) : (
-          <motion.div
-            key="empty"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="h-full bg-white/60 dark:bg-slate-800/40 backdrop-blur-xl border-2 border-slate-200 dark:border-slate-700 border-dashed rounded-[28px] p-10 flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-700 relative overflow-hidden"
-          >
-            <motion.div
-              initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}
-              className="flex flex-col items-center z-10"
-            >
-              <div className="w-20 h-20 bg-white dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-slate-100 dark:border-slate-700">
-                <FolderOpen size={36} strokeWidth={2.5} className="text-slate-300 dark:text-slate-600" />
-              </div>
-              <h3 className="font-display text-2xl font-extrabold text-slate-800 dark:text-slate-200 mb-3 tracking-tight">Focus Mode</h3>
-              <p className="text-[14px] max-w-[280px] leading-relaxed font-medium text-slate-500">
-                Haz clic en cualquier bloque a tu izquierda para descubrir guías, ver referencias y redactar tus hipótesis.
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
     </div>
   );
