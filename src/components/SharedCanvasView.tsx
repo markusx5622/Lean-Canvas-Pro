@@ -25,7 +25,8 @@ function ReadOnlyBlock({
       initial={{ opacity: 0, y: 40, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.5, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
-      className={`relative flex flex-col overflow-hidden rounded-[20px] bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgb(0,0,0,0.02)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-slate-200/80 dark:border-slate-700 ${additionalClasses}`}
+      className={`relative flex flex-col overflow-hidden rounded-[20px] bg-white dark:bg-slate-800 card-glow border border-slate-200/80 dark:border-slate-700 ${additionalClasses}`}
+      style={{ '--glow-color': meta.glowColor } as React.CSSProperties}
     >
       {/* Colored accent bar */}
       <div className={`absolute top-0 left-0 right-0 h-[3px] rounded-t-[20px] ${meta.accentBar} opacity-60`} />

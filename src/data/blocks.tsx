@@ -20,6 +20,8 @@ export interface BlockDefinition {
   iconColor: string;
   /** Tailwind ring-color class used when the block is active */
   ringColor: string;
+  /** Space-separated RGB triplet for the reactive aura glow, e.g. "244 63 94" */
+  glowColor: string;
   /** Tailwind bg-color classes for the thin accent bar at the top of the card */
   accentBar: string;
   /** Tailwind bg-color classes for the icon container background tint */
@@ -34,7 +36,7 @@ export interface BlockDefinition {
 }
 
 /** Compact subset used by read-only / shared views */
-export type BlockMeta = Pick<BlockDefinition, 'title' | 'icon' | 'color' | 'iconColor' | 'accentBar' | 'accentIconBg'>;
+export type BlockMeta = Pick<BlockDefinition, 'title' | 'icon' | 'color' | 'iconColor' | 'accentBar' | 'accentIconBg' | 'glowColor'>;
 
 // ── Static block definitions ─────────────────────────────────────────────────
 
@@ -44,6 +46,7 @@ export const BLOCKS: BlockDefinition[] = [
     color: 'from-rose-50 to-white dark:from-rose-950/30 dark:to-slate-900',
     iconColor: 'text-rose-500 dark:text-rose-400',
     ringColor: 'ring-rose-500/50 dark:ring-rose-500/40',
+    glowColor: '244 63 94',
     accentBar: 'bg-rose-400 dark:bg-rose-500',
     accentIconBg: 'bg-rose-50 dark:bg-rose-900/50',
     icon: <AlertCircle size={22} strokeWidth={2.5} />,
@@ -60,6 +63,7 @@ export const BLOCKS: BlockDefinition[] = [
     color: 'from-amber-50 to-white dark:from-amber-950/30 dark:to-slate-900',
     iconColor: 'text-amber-500 dark:text-amber-400',
     ringColor: 'ring-amber-500/50 dark:ring-amber-500/40',
+    glowColor: '245 158 11',
     accentBar: 'bg-amber-400 dark:bg-amber-500',
     accentIconBg: 'bg-amber-50 dark:bg-amber-900/50',
     icon: <Lightbulb size={22} strokeWidth={2.5} />,
@@ -75,6 +79,7 @@ export const BLOCKS: BlockDefinition[] = [
     color: 'from-violet-50 to-white dark:from-violet-950/30 dark:to-slate-900',
     iconColor: 'text-violet-500 dark:text-violet-400',
     ringColor: 'ring-violet-500/50 dark:ring-violet-500/40',
+    glowColor: '139 92 246',
     accentBar: 'bg-violet-500 dark:bg-violet-500',
     accentIconBg: 'bg-violet-50 dark:bg-violet-900/50',
     icon: <Rocket size={22} strokeWidth={2.5} />,
@@ -90,6 +95,7 @@ export const BLOCKS: BlockDefinition[] = [
     color: 'from-blue-50 to-white dark:from-blue-950/30 dark:to-slate-900',
     iconColor: 'text-blue-500 dark:text-blue-400',
     ringColor: 'ring-blue-500/50 dark:ring-blue-500/40',
+    glowColor: '59 130 246',
     accentBar: 'bg-blue-400 dark:bg-blue-500',
     accentIconBg: 'bg-blue-50 dark:bg-blue-900/50',
     icon: <ShieldCheck size={22} strokeWidth={2.5} />,
@@ -105,6 +111,7 @@ export const BLOCKS: BlockDefinition[] = [
     color: 'from-emerald-50 to-white dark:from-emerald-950/30 dark:to-slate-900',
     iconColor: 'text-emerald-500 dark:text-emerald-400',
     ringColor: 'ring-emerald-500/50 dark:ring-emerald-500/40',
+    glowColor: '16 185 129',
     accentBar: 'bg-emerald-400 dark:bg-emerald-500',
     accentIconBg: 'bg-emerald-50 dark:bg-emerald-900/50',
     icon: <Users size={22} strokeWidth={2.5} />,
@@ -120,6 +127,7 @@ export const BLOCKS: BlockDefinition[] = [
     color: 'from-orange-50 to-white dark:from-orange-950/30 dark:to-slate-900',
     iconColor: 'text-orange-500 dark:text-orange-400',
     ringColor: 'ring-orange-500/50 dark:ring-orange-500/40',
+    glowColor: '249 115 22',
     accentBar: 'bg-orange-400 dark:bg-orange-500',
     accentIconBg: 'bg-orange-50 dark:bg-orange-900/50',
     icon: <TrendingUp size={22} strokeWidth={2.5} />,
@@ -135,6 +143,7 @@ export const BLOCKS: BlockDefinition[] = [
     color: 'from-teal-50 to-white dark:from-teal-950/30 dark:to-slate-900',
     iconColor: 'text-teal-500 dark:text-teal-400',
     ringColor: 'ring-teal-500/50 dark:ring-teal-500/40',
+    glowColor: '20 184 166',
     accentBar: 'bg-teal-400 dark:bg-teal-500',
     accentIconBg: 'bg-teal-50 dark:bg-teal-900/50',
     icon: <Share2 size={22} strokeWidth={2.5} />,
@@ -150,6 +159,7 @@ export const BLOCKS: BlockDefinition[] = [
     color: 'from-slate-100 to-white dark:from-slate-800/50 dark:to-slate-900',
     iconColor: 'text-slate-600 dark:text-slate-400',
     ringColor: 'ring-slate-500/50 dark:ring-slate-500/40',
+    glowColor: '100 116 139',
     accentBar: 'bg-slate-400 dark:bg-slate-500',
     accentIconBg: 'bg-slate-100 dark:bg-slate-700/60',
     icon: <CreditCard size={22} strokeWidth={2.5} />,
@@ -165,6 +175,7 @@ export const BLOCKS: BlockDefinition[] = [
     color: 'from-cyan-50 to-white dark:from-cyan-950/30 dark:to-slate-900',
     iconColor: 'text-cyan-500 dark:text-cyan-400',
     ringColor: 'ring-cyan-500/50 dark:ring-cyan-500/40',
+    glowColor: '6 182 212',
     accentBar: 'bg-cyan-400 dark:bg-cyan-500',
     accentIconBg: 'bg-cyan-50 dark:bg-cyan-900/50',
     icon: <DollarSign size={22} strokeWidth={2.5} />,
@@ -179,5 +190,5 @@ export const BLOCKS: BlockDefinition[] = [
 
 /** Lookup map used by read-only canvas views (e.g. SharedCanvasView) */
 export const BLOCK_META: Record<number, BlockMeta> = Object.fromEntries(
-  BLOCKS.map((b) => [b.id, { title: b.title, icon: b.icon, color: b.color, iconColor: b.iconColor, accentBar: b.accentBar, accentIconBg: b.accentIconBg }])
+  BLOCKS.map((b) => [b.id, { title: b.title, icon: b.icon, color: b.color, iconColor: b.iconColor, accentBar: b.accentBar, accentIconBg: b.accentIconBg, glowColor: b.glowColor }])
 );
