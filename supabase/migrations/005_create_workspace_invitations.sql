@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS public.workspace_invitations (
   workspace_id uuid        NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
   invited_by   uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   -- The email address of the person being invited.
+  -- Application layer normalises to lowercase before INSERT (see invitationService.ts).
+  -- The unique index below also uses lower(email) for defence-in-depth.
   email        text        NOT NULL,
   -- Random token used in the accept link; must be kept secret.
   token        uuid        NOT NULL DEFAULT gen_random_uuid() UNIQUE,
