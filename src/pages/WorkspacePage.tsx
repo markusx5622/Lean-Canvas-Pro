@@ -11,7 +11,7 @@ import { useCanvasSharing } from '../hooks/useCanvasSharing';
 import { useCanvasComments } from '../hooks/useCanvasComments';
 import { trackStrategicAuditRun, trackPdfExported, trackPresentationModeEntered, trackFeedbackPanelOpened } from '../lib/analytics';
 import { ParticleBackground } from '../ParticleBackground';
-import { Toolbar } from '../components/toolbar/Toolbar';
+import { Sidebar } from '../components/sidebar/Sidebar';
 import { CanvasGrid } from '../components/canvas/CanvasGrid';
 import { EditorPanel } from '../components/editor/EditorPanel';
 import { MobileEditor } from '../components/editor/MobileEditor';
@@ -340,15 +340,7 @@ export function WorkspacePage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex justify-center pb-16 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
-      <ParticleBackground theme={theme} />
-      {/* Ambient glow blobs — same system used on landing and auth pages */}
-      <div aria-hidden="true" className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-[120px]" />
-        <div className="absolute top-[30%] -right-[15%] w-[40%] h-[60%] rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-[120px]" />
-        <div className="absolute bottom-[0%] left-[20%] w-[60%] h-[40%] rounded-full bg-purple-500/10 dark:bg-purple-500/5 blur-[120px]" />
-      </div>
-
+    <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-row overflow-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
       {/* Splash screen */}
       <AnimatePresence>
         {showSplash && (
@@ -377,42 +369,53 @@ export function WorkspacePage() {
 
       <style dangerouslySetInnerHTML={{ __html: '::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }' }} />
 
-      <div className="w-full max-w-[1360px] px-4 md:px-8 py-5 flex flex-col gap-6 relative">
+      {/* Vertical sidebar */}
+      <Sidebar
+        projects={projects}
+        activeProjectId={activeProjectId}
+        onSelectProject={(id) => { setActiveProjectId(id); setSelectedBlockId(null); }}
+        filledBlocks={filledBlocks}
+        progressPercentage={progressPercentage}
+        pdfExporting={pdfExporting}
+        user={user}
+        prefersReducedMotion={prefersReducedMotion}
+        hasActiveShare={sharing.share !== null}
+        hasActiveCanvas={!!activeProject}
+        workspaces={workspaces}
+        activeWorkspaceId={activeWorkspaceId}
+        onSelectWorkspace={(id) => { setActiveWorkspaceId(id); setActiveProjectId(''); setSelectedBlockId(null); }}
+        onCreateWorkspace={() => setShowCreateWorkspaceDialog(true)}
+        onRenameWorkspace={() => setShowRenameWorkspaceDialog(true)}
+        onDeleteWorkspace={() => setShowDeleteWorkspaceConfirm(true)}
+        onInviteToWorkspace={() => setShowInviteModal(true)}
+        isWorkspaceOwner={isWorkspaceOwner}
+        onCreateProject={handleCreateProject}
+        onRenameProject={handleRenameProject}
+        onDeleteProject={handleDeleteProject}
+        onAudit={runCanvasAudit}
+        onOpenSettings={() => setShowSettingsModal(true)}
+        onExportPdf={handleExportPdf}
+        onShare={() => setShowShareModal(true)}
+        onPresent={() => { setShowPresentation(true); trackPresentationModeEntered(); }}
+        onLogoClick={() => setShowSplash(true)}
+        onOpenFeedback={() => {
+          setShowFeedbackPanel(true);
+          trackFeedbackPanelOpened(canvasComments.comments.length);
+        }}
+        feedbackCount={canvasComments.comments.length}
+      />
 
-        <Toolbar
-          projects={projects}
-          activeProjectId={activeProjectId}
-          onSelectProject={(id) => { setActiveProjectId(id); setSelectedBlockId(null); }}
-          filledBlocks={filledBlocks}
-          progressPercentage={progressPercentage}
-          pdfExporting={pdfExporting}
-          user={user}
-          prefersReducedMotion={prefersReducedMotion}
-          hasActiveShare={sharing.share !== null}
-          hasActiveCanvas={!!activeProject}
-          workspaces={workspaces}
-          activeWorkspaceId={activeWorkspaceId}
-          onSelectWorkspace={(id) => { setActiveWorkspaceId(id); setActiveProjectId(''); setSelectedBlockId(null); }}
-          onCreateWorkspace={() => setShowCreateWorkspaceDialog(true)}
-          onRenameWorkspace={() => setShowRenameWorkspaceDialog(true)}
-          onDeleteWorkspace={() => setShowDeleteWorkspaceConfirm(true)}
-          onInviteToWorkspace={() => setShowInviteModal(true)}
-          isWorkspaceOwner={isWorkspaceOwner}
-          onCreateProject={handleCreateProject}
-          onRenameProject={handleRenameProject}
-          onDeleteProject={handleDeleteProject}
-          onAudit={runCanvasAudit}
-          onOpenSettings={() => setShowSettingsModal(true)}
-          onExportPdf={handleExportPdf}
-          onShare={() => setShowShareModal(true)}
-          onPresent={() => { setShowPresentation(true); trackPresentationModeEntered(); }}
-          onLogoClick={() => setShowSplash(true)}
-          onOpenFeedback={() => {
-            setShowFeedbackPanel(true);
-            trackFeedbackPanelOpened(canvasComments.comments.length);
-          }}
-          feedbackCount={canvasComments.comments.length}
-        />
+      {/* Main scrollable area */}
+      <div className="flex-1 overflow-y-auto flex flex-col min-h-screen pb-16 relative">
+        <ParticleBackground theme={theme} />
+        {/* Ambient glow blobs */}
+        <div aria-hidden="true" className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-[120px]" />
+          <div className="absolute top-[30%] -right-[15%] w-[40%] h-[60%] rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-[120px]" />
+          <div className="absolute bottom-[0%] left-[20%] w-[60%] h-[40%] rounded-full bg-purple-500/10 dark:bg-purple-500/5 blur-[120px]" />
+        </div>
+
+        <div className="flex-1 px-4 md:px-6 py-5 flex flex-col gap-6 relative">
 
         {/* Dialogs */}
         <AnimatePresence>
@@ -643,7 +646,8 @@ export function WorkspacePage() {
           />
         )}
 
-      </div>
+        </div>{/* end flex-1 px-4 */}
+      </div>{/* end main scrollable area */}
     </div>
   );
 }
