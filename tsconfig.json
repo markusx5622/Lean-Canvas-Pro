@@ -22,5 +22,8 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  // Exclude Playwright config and E2E tests – they have their own type requirements.
+  "exclude": ["node_modules", "dist", "playwright.config.ts", "e2e"]
 }
+
