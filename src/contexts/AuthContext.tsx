@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { Sentry } from '../lib/sentry';
 
 // === Types ===
 
@@ -46,6 +47,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      // Attach the user ID (never email) so Sentry events can be correlated
+      // with a specific account without exposing personally-identifiable data.
+      if (session?.user) {
+        Sentry.setUser({ id: session.user.id });
+      } else {
+        Sentry.setUser(null);
+      }
     });
 
     return () => subscription.unsubscribe();

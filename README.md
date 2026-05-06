@@ -131,6 +131,57 @@ updateBlock() ──► localStorage cache (escritura inmediata)
 
 
 
+---
+
+## 🔍 Error Tracking (Sentry)
+
+Lean Canvas Pro integra **Sentry** para captura de errores en frontend y backend.  
+La integración es completamente opcional: si las variables de entorno no están definidas, la aplicación funciona con normalidad sin enviar ningún dato.
+
+### Variables de entorno
+
+| Variable | Dónde se usa | Descripción |
+|---|---|---|
+| `VITE_SENTRY_DSN` | Frontend (Vite → navegador) | DSN del proyecto Sentry para el cliente React |
+| `SENTRY_DSN` | Backend (Node.js) | DSN del proyecto Sentry para el servidor Express |
+
+Añade ambas variables a tu archivo `.env` (consulta `.env.example` para el formato exacto).
+
+### Qué se captura
+
+| Superficie | Qué se reporta | Qué se omite intencionalmente |
+|---|---|---|
+| **Frontend** | Errores de render capturados por `ErrorBoundary`, excepciones no controladas | Contenido de los bloques del canvas, email del usuario |
+| **Backend** | Excepciones que llegan al error-handler de Express | Cuerpos de request (canvas data) |
+
+### Contexto de usuario
+
+Al autenticarse, se adjunta únicamente el **ID de usuario** de Supabase al scope de Sentry.  
+El email y cualquier otro dato personal quedan fuera del reporte para respetar la privacidad.
+
+### Setup
+
+1. Crea un proyecto en [sentry.io](https://sentry.io) (puedes usar uno solo para ambos o uno separado por entorno).
+2. Copia el **DSN** desde *Project → Settings → Client Keys*.
+3. Añade las variables a tu `.env`:
+   ```env
+   VITE_SENTRY_DSN=https://your-key@oXXXXX.ingest.sentry.io/XXXXXXX
+   SENTRY_DSN=https://your-key@oXXXXX.ingest.sentry.io/XXXXXXX
+   ```
+4. Reinicia el servidor de desarrollo (`npm run dev`).
+
+### Archivos relevantes
+
+| Archivo | Responsabilidad |
+|---|---|
+| `src/lib/sentry.ts` | `initSentry()` – inicializa el SDK de React/browser |
+| `src/main.tsx` | Llama a `initSentry()` antes del primer render |
+| `src/ErrorBoundary.tsx` | Reporta errores de render vía `Sentry.captureException` |
+| `src/contexts/AuthContext.tsx` | Adjunta / limpia el user scope (`Sentry.setUser`) |
+| `server.ts` | Inicializa `@sentry/node` y registra `setupExpressErrorHandler` |
+
+---
+
 Diseñado y desarrollado de manera empírica en el ecosistema de talento e innovación por **Marc Cubero Cantavella** desde el campo de la *Ingeniería de Organización Industrial* aplicados sobre la **Universidad Europea de Valencia**. 
 
 [🔗 Conectar con Marc Cubero en LinkedIn](https://www.linkedin.com/in/marc-cubero-cantavella-bb04542a7)
