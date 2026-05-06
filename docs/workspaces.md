@@ -2,7 +2,7 @@
 
 ## Overview
 
-Lean Canvas Pro soporta **workspaces de equipo**. Un usuario puede pertenecer a uno o varios workspaces y crear lienzes asociados a ellos. Todos los lienzes anteriores siguen existiendo como lienzes **personales** (sin workspace).
+Lean Canvas Pro soporta **workspaces de equipo**. Un usuario puede pertenecer a uno o varios workspaces y crear lienzos asociados a ellos. Todos los lienzos anteriores siguen existiendo como lienzos **personales** (sin workspace).
 
 ---
 
@@ -34,7 +34,7 @@ Lean Canvas Pro soporta **workspaces de equipo**. Un usuario puede pertenecer a 
 
 | Columna        | Tipo                   | Descripción                                                  |
 |---------------|------------------------|--------------------------------------------------------------|
-| `workspace_id` | `uuid` nullable → `workspaces` | `NULL` = lienzo personal; non-null = lienzo de workspace. ON DELETE SET NULL. |
+| `workspace_id` | `uuid` nullable → `workspaces` | `NULL` = lienzo personal; non-null = lienzo del workspace. ON DELETE SET NULL. |
 
 ---
 
@@ -69,8 +69,8 @@ Lean Canvas Pro soporta **workspaces de equipo**. Un usuario puede pertenecer a 
 ## Invariantes y restricciones
 
 1. **Un workspace siempre tiene al menos un owner** — el trigger garantiza esto en la creación. No se puede degradar al owner sin transferir la propiedad.
-2. **Los lienzes personales son privados** — `workspace_id IS NULL` activa la política personal; solo el creador puede acceder.
-3. **Borrar un workspace** no borra los lienzes; su `workspace_id` queda en `NULL` (pasan a ser personales del creador).
+2. **Los lienzos personales son privados** — `workspace_id IS NULL` activa la política personal; solo el creador puede acceder.
+3. **Borrar un workspace** no borra los lienzos; su `workspace_id` queda en `NULL` (pasan a ser personales del creador).
 4. **Sin colaboración en tiempo real** — no hay Supabase Realtime habilitado sobre estas tablas. Cada usuario ve su propia sesión.
 
 ---
@@ -91,7 +91,7 @@ Usuario crea un lienzo en workspace "Acme"
 
 Futuro: owner invita a otro usuario
   → INSERT workspace_members (workspace_id, user_id, role = 'member')
-  → El invitado puede leer/escribir todos los canvases del workspace
+  → El invitado puede leer/escribir todos los lienzos del workspace
 ```
 
 ---

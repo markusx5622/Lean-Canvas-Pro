@@ -509,7 +509,7 @@ export function WorkspacePage() {
           {showDeleteWorkspaceConfirm && activeWorkspace && (
             <ConfirmDialog
               title="Eliminar workspace"
-              message={`¿Eliminar el workspace '${activeWorkspace.name}'? Los lienzes del workspace perderán su asociación.`}
+              message={`¿Eliminar el workspace '${activeWorkspace.name}'? Los lienzos del workspace perderán su asociación.`}
               confirmLabel="Eliminar"
               variant="danger"
               onConfirm={() => {
