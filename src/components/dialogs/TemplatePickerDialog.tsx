@@ -87,7 +87,6 @@ export function TemplatePickerDialog({
     if (tpl) onSelectTemplate(tpl);
   };
 
-  const confirmDisabled = selectedId === undefined;
   const selectedTemplate = selectedId ? TEMPLATES.find((t) => t.id === selectedId) : null;
 
   return (
@@ -203,10 +202,9 @@ export function TemplatePickerDialog({
             <button
               type="button"
               onClick={handleConfirm}
-              disabled={confirmDisabled}
-              className="flex-[2] py-3 rounded-xl font-bold text-[14px] bg-indigo-600 hover:bg-indigo-700 text-white shadow-[0_4px_14px_-4px_rgba(79,70,229,0.4)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-[2] py-3 rounded-xl font-bold text-[14px] bg-indigo-600 hover:bg-indigo-700 text-white shadow-[0_4px_14px_-4px_rgba(79,70,229,0.4)] transition-all active:scale-[0.98] flex items-center justify-center gap-2"
             >
-              {selectedTemplate ? `Usar template "${selectedTemplate.name}"` : 'Crear en blanco'}
+              {selectedTemplate ? `Usar plantilla "${selectedTemplate.name}"` : 'Crear en blanco'}
               <ArrowRight size={14} strokeWidth={2.5} />
             </button>
           </div>
