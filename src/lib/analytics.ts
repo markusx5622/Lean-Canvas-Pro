@@ -78,6 +78,11 @@ export function trackCanvasCreated() {
   track('canvas_created');
 }
 
+/** A new canvas was created from a template. Only the template ID is sent. */
+export function trackCanvasCreatedFromTemplate(templateId: string) {
+  track('canvas_created_from_template', { template_id: templateId });
+}
+
 /** An existing canvas was renamed (no name content captured). */
 export function trackCanvasRenamed() {
   track('canvas_renamed');
