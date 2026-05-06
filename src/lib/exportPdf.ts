@@ -4,15 +4,16 @@ import { pdf } from '@react-pdf/renderer';
 import type { DocumentProps } from '@react-pdf/renderer';
 import CanvasPdfDocument from '../components/CanvasPdfDocument';
 import type { Project } from '../hooks/useCanvases';
+import type { ExportOptions } from '../components/dialogs/ExportOptionsDialog';
 
 /**
  * Generates a real PDF from the given canvas project and triggers a browser
  * download. Uses @react-pdf/renderer entirely client-side – no print dialog.
  */
-export async function exportCanvasToPdf(project: Project): Promise<void> {
+export async function exportCanvasToPdf(project: Project, options?: ExportOptions): Promise<void> {
   // CanvasPdfDocument renders a <Document> at its root, satisfying the
   // react-pdf pdf() contract. The cast bridges the generic component type.
-  const doc = createElement(CanvasPdfDocument, { project }) as ReactElement<DocumentProps>;
+  const doc = createElement(CanvasPdfDocument, { project, options }) as ReactElement<DocumentProps>;
   const blob = await pdf(doc).toBlob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

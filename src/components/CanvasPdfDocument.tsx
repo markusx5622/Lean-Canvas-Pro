@@ -8,6 +8,7 @@ import {
 } from '@react-pdf/renderer';
 import type { Style } from '@react-pdf/types';
 import type { Project } from '../hooks/useCanvases';
+import type { ExportOptions } from './dialogs/ExportOptionsDialog';
 
 // ── Block metadata ───────────────────────────────────────────────────────────
 
@@ -58,11 +59,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-end',
   },
+  headerLeft: {
+    flexDirection: 'column',
+  },
   headerTitle: {
     fontFamily: LABEL_FONT,
     fontSize: 18,
     color: '#0f172a',
     letterSpacing: 0.5,
+  },
+  headerSubtitle: {
+    fontFamily: CONTENT_FONT,
+    fontSize: 8,
+    color: '#6366f1',
+    marginTop: 3,
+    letterSpacing: 0.3,
   },
   headerSub: {
     fontFamily: LABEL_FONT,
@@ -72,11 +83,45 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginTop: 2,
   },
+  headerRight: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    gap: 2,
+  },
   headerMeta: {
     fontFamily: CONTENT_FONT,
     fontSize: 7,
     color: '#94a3b8',
     textAlign: 'right',
+  },
+  headerPreparedFor: {
+    fontFamily: LABEL_FONT,
+    fontSize: 7.5,
+    color: '#475569',
+    textAlign: 'right',
+  },
+  // Completion badge
+  completionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 3,
+  },
+  completionBar: {
+    height: 4,
+    width: 80,
+    backgroundColor: '#e2e8f0',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  completionFill: {
+    height: 4,
+    borderRadius: 2,
+  },
+  completionLabel: {
+    fontFamily: CONTENT_FONT,
+    fontSize: 6.5,
+    color: '#94a3b8',
   },
   // Main grid row (top area)
   gridRow: {
@@ -130,7 +175,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 2.5,
+    height: 3,
     borderTopLeftRadius: BORDER_RADIUS,
     borderTopRightRadius: BORDER_RADIUS,
   },
@@ -160,12 +205,12 @@ const styles = StyleSheet.create({
     fontFamily: CONTENT_FONT,
     fontSize: 7.5,
     color: '#334155',
-    lineHeight: 1.55,
+    lineHeight: 1.6,
   },
   blockEmpty: {
     fontFamily: CONTENT_FONT,
     fontSize: 7,
-    color: '#94a3b8',
+    color: '#cbd5e1',
     fontStyle: 'italic',
   },
   // Footer
@@ -175,11 +220,21 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  footerLeft: {
+    flexDirection: 'column',
+    gap: 1,
   },
   footerText: {
     fontFamily: CONTENT_FONT,
     fontSize: 6.5,
     color: '#94a3b8',
+  },
+  footerBrand: {
+    fontFamily: LABEL_FONT,
+    fontSize: 6.5,
+    color: '#6366f1',
   },
 });
 
@@ -215,9 +270,10 @@ const BlockCard: React.FC<BlockCardProps> = ({ id, content, style }) => {
 
 interface Props {
   project: Project;
+  options?: ExportOptions;
 }
 
-const CanvasPdfDocument: React.FC<Props> = ({ project }) => {
+const CanvasPdfDocument: React.FC<Props> = ({ project, options }) => {
   const d = project.data;
   const get = (id: number) => d[id] ?? '';
   const date = new Date().toLocaleDateString('es-ES', {
@@ -226,23 +282,50 @@ const CanvasPdfDocument: React.FC<Props> = ({ project }) => {
     day: 'numeric',
   });
 
+  const filledCount = Object.values(project.data).filter(
+    (v) => v && String(v).trim().length > 0
+  ).length;
+  const completionPct = Math.round((filledCount / 9) * 100);
+  const fillColor = completionPct === 100 ? '#10b981' : '#6366f1';
+
+  const preparedFor = options?.preparedFor ?? '';
+  const subtitle = options?.subtitle ?? '';
+
   return (
     <Document
       title={project.name}
       author="Lean Canvas Pro"
-      subject="Lean Canvas"
+      subject={subtitle || 'Lean Canvas · Modelo de Negocio'}
       keywords="lean canvas, startup, business model"
     >
       <Page size="A4" orientation="landscape" style={styles.page}>
         {/* ── Header ── */}
         <View style={styles.header}>
-          <View>
+          <View style={styles.headerLeft}>
             <Text style={styles.headerTitle}>{project.name}</Text>
+            {subtitle ? (
+              <Text style={styles.headerSubtitle}>{subtitle}</Text>
+            ) : null}
             <Text style={styles.headerSub}>Lean Canvas · Modelo de Negocio</Text>
           </View>
-          <Text style={styles.headerMeta}>
-            Generado el {date} · Lean Canvas Pro
-          </Text>
+          <View style={styles.headerRight}>
+            {preparedFor ? (
+              <Text style={styles.headerPreparedFor}>Preparado para: {preparedFor}</Text>
+            ) : null}
+            <Text style={styles.headerMeta}>Generado el {date} · Lean Canvas Pro</Text>
+            {/* Completion progress bar */}
+            <View style={styles.completionBadge}>
+              <View style={styles.completionBar}>
+                <View
+                  style={[
+                    styles.completionFill,
+                    { width: `${completionPct}%`, backgroundColor: fillColor },
+                  ]}
+                />
+              </View>
+              <Text style={styles.completionLabel}>{filledCount}/9 bloques</Text>
+            </View>
+          </View>
         </View>
 
         {/* ── Top grid (5 column groups, 2 rows each) ── */}
@@ -283,9 +366,15 @@ const CanvasPdfDocument: React.FC<Props> = ({ project }) => {
 
         {/* ── Footer ── */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Lean Canvas Pro · lean-canvas-pro.app</Text>
+          <View style={styles.footerLeft}>
+            <Text style={styles.footerBrand}>Lean Canvas Pro</Text>
+            <Text style={styles.footerText}>lean-canvas-pro.app</Text>
+          </View>
+          {preparedFor ? (
+            <Text style={styles.footerText}>Preparado para: {preparedFor}</Text>
+          ) : null}
           <Text style={styles.footerText}>
-            {Object.values(project.data).filter((v) => v && String(v).trim()).length} / 9 bloques completados
+            {filledCount} / 9 bloques completados · {completionPct}%
           </Text>
         </View>
       </Page>
