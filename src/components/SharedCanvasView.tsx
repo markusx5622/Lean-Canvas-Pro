@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Rocket, EyeOff, Loader2, MessageSquarePlus } from 'lucide-react';
+import { Rocket, EyeOff, Loader2, MessageSquarePlus, CheckCircle2 } from 'lucide-react';
 import { getCanvasByShareToken, type SharedCanvasRow } from '../lib/shareService';
 import { BLOCK_META } from '../data/blocks';
 import { FeedbackForm } from './comments/FeedbackForm';
@@ -111,6 +111,13 @@ export function SharedCanvasView({ token }: { token: string }) {
   }
 
   const data = canvas.data as Record<string, string | undefined>;
+  const filledCount = Object.values(data).filter((v) => v && String(v).trim().length > 0).length;
+  const completionPct = Math.round((filledCount / 9) * 100);
+  const updatedAt = new Date(canvas.updated_at).toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 
   return (
     <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 overflow-x-hidden">
@@ -135,10 +142,35 @@ export function SharedCanvasView({ token }: { token: string }) {
           </div>
         </div>
 
-        {/* Read-only badge */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 text-amber-700 dark:text-amber-400 text-[11px] font-extrabold uppercase tracking-wider shrink-0">
-          <EyeOff size={12} strokeWidth={2.5} />
-          Solo lectura
+        <div className="flex items-center gap-3">
+          {/* Completion badge */}
+          <div className="hidden sm:flex flex-col items-end gap-1">
+            <div className="flex items-center gap-1.5">
+              {completionPct === 100 ? (
+                <CheckCircle2 size={11} className="text-emerald-500" strokeWidth={2.5} />
+              ) : null}
+              <span className={`text-[11px] font-extrabold ${completionPct === 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                {filledCount}/9 bloques · {completionPct}%
+              </span>
+            </div>
+            <div className="w-[100px] h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${completionPct === 100 ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                style={{ width: `${completionPct}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Updated date */}
+          <span className="hidden md:block text-[10.5px] text-slate-400 dark:text-slate-500 font-medium">
+            Actualizado {updatedAt}
+          </span>
+
+          {/* Read-only badge */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 text-amber-700 dark:text-amber-400 text-[11px] font-extrabold uppercase tracking-wider shrink-0">
+            <EyeOff size={12} strokeWidth={2.5} />
+            Solo lectura
+          </div>
         </div>
       </motion.div>
 

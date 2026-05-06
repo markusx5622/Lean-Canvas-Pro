@@ -21,6 +21,8 @@ import { ConfirmDialog } from '../components/dialogs/ConfirmDialog';
 import { PromptDialog } from '../components/dialogs/PromptDialog';
 import { SettingsModal } from '../components/dialogs/SettingsModal';
 import { InviteModal } from '../components/dialogs/InviteModal';
+import { ExportOptionsDialog } from '../components/dialogs/ExportOptionsDialog';
+import type { ExportOptions } from '../components/dialogs/ExportOptionsDialog';
 import { TemplatePickerDialog } from '../components/dialogs/TemplatePickerDialog';
 import { ShareModal } from '../components/ShareModal';
 import { CommentPanel } from '../components/comments/CommentPanel';
@@ -78,6 +80,7 @@ export function WorkspacePage() {
   const [showSplash, setShowSplash] = useState(true);
   const [canvasEntryKey, setCanvasEntryKey] = useState(0);
   const [pdfExporting, setPdfExporting] = useState(false);
+  const [showExportOptions, setShowExportOptions] = useState(false);
 
   // ── Dialog state ─────────────────────────────────────────────────────────────
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
@@ -256,11 +259,16 @@ export function WorkspacePage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleExportPdf = async () => {
+  const handleExportPdf = async (options?: ExportOptions) => {
     if (!activeProject || pdfExporting) return;
+    if (!options) {
+      setShowExportOptions(true);
+      return;
+    }
+    setShowExportOptions(false);
     setPdfExporting(true);
     try {
-      await exportCanvasToPdf(activeProject);
+      await exportCanvasToPdf(activeProject, options);
       trackPdfExported();
     } catch (err) {
       console.error('[exportPdf] Failed to generate PDF:', err);
@@ -424,6 +432,16 @@ export function WorkspacePage() {
               onSelectTemplate={handleSelectTemplate}
               onSelectBlank={handleSelectBlankCanvas}
               onCancel={() => setShowTemplatePicker(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showExportOptions && activeProject && (
+            <ExportOptionsDialog
+              canvasName={activeProject.name}
+              onConfirm={(options) => handleExportPdf(options)}
+              onCancel={() => setShowExportOptions(false)}
             />
           )}
         </AnimatePresence>
