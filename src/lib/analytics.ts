@@ -108,7 +108,17 @@ export function trackPdfExported() {
   track('pdf_exported');
 }
 
-// ── Sharing events ────────────────────────────────────────────────────────────
+// ── Workspace events ──────────────────────────────────────────────────────────
+
+/** A new workspace was created. */
+export function trackWorkspaceCreated() {
+  track('workspace_created');
+}
+
+/** A workspace was deleted. */
+export function trackWorkspaceDeleted() {
+  track('workspace_deleted');
+}
 
 /** A read-only share link was generated. */
 export function trackShareLinkCreated() {

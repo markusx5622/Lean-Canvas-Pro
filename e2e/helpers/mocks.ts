@@ -145,6 +145,44 @@ export async function setupSupabaseMocks(page: Page): Promise<void> {
     });
   });
 
+  // ── Workspaces table ────────────────────────────────────────────────────────
+
+  await page.route('**/rest/v1/workspaces*', async (route: Route) => {
+    const method = route.request().method();
+    if (method === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      return;
+    }
+    if (method === 'POST') {
+      let body: Record<string, unknown> = {};
+      try { body = JSON.parse(route.request().postData() ?? '{}') as Record<string, unknown>; } catch { /* ignore */ }
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: crypto.randomUUID(),
+          name: (body.name as string | undefined) ?? 'Workspace',
+          owner_id: MOCK_USER.id,
+          created_at: '2024-01-01T00:00:00.000Z',
+          updated_at: '2024-01-01T00:00:00.000Z',
+        }),
+      });
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+
+  // ── Workspace members table ─────────────────────────────────────────────────
+
+  await page.route('**/rest/v1/workspace_members*', async (route: Route) => {
+    const method = route.request().method();
+    if (method === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+
   // ── Canvas snapshots table ──────────────────────────────────────────────────
 
   await page.route('**/rest/v1/canvas_snapshots*', async (route: Route) => {

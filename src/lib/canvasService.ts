@@ -4,18 +4,24 @@ import { supabase } from './supabase';
 export interface CanvasRow {
   id: string;
   user_id: string;
+  /** Present after migration 004. null = personal canvas; non-null = workspace canvas. */
+  workspace_id: string | null;
   name: string;
   data: Record<string, string>;
   created_at: string;
   updated_at: string;
 }
 
-/** Retrieve all canvases for the authenticated user, ordered by most-recently updated. */
-export async function listCanvases(): Promise<CanvasRow[]> {
-  const { data, error } = await supabase
-    .from('canvases')
-    .select('*')
-    .order('updated_at', { ascending: false });
+/**
+ * Retrieve canvases scoped to the given workspace.
+ * Pass `null` (default) to retrieve personal canvases (workspace_id IS NULL).
+ */
+export async function listCanvases(workspaceId: string | null = null): Promise<CanvasRow[]> {
+  const base = supabase.from('canvases').select('*');
+  const query = workspaceId === null
+    ? base.is('workspace_id', null)
+    : base.eq('workspace_id', workspaceId);
+  const { data, error } = await query.order('updated_at', { ascending: false });
   if (error) throw error;
   return (data as CanvasRow[]) ?? [];
 }
@@ -23,15 +29,19 @@ export async function listCanvases(): Promise<CanvasRow[]> {
 /**
  * Insert a new canvas row.
  * The caller is responsible for providing a UUID `id` (use `crypto.randomUUID()`).
+ * Pass `workspaceId` to assign the canvas to a workspace; omit for a personal canvas.
  */
 export async function createCanvas(
   id: string,
   name: string,
-  data: Record<string, string> = {}
+  data: Record<string, string> = {},
+  workspaceId: string | null = null
 ): Promise<CanvasRow> {
+  const payload: Record<string, unknown> = { id, name, data };
+  if (workspaceId !== null) payload.workspace_id = workspaceId;
   const { data: row, error } = await supabase
     .from('canvases')
-    .insert({ id, name, data })
+    .insert(payload)
     .select()
     .single();
   if (error) throw error;
