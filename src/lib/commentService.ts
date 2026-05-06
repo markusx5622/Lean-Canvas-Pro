@@ -17,7 +17,7 @@ export interface CommentRow {
  * @param token     - The canvas share token (from the /share/:token URL).
  * @param blockId   - Optional block number (1–9). Pass null for a general comment.
  * @param authorName - Display name of the reviewer (max 120 chars).
- * @param body      - Comment text (max 2 000 chars).
+ * @param body      - Comment text (max 2000 chars).
  */
 export async function addComment(
   token: string,

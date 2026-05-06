@@ -164,7 +164,7 @@ export function SharedCanvasView({ token }: { token: string }) {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="max-w-xl mx-auto w-full mt-4"
+          className="max-w-xl mx-auto w-full mt-10"
         >
           <div className="bg-white dark:bg-slate-800 rounded-[20px] border border-slate-200/80 dark:border-slate-700 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-5">
