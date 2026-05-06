@@ -3,11 +3,26 @@ import { createServer as createViteServer } from "vite";
 import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from "url";
+import * as Sentry from "@sentry/node";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const isProd = process.env.NODE_ENV === "production";
+
+// Initialize Sentry as early as possible so that all subsequent errors
+// (including startup errors) are captured.  The SDK becomes a no-op when
+// SENTRY_DSN is not set, so the server works fine without the variable.
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: isProd ? "production" : "development",
+    tracesSampleRate: isProd ? 0.1 : 1.0,
+    // Never attach request bodies to events – canvas data may be submitted
+    // through future API routes and must not be sent to a third-party service.
+    sendDefaultPii: false,
+  });
+}
 
 async function startServer() {
   const app = express();
@@ -74,6 +89,10 @@ async function startServer() {
   app.use((_req, res) => {
     res.status(404).json({ error: "Not found" });
   });
+
+  // Sentry must be registered as the first error handler so it receives the
+  // full error object before any other middleware transforms or swallows it.
+  Sentry.setupExpressErrorHandler(app);
 
   // 500 error handler
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
