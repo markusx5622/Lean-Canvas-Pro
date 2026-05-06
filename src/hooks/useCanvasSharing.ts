@@ -5,6 +5,7 @@ import {
   revokeShare,
   type ShareRow,
 } from '../lib/shareService';
+import { trackShareLinkCreated, trackShareLinkRevoked } from '../lib/analytics';
 
 export interface UseCanvasSharingReturn {
   share: ShareRow | null;
@@ -50,6 +51,7 @@ export function useCanvasSharing(canvasId: string | undefined): UseCanvasSharing
     try {
       const row = await createShare(canvasId);
       setShare(row);
+      trackShareLinkCreated();
     } catch (err: unknown) {
       console.error('[useCanvasSharing] Failed to create share:', err);
       setError('No se pudo generar el enlace. Inténtalo de nuevo.');
@@ -65,6 +67,7 @@ export function useCanvasSharing(canvasId: string | undefined): UseCanvasSharing
     try {
       await revokeShare(share.id);
       setShare(null);
+      trackShareLinkRevoked();
     } catch (err: unknown) {
       console.error('[useCanvasSharing] Failed to revoke share:', err);
       setError('No se pudo revocar el enlace. Inténtalo de nuevo.');

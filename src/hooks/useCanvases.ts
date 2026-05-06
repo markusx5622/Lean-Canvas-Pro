@@ -8,6 +8,12 @@ import {
   type CanvasRow,
 } from '../lib/canvasService';
 import { createSnapshot } from '../lib/snapshotService';
+import {
+  trackCanvasCreated,
+  trackCanvasRenamed,
+  trackCanvasDeleted,
+  trackBlockEdited,
+} from '../lib/analytics';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -224,6 +230,7 @@ export function useCanvases(): UseCanvasesReturn {
       { id: newId, name, lastModified: Date.now(), data: {} },
     ]);
     createCanvas(newId, name).catch(console.error);
+    trackCanvasCreated();
     return newId;
   }, [updateProjects]);
 
@@ -233,6 +240,7 @@ export function useCanvases(): UseCanvasesReturn {
         prev.map((p) => (p.id === id ? { ...p, name, lastModified: Date.now() } : p))
       );
       updateCanvas(id, { name }).catch(console.error);
+      trackCanvasRenamed();
     },
     [updateProjects]
   );
@@ -241,6 +249,7 @@ export function useCanvases(): UseCanvasesReturn {
     (id: string) => {
       updateProjects((prev) => prev.filter((p) => p.id !== id));
       deleteCanvas(id).catch(console.error);
+      trackCanvasDeleted();
     },
     [updateProjects]
   );
@@ -283,6 +292,8 @@ export function useCanvases(): UseCanvasesReturn {
 
       return updateCanvas(projectId, {
         data: projectDataToRecord(newData),
+      }).then(() => {
+        trackBlockEdited(blockId);
       });
     },
     [updateProjects]
