@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import { AuthPage } from './components/auth/AuthPage';
 import { SharedCanvasView } from './components/SharedCanvasView';
@@ -29,6 +29,14 @@ function getLegalRoute(): 'legal' | 'privacy' | 'cookies' | null {
 const App = () => {
   const { user, loading, session, isSupabaseConfigured } = useAuth();
   const [theme] = useLocalStorage<'light' | 'dark'>('lean-canvas-pro-theme', 'light');
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   const shareToken = getShareToken();
   if (shareToken) {
