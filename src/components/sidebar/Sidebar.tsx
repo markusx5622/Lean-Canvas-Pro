@@ -197,20 +197,15 @@ export function Sidebar({
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <motion.div
-      animate={{ width: collapsed ? 64 : 240 }}
-      transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-      className="relative shrink-0 h-screen sticky top-0 flex flex-col bg-slate-900 dark:bg-slate-950 border-r border-slate-700/60 dark:border-slate-800 overflow-hidden z-[90]"
-    >
-      {/* Toggle button */}
-      <button
-        onClick={() => setCollapsed((c: boolean) => !c)}
-        aria-label={collapsed ? 'Expandir barra lateral' : 'Colapsar barra lateral'}
-        title={collapsed ? 'Expandir' : 'Colapsar'}
-        className="absolute top-4 -right-3 z-10 w-6 h-6 rounded-full bg-slate-700 hover:bg-indigo-600 text-slate-300 hover:text-white flex items-center justify-center shadow-lg border border-slate-600 transition-all"
+    /* Wrapper: relative + self-stretch so the sidebar always fills the full
+       viewport height via flex-row alignment.  overflow-visible here lets
+       the toggle button protrude past the right edge without being clipped. */
+    <div className="relative shrink-0 self-stretch z-[90]">
+      <motion.div
+        animate={{ width: collapsed ? 64 : 240 }}
+        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+        className="flex flex-col h-full bg-slate-900 dark:bg-slate-950 border-r border-slate-700/60 dark:border-slate-800 overflow-hidden"
       >
-        {collapsed ? <ChevronRight size={12} strokeWidth={2.5} /> : <ChevronLeft size={12} strokeWidth={2.5} />}
-      </button>
 
       {/* ── A. Top zone ─────────────────────────────────────────────────── */}
       <div className="pt-4 pb-3 border-b border-slate-700/60 dark:border-slate-800 flex flex-col gap-3 px-2">
@@ -554,5 +549,17 @@ export function Sidebar({
         </button>
       </div>
     </motion.div>
+
+    {/* Toggle button lives OUTSIDE the overflow-hidden motion.div so it is
+        never clipped, but still positioned relative to the sidebar wrapper. */}
+    <button
+      onClick={() => setCollapsed((c: boolean) => !c)}
+      aria-label={collapsed ? 'Expandir barra lateral' : 'Colapsar barra lateral'}
+      title={collapsed ? 'Expandir' : 'Colapsar'}
+      className="absolute top-4 -right-3 z-10 w-6 h-6 rounded-full bg-slate-700 hover:bg-indigo-600 text-slate-300 hover:text-white flex items-center justify-center shadow-lg border border-slate-600 transition-all"
+    >
+      {collapsed ? <ChevronRight size={12} strokeWidth={2.5} /> : <ChevronLeft size={12} strokeWidth={2.5} />}
+    </button>
+  </div>
   );
 }
