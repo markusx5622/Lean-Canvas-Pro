@@ -42,7 +42,7 @@ html {
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.04),
     0 0 24px -4px rgb(var(--glow-color) / 0.09);
-  transition: box-shadow 0.35s ease;
+  transition: box-shadow 0.35s ease, border-color 0.3s ease, background-color 0.3s ease;
 }
 
 .card-glow:hover {
