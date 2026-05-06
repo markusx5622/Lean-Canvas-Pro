@@ -137,7 +137,8 @@ describe('evaluateCanvas — cross-block coherence', () => {
       1: 'El cliente pierde tiempo en procesos manuales.',
       4: 'App con automatización y flujo de trabajo integrado.',
       2: 'Pymes de 10-50 empleados del sector contable.',
-      6: 'Suscripción mensual de 49 €/mes por empresa.',
+      5: 'SEO orgánico y LinkedIn outreach directo a gestorías.',
+      6: 'Suscripción mensual de 49 €/mes por empresa. LTV estimado 600 €.',
       7: 'Servidores 500 €/mes, soporte 1.000 €/mes.',
     };
     const result = evaluateCanvas(canvas);
@@ -161,7 +162,8 @@ describe('evaluateCanvas — consistencyScore', () => {
       2: 'Pymes de 10-50 empleados del sector contable en España.',
       3: 'Ahorra 5 horas semanales eliminando gestión manual.',
       4: 'App con automatización y flujo de trabajo integrado.',
-      6: 'Suscripción mensual de 49 €/mes por empresa.',
+      5: 'SEO orgánico y LinkedIn outreach directo a gestorías.',
+      6: 'Suscripción mensual de 49 €/mes por empresa. LTV estimado 600 €.',
       7: 'Servidores 500 €/mes, soporte 1.000 €/mes.',
     };
     expect(evaluateCanvas(canvas).summary.consistencyScore).toBe(100);
@@ -408,12 +410,16 @@ describe('evaluateCanvas — scoreWeights transparency', () => {
     expect(result.summary.scoreWeights.specificity).toBe(SCORE_WEIGHTS.specificity);
     expect(result.summary.scoreWeights.consistency).toBe(SCORE_WEIGHTS.consistency);
     expect(result.summary.scoreWeights.strategicReadiness).toBe(SCORE_WEIGHTS.strategicReadiness);
+    expect(result.summary.scoreWeights.marketClarity).toBe(SCORE_WEIGHTS.marketClarity);
+    expect(result.summary.scoreWeights.valueProposition).toBe(SCORE_WEIGHTS.valueProposition);
+    expect(result.summary.scoreWeights.viability).toBe(SCORE_WEIGHTS.viability);
   });
 
   it('all weights sum to 1.0', () => {
     const weights = SCORE_WEIGHTS;
     const total = weights.completeness + weights.clarity + weights.specificity +
-      weights.consistency + weights.strategicReadiness;
+      weights.consistency + weights.strategicReadiness +
+      weights.marketClarity + weights.valueProposition + weights.viability;
     expect(total).toBeCloseTo(1.0);
   });
 
@@ -423,14 +429,21 @@ describe('evaluateCanvas — scoreWeights transparency', () => {
       2: 'Pymes B2B de 10-50 empleados del sector contable.',
       6: 'Suscripción SaaS de 49 €/mes por empresa.',
     });
-    const { completenessScore, clarityScore, specificityScore, consistencyScore, strategicReadinessScore, overallScore } = result.summary;
+    const {
+      completenessScore, clarityScore, specificityScore, consistencyScore,
+      strategicReadinessScore, marketClarityScore, valuePropositionScore, viabilityScore,
+      overallScore,
+    } = result.summary;
     const w = SCORE_WEIGHTS;
     const expected = Math.round(
-      completenessScore * w.completeness +
-      clarityScore      * w.clarity +
-      specificityScore  * w.specificity +
-      consistencyScore  * w.consistency +
-      strategicReadinessScore * w.strategicReadiness,
+      completenessScore       * w.completeness +
+      clarityScore            * w.clarity +
+      specificityScore        * w.specificity +
+      consistencyScore        * w.consistency +
+      strategicReadinessScore * w.strategicReadiness +
+      marketClarityScore      * w.marketClarity +
+      valuePropositionScore   * w.valueProposition +
+      viabilityScore          * w.viability,
     );
     expect(overallScore).toBe(expected);
   });
@@ -583,7 +596,8 @@ describe('evaluateCanvas — cross-block coherence', () => {
       1: 'El cliente pierde tiempo en procesos manuales.',
       4: 'App con automatización y flujo de trabajo integrado.',
       2: 'Pymes de 10-50 empleados del sector contable.',
-      6: 'Suscripción mensual de 49 €/mes por empresa.',
+      5: 'SEO orgánico y LinkedIn outreach directo a gestorías.',
+      6: 'Suscripción mensual de 49 €/mes por empresa. LTV estimado 600 €.',
       7: 'Servidores 500 €/mes, soporte 1.000 €/mes.',
     };
     const result = evaluateCanvas(canvas);
@@ -607,7 +621,8 @@ describe('evaluateCanvas — consistencyScore', () => {
       2: 'Pymes de 10-50 empleados del sector contable en España.',
       3: 'Ahorra 5 horas semanales eliminando gestión manual.',
       4: 'App con automatización y flujo de trabajo integrado.',
-      6: 'Suscripción mensual de 49 €/mes por empresa.',
+      5: 'SEO orgánico y LinkedIn outreach directo a gestorías.',
+      6: 'Suscripción mensual de 49 €/mes por empresa. LTV estimado 600 €.',
       7: 'Servidores 500 €/mes, soporte 1.000 €/mes.',
     };
     expect(evaluateCanvas(canvas).summary.consistencyScore).toBe(100);

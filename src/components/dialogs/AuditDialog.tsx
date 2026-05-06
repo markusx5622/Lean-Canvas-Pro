@@ -110,6 +110,9 @@ export function AuditDialog({ auditResult, onClose }: AuditDialogProps) {
               <SubScoreBar label="Concreción" value={summary.specificityScore} />
               <SubScoreBar label="Coherencia" value={summary.consistencyScore} />
               <SubScoreBar label="Preparación" value={summary.strategicReadinessScore} />
+              <SubScoreBar label="Claridad de Mercado" value={summary.marketClarityScore} />
+              <SubScoreBar label="Propuesta de Valor" value={summary.valuePropositionScore} />
+              <SubScoreBar label="Viabilidad" value={summary.viabilityScore} />
             </div>
 
             {/* Next priority */}

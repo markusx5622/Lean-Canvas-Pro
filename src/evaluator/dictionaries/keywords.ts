@@ -55,6 +55,7 @@ export const BLOCK_KEYWORDS: Record<BlockId, BlockKeywords> = {
       'pyme', 'startup', 'b2b', 'b2c', 'autónomo', 'freelance',
       'profesional', 'director', 'gerente', 'cto', 'ceo', 'sector',
       'industria', 'empleados', 'años', 'facturación',
+      'tam', 'sam', 'som', 'tamaño de mercado', 'millones',
     ],
   },
 

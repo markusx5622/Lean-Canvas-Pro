@@ -81,5 +81,23 @@ export function evaluateFlujoIngresos(text: string): { issues: Issue[]; strength
     score += 10;
   }
 
+  // Reward multiple pricing tiers (freemium → premium, básico → pro)
+  if (hasAnyKeyword(text, ['plan básico', 'plan pro', 'plan enterprise', 'tier', 'freemium', 'premium', 'escalado'])) {
+    strengths.push({
+      code: 'MULTIPLE_TIERS',
+      message: 'Varios niveles de precio o plan freemium permiten capturar más segmentos y facilitan la expansión de ingresos.',
+    });
+    score += 8;
+  }
+
+  // Reward LTV awareness in revenue block
+  if (hasAnyKeyword(text, ['ltv', 'valor de vida', 'valor del cliente'])) {
+    strengths.push({
+      code: 'LTV_AWARE',
+      message: 'Menciona el Valor de Vida del Cliente (LTV) en el bloque de ingresos: señal de que el modelo está orientado a retención y expansión.',
+    });
+    score += 7;
+  }
+
   return { issues, strengths, score: Math.max(0, Math.min(100, score)) };
 }

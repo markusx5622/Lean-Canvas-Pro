@@ -81,5 +81,25 @@ export function evaluateMetricas(text: string): { issues: Issue[]; strengths: St
     score += 10;
   }
 
+  // Reward complete unit economics (both CAC AND LTV)
+  const hasCac = hasAnyKeyword(text, ['cac', 'coste de adquisición', 'coste de adquisicion']);
+  const hasLtv = hasAnyKeyword(text, ['ltv', 'valor de vida', 'valor del cliente']);
+  if (hasCac && hasLtv) {
+    strengths.push({
+      code: 'UNIT_ECONOMICS_COMPLETE',
+      message: 'Tienes tanto CAC como LTV definidos: el ratio LTV/CAC es el indicador más claro de sostenibilidad económica para un inversor.',
+    });
+    score += 10;
+  }
+
+  // Reward churn/retention awareness
+  if (hasAnyKeyword(text, ['churn', 'retención', 'retencion', 'abandono', 'tasa de bajas'])) {
+    strengths.push({
+      code: 'CHURN_AWARENESS',
+      message: 'Mide el churn o retención, la métrica que más revela la salud real del negocio.',
+    });
+    score += 5;
+  }
+
   return { issues, strengths, score: Math.max(0, Math.min(100, score)) };
 }
