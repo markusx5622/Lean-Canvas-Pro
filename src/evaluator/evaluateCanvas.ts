@@ -301,24 +301,25 @@ function computeMarketClarityScore(canvasData: CanvasData): number {
 
   const segNorm = normalise(segmentos);
   const probNorm = normalise(problema);
+  const combined = `${segNorm} ${probNorm}`;
 
-  // Specific segment descriptors
+  // Specific segment descriptors (terms are already lowercase, no accent normalisation needed)
   const specificTerms = ['b2b', 'b2c', 'pyme', 'startup', 'freelance', 'autonomo', 'director',
     'sector', 'industria', 'empleados', 'facturacion', 'profesional', 'gerente', 'cto', 'ceo'];
-  const specificMatches = specificTerms.filter(t => segNorm.includes(t) || probNorm.includes(t)).length;
+  const specificMatches = specificTerms.filter(t => combined.includes(t)).length;
   if (specificMatches >= 3) score += 20;
   else if (specificMatches >= 1) score += 10;
 
-  // Early adopter defined
-  if (/early adopter|adopter|primer cliente|pionero|nicho/.test(segNorm)) score += 15;
+  // Early adopter defined (drop redundant 'adopter' — already matched by 'early adopter')
+  if (/early adopter|primer cliente|pionero|nicho/.test(segNorm)) score += 15;
 
   // Market size signals (TAM/SAM/SOM or size estimate)
-  const hasSizeSignal = /\btam\b|\bsam\b|\bsom\b|tama[ñn]o de mercado|mercado de|millones de|miles de/.test(segNorm + ' ' + probNorm);
+  const hasSizeSignal = /\btam\b|\bsam\b|\bsom\b|tama[ñn]o de mercado|mercado de|millones de|miles de/.test(combined);
   if (hasSizeSignal) score += 10;
 
-  // Penalise broad-audience language
+  // Penalise broad-audience language (terms are already normalised — compare to segNorm)
   const broadTerms = ['todos', 'todo el mundo', 'cualquiera', 'personas en general', 'gente'];
-  const hasBroad = broadTerms.some(t => segNorm.includes(normalise(t)));
+  const hasBroad = broadTerms.some(t => segNorm.includes(t));
   if (hasBroad) score -= 20;
 
   // Bonus if segment has a reasonable word count

@@ -83,7 +83,7 @@ export function evaluatePropuestaUnica(text: string): { issues: Issue[]; strengt
   }
 
   // Reward explicit differentiation/comparison language
-  if (hasAnyKeyword(text, ['a diferencia de', 'frente a', 'en lugar de', 'mejor que', 'sin necesidad de', 'a diferencia', 'unico en'])) {
+  if (hasAnyKeyword(text, ['a diferencia de', 'frente a', 'en lugar de', 'mejor que', 'sin necesidad de', 'unico en'])) {
     strengths.push({
       code: 'COMPARISON_LANGUAGE',
       message: 'La propuesta hace una comparación explícita con las alternativas, lo que refuerza la diferenciación.',

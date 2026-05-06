@@ -75,7 +75,7 @@ export function evaluateVentajaInjusta(text: string): { issues: Issue[]; strengt
   }
 
   // Reward network effects
-  if (hasAnyKeyword(text, ['efecto red', 'network effect', 'efectos de red', 'red de usuarios', 'efectos de red'])) {
+  if (hasAnyKeyword(text, ['efecto red', 'network effect', 'efectos de red', 'red de usuarios'])) {
     strengths.push({
       code: 'NETWORK_EFFECT',
       message: 'Menciona efectos de red — una barrera de entrada que crece con cada usuario añadido.',
