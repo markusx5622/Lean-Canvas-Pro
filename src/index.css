@@ -35,43 +35,50 @@ html {
 }
 
 /* ── Reactive aura glow ─────────────────────────────────────────────────────── */
-/* Uses CSS custom property --glow-color (space-separated RGB: "R G B")         */
+/* Uses CSS custom property --glow-color (space-separated RGB: "R G B").        */
+/* Border is owned by these rules (not Tailwind) so it can inherit the hue.     */
 
 .card-glow {
   --glow-color: 148 163 184;
+  border: 1px solid rgb(var(--glow-color) / 0.20);
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.04),
-    0 0 24px -4px rgb(var(--glow-color) / 0.09);
+    0 0 28px -4px rgb(var(--glow-color) / 0.12);
   transition: box-shadow 0.35s ease, border-color 0.3s ease, background-color 0.3s ease;
 }
 
 .card-glow:hover {
+  border-color: rgb(var(--glow-color) / 0.36);
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.09),
-    0 0 36px -4px rgb(var(--glow-color) / 0.19);
+    0 0 36px -4px rgb(var(--glow-color) / 0.24);
 }
 
 .card-glow.card-glow--active {
+  border-color: rgb(var(--glow-color) / 0.50);
   box-shadow:
     0 15px 40px -5px rgba(0, 0, 0, 0.11),
-    0 0 44px -4px rgb(var(--glow-color) / 0.24);
+    0 0 48px -4px rgb(var(--glow-color) / 0.32);
 }
 
 /* Dark-mode variants — glow appears slightly stronger against dark backgrounds */
 .dark .card-glow {
+  border: 1px solid rgb(var(--glow-color) / 0.22);
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.22),
-    0 0 24px -4px rgb(var(--glow-color) / 0.14);
+    0 0 28px -4px rgb(var(--glow-color) / 0.18);
 }
 
 .dark .card-glow:hover {
+  border-color: rgb(var(--glow-color) / 0.38);
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.40),
-    0 0 36px -4px rgb(var(--glow-color) / 0.26);
+    0 0 36px -4px rgb(var(--glow-color) / 0.32);
 }
 
 .dark .card-glow.card-glow--active {
+  border-color: rgb(var(--glow-color) / 0.52);
   box-shadow:
     0 15px 40px -5px rgba(0, 0, 0, 0.40),
-    0 0 44px -4px rgb(var(--glow-color) / 0.30);
+    0 0 48px -4px rgb(var(--glow-color) / 0.40);
 }

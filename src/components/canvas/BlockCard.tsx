@@ -50,7 +50,7 @@ export function BlockCard({
       className={`group relative flex flex-col cursor-pointer overflow-hidden rounded-[20px] card-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500
         ${isActive
           ? `bg-white dark:bg-slate-800 card-glow--active ring-2 ring-offset-2 dark:ring-offset-slate-900 ${data.ringColor} z-20`
-          : 'bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-slate-300/80 dark:hover:border-slate-600'
+          : 'bg-white dark:bg-slate-800'
         } ${additionalClasses}`}
       style={{ '--glow-color': data.glowColor } as React.CSSProperties}
     >
