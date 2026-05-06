@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import type { WorkspaceRow } from '../hooks/useWorkspaces';
+import { useAuth } from './AuthContext';
+import { deriveRole, type WorkspaceRole } from '../lib/permissions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -17,6 +19,13 @@ interface WorkspaceContextValue {
   createWs: (name: string) => Promise<string>;
   renameWs: (id: string, name: string) => Promise<void>;
   deleteWs: (id: string) => Promise<void>;
+  /**
+   * Role of the current user in the active workspace.
+   * `null` when no workspace is selected (Personal scope).
+   */
+  userRole: WorkspaceRole | null;
+  /** Shorthand: true when `userRole === 'owner'`. */
+  isOwner: boolean;
 }
 
 // ── Context ───────────────────────────────────────────────────────────────────
@@ -26,6 +35,7 @@ const WorkspaceContext = createContext<WorkspaceContextValue | undefined>(undefi
 // ── Provider ──────────────────────────────────────────────────────────────────
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const { workspaces, loading, createWs, renameWs, deleteWs } = useWorkspaces();
 
   // null = Personal scope (no workspace selected)
@@ -44,6 +54,14 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     [deleteWs]
   );
 
+  // Derive role from the active workspace's owner_id vs. the current user.
+  const { userRole, isOwner } = useMemo(() => {
+    if (!activeWorkspaceId) return { userRole: null, isOwner: false };
+    const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
+    const role = deriveRole(activeWorkspace?.owner_id, user?.id);
+    return { userRole: role, isOwner: role === 'owner' };
+  }, [activeWorkspaceId, workspaces, user?.id]);
+
   return (
     <WorkspaceContext.Provider
       value={{
@@ -54,6 +72,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         createWs,
         renameWs,
         deleteWs: handleDeleteWs,
+        userRole,
+        isOwner,
       }}
     >
       {children}
