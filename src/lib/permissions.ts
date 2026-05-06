@@ -41,10 +41,16 @@ export const WorkspacePermissions = {
   /** Invite new members or revoke pending invitations. Owner only. */
   canManageMembers: (role: WorkspaceRole): boolean => role === 'owner',
 
-  /** Create a new canvas inside the workspace. All members. */
+  /**
+   * Create a new canvas inside the workspace. All members.
+   * Parameter kept for API consistency — future roles (e.g. viewer) may restrict this.
+   */
   canCreateCanvas: (_role: WorkspaceRole): boolean => true,
 
-  /** Edit blocks in any workspace canvas. All members. */
+  /**
+   * Edit blocks in any workspace canvas. All members.
+   * Parameter kept for API consistency — future roles (e.g. viewer) may restrict this.
+   */
   canEditCanvas: (_role: WorkspaceRole): boolean => true,
 
   /**
@@ -57,6 +63,9 @@ export const WorkspacePermissions = {
   canDeleteCanvas: (role: WorkspaceRole, isCanvasCreator: boolean): boolean =>
     role === 'owner' || isCanvasCreator,
 
-  /** Create or revoke a public share link. All members. */
+  /**
+   * Create or revoke a public share link. All members.
+   * Parameter kept for API consistency — future roles (e.g. viewer) may restrict this.
+   */
   canShareCanvas: (_role: WorkspaceRole): boolean => true,
 } as const;

@@ -4,7 +4,7 @@
 -- Previously the "Members manage workspace canvases" policy used
 -- FOR ALL, which let any workspace member delete any canvas.
 --
--- This migration replaces that single policy with three narrower
+-- This migration replaces that single policy with four narrower
 -- policies:
 --   • SELECT  – any workspace member
 --   • INSERT  – any workspace member
