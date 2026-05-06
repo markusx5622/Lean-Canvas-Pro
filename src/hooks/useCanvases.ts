@@ -10,6 +10,7 @@ import {
 import { createSnapshot } from '../lib/snapshotService';
 import {
   trackCanvasCreated,
+  trackCanvasCreatedFromTemplate,
   trackCanvasRenamed,
   trackCanvasDeleted,
   trackBlockEdited,
@@ -38,6 +39,8 @@ export interface UseCanvasesReturn {
   /** Updates a block locally and persists to Supabase. Returns the cloud-write promise so callers can handle errors. */
   updateBlock: (projectId: string, blockId: number, text: string) => Promise<void>;
   importProject: (name: string, data: CanvasData) => string;
+  /** Create a new canvas pre-filled with a template and persist to Supabase. */
+  createProjectFromTemplate: (name: string, templateId: string, data: CanvasData) => string;
   /** Replace all canvas data with a previous snapshot and persist to Supabase. */
   restoreProject: (id: string, data: CanvasData) => Promise<void>;
 }
@@ -333,6 +336,20 @@ export function useCanvases(workspaceId: string | null = null): UseCanvasesRetur
     [updateProjects, workspaceId]
   );
 
+  const createProjectFromTemplate = useCallback(
+    (name: string, templateId: string, data: CanvasData): string => {
+      const newId = crypto.randomUUID();
+      updateProjects((prev) => [
+        ...prev,
+        { id: newId, name, lastModified: Date.now(), data },
+      ]);
+      createCanvas(newId, name, projectDataToRecord(data), workspaceId).catch(console.error);
+      trackCanvasCreatedFromTemplate(templateId);
+      return newId;
+    },
+    [updateProjects, workspaceId]
+  );
+
   const restoreProject = useCallback(
     (id: string, data: CanvasData): Promise<void> => {
       updateProjects((prev) =>
@@ -354,6 +371,7 @@ export function useCanvases(workspaceId: string | null = null): UseCanvasesRetur
     clearProject,
     updateBlock,
     importProject,
+    createProjectFromTemplate,
     restoreProject,
   };
 }

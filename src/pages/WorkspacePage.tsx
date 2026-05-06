@@ -20,9 +20,11 @@ import { ConfirmDialog } from '../components/dialogs/ConfirmDialog';
 import { PromptDialog } from '../components/dialogs/PromptDialog';
 import { SettingsModal } from '../components/dialogs/SettingsModal';
 import { InviteModal } from '../components/dialogs/InviteModal';
+import { TemplatePickerDialog } from '../components/dialogs/TemplatePickerDialog';
 import { ShareModal } from '../components/ShareModal';
 import { SplashPage } from './SplashPage';
 import { BLOCKS } from '../data/blocks';
+import type { CanvasTemplate } from '../data/templates';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -54,6 +56,7 @@ export function WorkspacePage() {
     clearProject,
     updateBlock,
     importProject,
+    createProjectFromTemplate,
   } = useCanvases(activeWorkspaceId);
 
   const [activeProjectId, setActiveProjectId] = useLocalStorage<string>('lean-canvas-pro-active', '');
@@ -72,6 +75,7 @@ export function WorkspacePage() {
   const [pdfExporting, setPdfExporting] = useState(false);
 
   // ── Dialog state ─────────────────────────────────────────────────────────────
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -182,9 +186,21 @@ export function WorkspacePage() {
   // ── Handlers ─────────────────────────────────────────────────────────────────
 
   const handleCreateProject = () => {
+    setShowTemplatePicker(true);
+  };
+
+  const handleSelectBlankCanvas = () => {
     const newId = createProject();
     setActiveProjectId(newId);
     setSelectedBlockId(null);
+    setShowTemplatePicker(false);
+  };
+
+  const handleSelectTemplate = (template: CanvasTemplate) => {
+    const newId = createProjectFromTemplate(template.name, template.id, template.data);
+    setActiveProjectId(newId);
+    setSelectedBlockId(null);
+    setShowTemplatePicker(false);
   };
 
   const handleRenameProject = () => {
@@ -374,6 +390,16 @@ export function WorkspacePage() {
         />
 
         {/* Dialogs */}
+        <AnimatePresence>
+          {showTemplatePicker && (
+            <TemplatePickerDialog
+              onSelectTemplate={handleSelectTemplate}
+              onSelectBlank={handleSelectBlankCanvas}
+              onCancel={() => setShowTemplatePicker(false)}
+            />
+          )}
+        </AnimatePresence>
+
         <AnimatePresence>
           {showAboutDialog && <AboutDialog onClose={() => setShowAboutDialog(false)} />}
         </AnimatePresence>
