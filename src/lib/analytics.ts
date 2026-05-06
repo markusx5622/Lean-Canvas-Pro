@@ -146,3 +146,10 @@ export function trackInvitationSent() {
 export function trackInvitationAccepted() {
   track('invitation_accepted');
 }
+
+// ── Presentation events ───────────────────────────────────────────────────────
+
+/** The presentation mode was entered for a canvas. */
+export function trackPresentationModeEntered() {
+  track('presentation_mode_entered');
+}
