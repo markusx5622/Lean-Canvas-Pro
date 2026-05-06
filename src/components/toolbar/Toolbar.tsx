@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import {
   Rocket, Plus, Edit2, Trash2, ShieldCheck, Settings,
-  FileDown, Share2, LogOut, Loader2, Layers, ChevronRight, UserPlus,
+  FileDown, Share2, Loader2, Layers, ChevronRight, UserPlus,
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Project } from '../../hooks/useCanvases';
@@ -37,7 +37,6 @@ export interface ToolbarProps {
   onOpenSettings: () => void;
   onExportPdf: () => void;
   onShare: () => void;
-  onSignOut: () => void;
   onLogoClick: () => void;
 }
 
@@ -69,7 +68,6 @@ export function Toolbar({
   onOpenSettings,
   onExportPdf,
   onShare,
-  onSignOut,
   onLogoClick,
 }: ToolbarProps) {
   const activeWorkspaceName = activeWorkspaceId
@@ -290,20 +288,18 @@ export function Toolbar({
 
         <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1" />
 
-        {/* User / sign-out */}
+        {/* User avatar (compact) */}
         <button
-          onClick={onSignOut}
-          aria-label={`Cerrar sesión (${user?.email})`}
-          title={`Cerrar sesión (${user?.email})`}
-          className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-[10px] transition-all border border-transparent hover:border-rose-200/80 dark:hover:border-rose-500/20 active:scale-95"
+          onClick={onOpenSettings}
+          aria-label={`Usuario: ${user?.email} · Abrir ajustes`}
+          title={`Usuario: ${user?.email}`}
+          className="flex items-center p-1 rounded-[10px] transition-all hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95"
         >
-          <div aria-hidden="true" className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shrink-0">
-            <span className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 leading-none">
+          <div aria-hidden="true" className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shrink-0">
+            <span className="text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400 leading-none">
               {user?.email?.charAt(0).toUpperCase()}
             </span>
           </div>
-          <span className="hidden lg:inline max-w-[100px] truncate text-[12px] font-semibold">{user?.email}</span>
-          <LogOut aria-hidden="true" size={13} strokeWidth={2} className="shrink-0 opacity-50" />
         </button>
       </div>
     </motion.div>

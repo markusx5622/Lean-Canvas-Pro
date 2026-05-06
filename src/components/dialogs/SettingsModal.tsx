@@ -1,17 +1,19 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sun, Moon, Download, Upload, Info, Trash2, X } from 'lucide-react';
+import { Sun, Moon, Download, Upload, Info, Trash2, X, LogOut, User } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface SettingsModalProps {
   theme: 'light' | 'dark';
   canvasName: string;
+  userEmail: string | undefined;
   onToggleTheme: () => void;
   onExportJson: () => void;
   onImportJson: () => void;
   onOpenAbout: () => void;
   onClearCanvas: () => void;
+  onSignOut: () => void;
   onClose: () => void;
 }
 
@@ -65,11 +67,13 @@ function SettingRow({
 export function SettingsModal({
   theme,
   canvasName,
+  userEmail,
   onToggleTheme,
   onExportJson,
   onImportJson,
   onOpenAbout,
   onClearCanvas,
+  onSignOut,
   onClose,
 }: SettingsModalProps) {
   return (
@@ -208,6 +212,28 @@ export function SettingsModal({
                     Ver
                   </button>
                 }
+              />
+            </div>
+
+            <div className="h-px bg-slate-100 dark:bg-slate-800 mx-1" />
+
+            {/* Cuenta */}
+            <div>
+              <SectionTitle>Cuenta</SectionTitle>
+              <SettingRow
+                icon={<User size={16} strokeWidth={2} />}
+                label="Sesión activa"
+                description={userEmail}
+                action={
+                  <button
+                    onClick={onSignOut}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 border border-rose-100 dark:border-rose-500/20 transition-all active:scale-95"
+                  >
+                    <LogOut size={13} strokeWidth={2.5} />
+                    Cerrar sesión
+                  </button>
+                }
+                variant="danger"
               />
             </div>
 
