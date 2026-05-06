@@ -20,6 +20,8 @@ export interface ToolbarProps {
   user: User | null;
   prefersReducedMotion: boolean | null | undefined;
   hasActiveShare: boolean;
+  /** Whether there is an active canvas — used to disable canvas-specific actions. */
+  hasActiveCanvas: boolean;
   workspaces: WorkspaceRow[];
   activeWorkspaceId: string | null;
   onSelectWorkspace: (id: string | null) => void;
@@ -51,6 +53,7 @@ export function Toolbar({
   user,
   prefersReducedMotion,
   hasActiveShare,
+  hasActiveCanvas,
   workspaces,
   activeWorkspaceId,
   onSelectWorkspace,
@@ -81,10 +84,10 @@ export function Toolbar({
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border text-sm border-slate-200/60 dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-[20px] py-3.5 px-5 flex flex-col md:flex-row items-center justify-between gap-3 sticky top-4 z-[100]"
+      className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border text-sm border-slate-200/60 dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-[20px] py-3.5 px-6 flex flex-col md:flex-row items-center justify-between gap-3 sticky top-4 z-[100]"
     >
       {/* Logo & workspace + project selectors */}
-      <div className="flex items-center gap-3 w-full md:w-auto">
+      <div className="flex items-center gap-4 w-full md:w-auto">
         <div className="relative shrink-0">
           <motion.div
             aria-hidden="true"
@@ -235,7 +238,7 @@ export function Toolbar({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+      <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
         {/* Audit CTA */}
         <button
           onClick={onAudit}
@@ -247,24 +250,25 @@ export function Toolbar({
           <span className="hidden lg:inline">Auditoría Estratégica</span>
         </button>
 
-        <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-0.5" />
+        <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1" />
 
         {/* Settings */}
         <button
           onClick={onOpenSettings}
           aria-label="Ajustes"
           title="Ajustes"
-          className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-all active:scale-90"
+          className="flex items-center gap-1.5 px-2.5 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 rounded-[10px] transition-all active:scale-90 text-[12px] font-bold"
         >
-          <Settings size={16} strokeWidth={2} />
+          <Settings size={15} strokeWidth={2} />
+          <span className="hidden lg:inline">Ajustes</span>
         </button>
 
-        <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-0.5" />
+        <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1" />
 
         {/* PDF export + share */}
         <button
           onClick={onExportPdf}
-          disabled={pdfExporting}
+          disabled={pdfExporting || !hasActiveCanvas}
           className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 text-white font-bold rounded-[10px] hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap text-[13px] tracking-tight disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {pdfExporting ? <Loader2 size={14} strokeWidth={2.5} className="animate-spin" /> : <FileDown size={14} strokeWidth={2.5} />}
@@ -272,9 +276,10 @@ export function Toolbar({
         </button>
         <button
           onClick={onShare}
+          disabled={!hasActiveCanvas}
           aria-label={hasActiveShare ? 'Canvas compartido · gestionar enlace' : 'Compartir canvas (solo lectura)'}
           title={hasActiveShare ? 'Canvas compartido · gestionar enlace' : 'Compartir canvas (solo lectura)'}
-          className="relative flex items-center gap-1.5 px-3.5 py-2 text-slate-600 dark:text-slate-300 font-bold rounded-[10px] hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border border-slate-200/60 dark:border-slate-700 hover:border-indigo-200/80 dark:hover:border-indigo-500/20 active:scale-95 whitespace-nowrap text-[13px] tracking-tight"
+          className="relative flex items-center gap-1.5 px-3.5 py-2 text-slate-600 dark:text-slate-300 font-bold rounded-[10px] hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border border-slate-200/60 dark:border-slate-700 hover:border-indigo-200/80 dark:hover:border-indigo-500/20 active:scale-95 whitespace-nowrap text-[13px] tracking-tight disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {hasActiveShare && (
             <span aria-hidden="true" className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-800 shadow-sm" />
@@ -283,7 +288,7 @@ export function Toolbar({
           <span className="hidden sm:inline">Compartir</span>
         </button>
 
-        <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-0.5" />
+        <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1" />
 
         {/* User / sign-out */}
         <button

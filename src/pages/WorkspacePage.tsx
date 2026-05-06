@@ -120,12 +120,12 @@ export function WorkspacePage() {
   }, [canvasLoading, projects]);
 
   useEffect(() => {
-    const shouldLock = showSplash || showAboutDialog || showSettingsModal || !!auditResult;
+    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showShareModal || !!auditResult;
     if (!shouldLock) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
-  }, [showSplash, showAboutDialog, auditResult]);
+  }, [showSplash, showAboutDialog, showSettingsModal, showShareModal, auditResult]);
 
   /** Immediately persists any dirty text (used when switching context). */
   const flushPendingSave = useCallback(() => {
@@ -354,6 +354,7 @@ export function WorkspacePage() {
           user={user}
           prefersReducedMotion={prefersReducedMotion}
           hasActiveShare={sharing.share !== null}
+          hasActiveCanvas={!!activeProject}
           workspaces={workspaces}
           activeWorkspaceId={activeWorkspaceId}
           onSelectWorkspace={(id) => { setActiveWorkspaceId(id); setActiveProjectId(''); setSelectedBlockId(null); }}
@@ -379,10 +380,10 @@ export function WorkspacePage() {
         </AnimatePresence>
 
         <AnimatePresence>
-          {showSettingsModal && activeProject && (
+          {showSettingsModal && (
             <SettingsModal
               theme={theme}
-              canvasName={activeProject.name}
+              canvasName={activeProject?.name ?? ''}
               onToggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')}
               onExportJson={handleExportJson}
               onImportJson={() => fileInputRef.current?.click()}
