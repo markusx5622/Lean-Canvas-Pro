@@ -370,7 +370,6 @@ export function WorkspacePage() {
           onOpenSettings={() => setShowSettingsModal(true)}
           onExportPdf={handleExportPdf}
           onShare={() => setShowShareModal(true)}
-          onSignOut={signOut}
           onLogoClick={() => setShowSplash(true)}
         />
 
@@ -384,11 +383,13 @@ export function WorkspacePage() {
             <SettingsModal
               theme={theme}
               canvasName={activeProject?.name ?? ''}
+              userEmail={user?.email}
               onToggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')}
               onExportJson={handleExportJson}
               onImportJson={() => fileInputRef.current?.click()}
               onOpenAbout={() => setShowAboutDialog(true)}
               onClearCanvas={handleClearCanvas}
+              onSignOut={signOut}
               onClose={() => setShowSettingsModal(false)}
             />
           )}
