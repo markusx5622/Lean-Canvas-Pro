@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { BlockCard } from './BlockCard';
 import { BLOCKS } from '../../data/blocks';
 import type { CanvasData } from '../../hooks/useCanvases';
@@ -25,7 +26,7 @@ export function CanvasGrid({ canvasData, selectedBlockId, canvasEntryKey, onSele
   const blockById = (id: number) => BLOCKS.find((b) => b.id === id)!;
 
   return (
-    <div className="flex-[1.5] xl:flex-[2] w-full flex flex-col gap-5">
+    <motion.div layout transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="flex-[1.5] xl:flex-[2] w-full flex flex-col gap-5">
       {/* Top 7 blocks (2-row grid) */}
       <div key={canvasEntryKey} className="grid grid-cols-1 md:grid-cols-10 md:grid-rows-[minmax(270px,auto)_minmax(270px,auto)] gap-5">
         <BlockCard index={0} data={blockById(1)} additionalClasses="md:col-span-2 md:row-span-2" isActive={selectedBlockId === 1} hasContent={hasContent(canvasData, 1)} canvasDataValue={canvasData[1] || ''} onClick={() => onSelectBlock(1)} />
@@ -42,6 +43,6 @@ export function CanvasGrid({ canvasData, selectedBlockId, canvasEntryKey, onSele
         <BlockCard index={7} data={blockById(7)} additionalClasses="md:col-span-5 md:h-[230px]" isActive={selectedBlockId === 7} hasContent={hasContent(canvasData, 7)} canvasDataValue={canvasData[7] || ''} onClick={() => onSelectBlock(7)} />
         <BlockCard index={8} data={blockById(6)} additionalClasses="md:col-span-5 md:h-[230px]" isActive={selectedBlockId === 6} hasContent={hasContent(canvasData, 6)} canvasDataValue={canvasData[6] || ''} onClick={() => onSelectBlock(6)} />
       </div>
-    </div>
+    </motion.div>
   );
 }
