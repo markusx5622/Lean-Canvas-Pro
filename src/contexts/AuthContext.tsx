@@ -61,9 +61,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         identifyUser(session.user.id);
       } else {
         Sentry.setUser(null);
-        resetIdentity();
+        // Only reset analytics identity and record logout on an explicit sign-out,
+        // not on the initial INITIAL_SESSION event when no session exists.
+        if (event === 'SIGNED_OUT') {
+          resetIdentity();
+          trackLogout();
+        }
       }
-      if (event === 'SIGNED_OUT') trackLogout();
     });
 
     return () => subscription.unsubscribe();

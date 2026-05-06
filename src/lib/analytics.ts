@@ -8,6 +8,8 @@ import posthog from 'posthog-js';
  * Call once before the first React render (see main.tsx).
  * When VITE_POSTHOG_KEY is not set the SDK is not loaded and every
  * exported helper becomes a no-op, so the app works without the key.
+ * Subsequent calls after the first successful init are safe no-ops
+ * because PostHog guards against double initialisation internally.
  */
 export function initAnalytics() {
   const apiKey = import.meta.env.VITE_POSTHOG_KEY as string | undefined;
