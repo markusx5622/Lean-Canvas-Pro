@@ -39,10 +39,23 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
     canvasData, filledBlocks, crossBlockIssues,
   );
 
-  // Overall score = transparent weighted combination of the 5 dimensions.
+  // 6th dimension: market clarity
+  const marketClarityScore = computeMarketClarityScore(canvasData);
+
+  // 7th dimension: value proposition strength
+  const valuePropositionScore = computeValuePropositionScore(canvasData);
+
+  // 8th dimension: financial viability
+  const viabilityScore = computeViabilityScore(canvasData, filledBlocks, crossBlockIssues);
+
+  // Overall score = transparent weighted combination of the 8 dimensions.
   // Empty canvas → 0; otherwise the formula drives the score.
   const overallScore: number = filledBlocks > 0
-    ? computeOverallScore(completenessScore, clarityScore, specificityScore, consistencyScore, strategicReadinessScore)
+    ? computeOverallScore(
+        completenessScore, clarityScore, specificityScore,
+        consistencyScore, strategicReadinessScore,
+        marketClarityScore, valuePropositionScore, viabilityScore,
+      )
     : 0;
 
   const verdict = buildVerdict(overallScore, completionPct);
@@ -60,7 +73,8 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
 
   const headline = buildHeadline(overallScore, completionPct, crossBlockIssues, strategicReadinessScore);
   const nextPriority = buildNextPriority(
-    completionPct, crossBlockIssues, specificityScore, strategicReadinessScore, blocks,
+    completionPct, crossBlockIssues, specificityScore, strategicReadinessScore,
+    marketClarityScore, valuePropositionScore, viabilityScore, blocks,
   );
 
   const summary: GlobalSummary = {
@@ -72,6 +86,9 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
     specificityScore,
     consistencyScore,
     strategicReadinessScore,
+    marketClarityScore,
+    valuePropositionScore,
+    viabilityScore,
     verdict,
     headline,
     nextPriority,
@@ -205,6 +222,33 @@ function detectCrossBlockIssues(canvasData: CanvasData): CrossBlockIssue[] {
     }
   }
 
+  // Rule 9: Costs + Revenue defined but no CAC/LTV anywhere (stronger than Rule 4)
+  const cacLtvPattern = /cac|ltv|coste de adquisición|valor de vida|valor del cliente/i;
+  const hasCacLtvAnywhere = cacLtvPattern.test(ingresos) || cacLtvPattern.test(costes) || cacLtvPattern.test(metricas);
+  if (hasCosts && hasRevenue && !hasCacLtvAnywhere) {
+    // Only flag when metrics is empty (Rule 4 covers the case where metrics IS filled)
+    if (metricas.trim().length === 0) {
+      issues.push({
+        code: 'NO_UNIT_ECONOMICS',
+        message: 'Tienes costes e ingresos pero no hay métricas de unit economics (CAC, LTV).',
+        severity: 'warning',
+        relatedBlocks: [6, 7, 8],
+        hint: 'Define el Coste de Adquisición (CAC) y el Valor de Vida del Cliente (LTV). Su ratio es el indicador financiero más importante para inversores.',
+      });
+    }
+  }
+
+  // Rule 10: Revenue model defined but no acquisition channels
+  if (ingresos.trim().length > 0 && canales.trim().length === 0 && segmentos.trim().length > 0) {
+    issues.push({
+      code: 'REVENUE_WITHOUT_CHANNELS',
+      message: 'Tienes un modelo de ingresos pero no has definido cómo vas a llegar a tus clientes.',
+      severity: 'warning',
+      relatedBlocks: [5, 6],
+      hint: 'Define al menos 2–3 canales de adquisición específicos (SEO, outbound, partnerships, etc.) para que el modelo de monetización sea ejecutable.',
+    });
+  }
+
   return issues;
 }
 
@@ -232,6 +276,185 @@ function computeConsistencyScore(
     else                                   score -= 5;
   }
   return Math.max(0, score);
+}
+
+// ── Market clarity subscore ───────────────────────────────────
+
+/**
+ * Compute a market clarity score [0–100].
+ *
+ * Rewards signals that indicate a well-defined, scoped target market:
+ *   • Specific customer segment (B2B/B2C, industry, role, size)
+ *   • Early-adopter definition
+ *   • Market scope indication (TAM/SAM/SOM or numeric market size)
+ *   • Absence of "everyone" broad-audience language
+ *
+ * Returns 0 when neither block 1 nor block 2 is filled.
+ */
+function computeMarketClarityScore(canvasData: CanvasData): number {
+  const segmentos = canvasData[2] ?? '';
+  const problema  = canvasData[1] ?? '';
+
+  if (segmentos.trim().length === 0 && problema.trim().length === 0) return 0;
+
+  let score = 30; // baseline — clarity must be earned
+
+  const segNorm = normalise(segmentos);
+  const probNorm = normalise(problema);
+  const combined = `${segNorm} ${probNorm}`;
+
+  // Specific segment descriptors (terms are already lowercase, no accent normalisation needed)
+  const specificTerms = ['b2b', 'b2c', 'pyme', 'startup', 'freelance', 'autonomo', 'director',
+    'sector', 'industria', 'empleados', 'facturacion', 'profesional', 'gerente', 'cto', 'ceo'];
+  const specificMatches = specificTerms.filter(t => combined.includes(t)).length;
+  if (specificMatches >= 3) score += 20;
+  else if (specificMatches >= 1) score += 10;
+
+  // Early adopter defined (drop redundant 'adopter' — already matched by 'early adopter')
+  if (/early adopter|primer cliente|pionero|nicho/.test(segNorm)) score += 15;
+
+  // Market size signals (TAM/SAM/SOM or size estimate)
+  const hasSizeSignal = /\btam\b|\bsam\b|\bsom\b|tama[ñn]o de mercado|mercado de|millones de|miles de/.test(combined);
+  if (hasSizeSignal) score += 10;
+
+  // Penalise broad-audience language (terms are already normalised — compare to segNorm)
+  const broadTerms = ['todos', 'todo el mundo', 'cualquiera', 'personas en general', 'gente'];
+  const hasBroad = broadTerms.some(t => segNorm.includes(t));
+  if (hasBroad) score -= 20;
+
+  // Bonus if segment has a reasonable word count
+  const segWc = segmentos.trim().split(/\s+/).length;
+  if (segWc >= 15) score += 10;
+  else if (segWc < 5 && segmentos.trim().length > 0) score -= 5;
+
+  return Math.max(0, Math.min(100, score));
+}
+
+// ── Value proposition subscore ────────────────────────────────
+
+/**
+ * Compute a value proposition strength score [0–100].
+ *
+ * Rewards signals that indicate a compelling, outcome-focused,
+ * clearly-differentiated value proposition:
+ *   • Outcome-focused language (ahorra, reduce, elimina, automatiza)
+ *   • Quantified benefit (%, €, horas, veces)
+ *   • Conciseness (≤ 30 words)
+ *   • Explicit comparison with alternatives
+ *   • Absence of generic product descriptions
+ *
+ * Returns 0 when block 3 (UVP) is empty.
+ */
+function computeValuePropositionScore(canvasData: CanvasData): number {
+  const uvp = canvasData[3] ?? '';
+  if (uvp.trim().length === 0) return 0;
+
+  let score = 30; // baseline — strength must be earned
+
+  const uvpLower = normalise(uvp);
+
+  // Outcome-focused language
+  const outcomeTerms = ['ahorra', 'reduce', 'elimina', 'automatiza', 'simplifica',
+    'mas rapido', 'sin friccion', 'ahorro de', 'reduccion'];
+  const hasOutcome = outcomeTerms.some(t => uvpLower.includes(t));
+  if (hasOutcome) score += 20;
+
+  // Quantified benefit
+  const hasQuantified = /\d[\d.,]*\s*(%|€|\$|hora|horas|veces|minuto|minutos)/.test(uvp);
+  if (hasQuantified) score += 15;
+
+  // Conciseness bonus (a good UVP fits in 1–2 sentences)
+  const wc = uvp.trim().split(/\s+/).length;
+  if (wc <= 30) score += 10;
+  else if (wc > 60) score -= 10;
+
+  // Comparison/differentiation language
+  const comparisonTerms = ['a diferencia de', 'frente a', 'en lugar de', 'mejor que',
+    'sin necesidad de', 'a diferencia', 'alternativas', 'unico', 'diferente'];
+  const hasComparison = comparisonTerms.some(t => uvpLower.includes(t));
+  if (hasComparison) score += 10;
+
+  // Positive value keywords
+  const valueTerms = BLOCK_KEYWORDS[3].positive;
+  const posMatches = valueTerms.filter(t => uvpLower.includes(normalise(t))).length;
+  if (posMatches >= 2) score += 10;
+
+  // Penalise generic product descriptions without value language
+  const genericTerms = BLOCK_KEYWORDS[3].generic;
+  const hasGeneric = genericTerms.some(t => uvpLower.includes(normalise(t)));
+  if (hasGeneric && !hasOutcome && posMatches === 0) score -= 15;
+
+  return Math.max(0, Math.min(100, score));
+}
+
+// ── Viability subscore ────────────────────────────────────────
+
+/**
+ * Compute a financial viability score [0–100].
+ *
+ * Rewards signals that together form a coherent unit-economics story:
+ *   • Revenue model defined with pricing
+ *   • Cost structure defined with numbers
+ *   • Unit economics: CAC and LTV mentioned (anywhere across blocks 6–8)
+ *   • Recurring revenue (MRR/ARR)
+ *   • Retention/churn awareness
+ *
+ * Penalises structural viability gaps (critical cross-block issues).
+ *
+ * Returns 0 when fewer than 2 of blocks 6, 7, 8 are filled.
+ */
+function computeViabilityScore(
+  canvasData: CanvasData,
+  filledBlocks: number,
+  crossBlockIssues: CrossBlockIssue[],
+): number {
+  const ingresos = canvasData[6] ?? '';
+  const costes   = canvasData[7] ?? '';
+  const metricas = canvasData[8] ?? '';
+
+  const financialBlocksFilled = [ingresos, costes, metricas].filter(b => b.trim().length > 0).length;
+  if (financialBlocksFilled < 2 || filledBlocks < 3) return 0;
+
+  let score = 20; // baseline
+
+  // Revenue model defined
+  const revenueTerms = ['suscripcion', 'freemium', 'transaccion', 'comision', 'licencia',
+    'saas', 'pago', 'tarifa', 'precio', 'mensual', 'anual', 'modelo', 'revenue'];
+  const hasRevenueModel = revenueTerms.some(t => normalise(ingresos).includes(t));
+  if (hasRevenueModel) score += 15;
+
+  // Pricing defined (numbers in revenue block)
+  if (/\d/.test(ingresos)) score += 10;
+
+  // Cost structure defined
+  const costTerms = ['salario', 'infraestructura', 'servidor', 'cloud', 'hosting',
+    'marketing', 'cac', 'operativo', 'fijo', 'variable', 'burn'];
+  const hasCostModel = costTerms.some(t => normalise(costes).includes(t));
+  if (hasCostModel) score += 10;
+
+  // Cost numbers (burn rate calculable)
+  if (/\d/.test(costes)) score += 5;
+
+  // Unit economics: CAC + LTV present anywhere across financial blocks
+  const combined = normalise(ingresos + ' ' + costes + ' ' + metricas);
+  const hasCac = /cac|coste de adquisicion/.test(combined);
+  const hasLtv = /ltv|valor de vida|valor del cliente/.test(combined);
+  if (hasCac && hasLtv) score += 15;
+  else if (hasCac || hasLtv) score += 7;
+
+  // Recurring revenue signal
+  if (/recurrente|suscripcion|mrr|arr/.test(combined)) score += 5;
+
+  // Retention/churn awareness
+  if (/churn|retencion|retention/.test(combined)) score += 5;
+
+  // Penalise critical viability cross-block issues
+  const criticalViabilityIssues = crossBlockIssues.filter(
+    i => i.severity === 'critical' && (i.relatedBlocks.includes(6) || i.relatedBlocks.includes(7)),
+  );
+  score -= Math.min(25, criticalViabilityIssues.length * 15);
+
+  return Math.max(0, Math.min(100, score));
 }
 
 // ── Verdict & recommendation helpers ─────────────────────────
@@ -432,6 +655,9 @@ function buildNextPriority(
   crossBlockIssues: CrossBlockIssue[],
   specificityScore: number,
   strategicReadinessScore: number,
+  marketClarityScore: number,
+  valuePropositionScore: number,
+  viabilityScore: number,
   blocks: Array<{ filled: boolean; blockName: string }>,
 ): string {
   // 1. Completion gaps take absolute priority
@@ -462,11 +688,26 @@ function buildNextPriority(
     return 'Añade cifras concretas al canvas: precios (€), porcentajes (%), plazos y nombres de canales específicos.';
   }
 
-  // 5. Low strategic readiness: missing investment-ready signals
+  // 5. Weak market clarity: the target customer is not well-defined
+  if (marketClarityScore < 40) {
+    return 'Define mejor tu segmento objetivo: ¿quién es tu early adopter? ¿qué rol, sector e industria tiene? Un segmento vago lleva a mensajes que no conectan.';
+  }
+
+  // 6. Weak value proposition: the differentiation claim is not compelling
+  if (valuePropositionScore < 40) {
+    return 'Refuerza tu propuesta de valor: describe el resultado concreto que obtiene el cliente (ahorra X horas, reduce Y%) y en qué se diferencia de las alternativas actuales.';
+  }
+
+  // 7. Weak viability: financial model is incomplete
+  if (viabilityScore < 40) {
+    return 'Completa el modelo financiero: define precios concretos, estructura de costes con cifras y calcula CAC y LTV para demostrar la viabilidad económica.';
+  }
+
+  // 8. Low strategic readiness: missing investment-ready signals
   if (strategicReadinessScore < 50) {
     return 'Completa el modelo financiero (costes + ingresos + CAC/LTV) y define tu ventaja injusta para aumentar la preparación estratégica.';
   }
 
-  // 6. Canvas is solid — move to validation
+  // 9. Canvas is solid — move to validation
   return 'Realiza al menos 5 entrevistas con clientes potenciales para contrastar las hipótesis del canvas.';
 }

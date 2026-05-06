@@ -81,5 +81,21 @@ export function evaluateSegmentos(text: string): { issues: Issue[]; strengths: S
     });
   }
 
+  // Reward market size signals (TAM/SAM/SOM)
+  if (hasAnyKeyword(text, ['tam', 'sam', 'som', 'tamaño de mercado', 'mercado de', 'millones de', 'miles de'])) {
+    strengths.push({
+      code: 'MARKET_SIZE_MENTIONED',
+      message: 'Incluye señales de tamaño de mercado (TAM/SAM/SOM), un dato que los inversores siempre buscan.',
+    });
+    score += 10;
+  } else {
+    issues.push({
+      code: 'NO_MARKET_SCOPE',
+      message: 'No se menciona el tamaño o alcance del mercado objetivo.',
+      severity: 'info',
+      hint: 'Añade una estimación del mercado disponible (p.ej. "mercado de 500M€ en España") para contextualizar el potencial.',
+    });
+  }
+
   return { issues, strengths, score: Math.max(0, Math.min(100, score)) };
 }

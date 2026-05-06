@@ -82,5 +82,24 @@ export function evaluatePropuestaUnica(text: string): { issues: Issue[]; strengt
     score += 10;
   }
 
+  // Reward explicit differentiation/comparison language
+  if (hasAnyKeyword(text, ['a diferencia de', 'frente a', 'en lugar de', 'mejor que', 'sin necesidad de', 'unico en'])) {
+    strengths.push({
+      code: 'COMPARISON_LANGUAGE',
+      message: 'La propuesta hace una comparación explícita con las alternativas, lo que refuerza la diferenciación.',
+    });
+    score += 8;
+  }
+
+  // Warn if no customer reference in the UVP
+  if (!hasAnyKeyword(text, ['cliente', 'usuario', 'empresa', 'equipo', 'profesional', 'autónomo', 'para ti', 'para tu', 'para los'])) {
+    issues.push({
+      code: 'NO_CUSTOMER_REFERENCE',
+      message: 'La propuesta de valor no menciona explícitamente a quién está dirigida.',
+      severity: 'info',
+      hint: 'Una UVP más potente incluye el segmento: "La solución más rápida para [quién]".',
+    });
+  }
+
   return { issues, strengths, score: Math.max(0, Math.min(100, score)) };
 }

@@ -5,7 +5,7 @@
 import type { Issue, Strength } from '../types';
 import {
   wordCount, sentenceCount, hasAnyKeyword, countKeywordMatches,
-  looksLikePlaceholder,
+  looksLikePlaceholder, containsConcreteQuantity,
 } from '../utils/text';
 import { BLOCK_KEYWORDS } from '../dictionaries/keywords';
 
@@ -97,9 +97,18 @@ export function evaluateProblema(text: string): { issues: Issue[]; strengths: St
     issues.push({
       code: 'MISSING_ALTERNATIVES',
       message: 'No se mencionan las alternativas existentes.',
-      severity: 'info',
+      severity: 'warning',
       hint: 'Añade cómo resuelven el problema hoy tus clientes potenciales.',
     });
+  }
+
+  // Reward quantified pain (numbers make the problem tangible for investors)
+  if (containsConcreteQuantity(text)) {
+    strengths.push({
+      code: 'QUANTIFIED_PAIN',
+      message: 'El problema está cuantificado (tiempo, coste, frecuencia), lo que lo hace más convincente para inversores.',
+    });
+    score += 10;
   }
 
   return { issues, strengths, score: Math.max(0, Math.min(100, score)) };

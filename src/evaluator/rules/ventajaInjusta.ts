@@ -74,5 +74,23 @@ export function evaluateVentajaInjusta(text: string): { issues: Issue[]; strengt
     score += 10;
   }
 
+  // Reward network effects
+  if (hasAnyKeyword(text, ['efecto red', 'network effect', 'efectos de red', 'red de usuarios'])) {
+    strengths.push({
+      code: 'NETWORK_EFFECT',
+      message: 'Menciona efectos de red — una barrera de entrada que crece con cada usuario añadido.',
+    });
+    score += 10;
+  }
+
+  // Reward data flywheel / proprietary data
+  if (hasAnyKeyword(text, ['datos propios', 'datos únicos', 'datos unicos', 'flywheel', 'volante de datos', 'dataset exclusivo', 'dataset propio'])) {
+    strengths.push({
+      code: 'DATA_FLYWHEEL',
+      message: 'Los datos propios o exclusivos son un activo estratégico difícil de replicar que mejora con el uso.',
+    });
+    score += 10;
+  }
+
   return { issues, strengths, score: Math.max(0, Math.min(100, score)) };
 }

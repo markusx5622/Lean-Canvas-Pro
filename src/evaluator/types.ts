@@ -130,6 +130,29 @@ export interface GlobalSummary {
    */
   strategicReadinessScore: Score;
   /**
+   * Market clarity score [0–100].
+   * Measures how well the target market is defined: specificity of the
+   * customer segment, early-adopter identification, and any indication
+   * of market scope (TAM/SAM/SOM or size signals).
+   * 0 = market undefined  |  100 = clearly scoped, named segment.
+   */
+  marketClarityScore: Score;
+  /**
+   * Value proposition score [0–100].
+   * Measures the strength of the differentiation claim: outcome-focused
+   * language, quantified benefit, conciseness, and explicit comparison
+   * with existing alternatives.
+   * 0 = generic description  |  100 = compelling, customer-centred UVP.
+   */
+  valuePropositionScore: Score;
+  /**
+   * Financial viability score [0–100].
+   * Measures the integrity of the unit-economics story: revenue model
+   * definition, pricing, cost structure, and CAC/LTV awareness.
+   * 0 = no financial model  |  100 = fully specified unit economics.
+   */
+  viabilityScore: Score;
+  /**
    * One-line VC-style verdict based on overallScore:
    *   ≥ 80 → "Sólido"  |  60–79 → "Prometedor"  |  40–59 → "En desarrollo"  |  < 40 → "Necesita trabajo"
    */
@@ -163,6 +186,9 @@ export interface GlobalSummary {
     specificity: number;
     consistency: number;
     strategicReadiness: number;
+    marketClarity: number;
+    valueProposition: number;
+    viability: number;
   };
 }
 
