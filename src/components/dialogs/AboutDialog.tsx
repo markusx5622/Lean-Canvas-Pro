@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Code, Linkedin, Layers, ShieldCheck, Download, Sparkles, MousePointerClick, ArrowRight } from 'lucide-react';
+import { Github, Linkedin, Layers, ShieldCheck, Download, Sparkles, MousePointerClick, ArrowRight } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -120,7 +120,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
                     target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-3 px-4 py-3 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group text-[13px] font-medium text-slate-700 dark:text-slate-300 shadow-sm"
                   >
-                    <Code size={16} className="text-blue-500 group-hover:scale-110 transition-transform shrink-0" />
+                    <Github size={16} className="text-slate-800 dark:text-white group-hover:scale-110 transition-transform shrink-0" />
                     <span className="flex-1">Ver repositorio</span>
                     <ArrowRight size={13} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
                   </a>

@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import {
   Rocket, Sparkles, CheckCircle2, BarChart2, ShieldCheck, Code,
   Users, Zap, Layers, Download, Share2, Clock, ArrowRight,
-  FileText, MousePointerClick, Target, BookOpen, Github, ExternalLink,
+  FileText, MousePointerClick, Target, BookOpen, Github, Linkedin,
 } from 'lucide-react';
 import { ParticleBackground } from '../ParticleBackground';
 
@@ -520,7 +520,7 @@ export function SplashPage({ theme, onEnter, prefersReducedMotion }: SplashPageP
                   aria-label="LinkedIn"
                   className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
-                  <ExternalLink size={15} />
+                  <Linkedin size={15} />
                 </a>
               </div>
             </div>
