@@ -2,6 +2,13 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Sentry } from '../lib/sentry';
+import {
+  identifyUser,
+  resetIdentity,
+  trackSignUp,
+  trackLogin,
+  trackLogout,
+} from '../lib/analytics';
 
 // === Types ===
 
@@ -43,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Keep state in sync whenever auth changes (sign in / sign out / token refresh).
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -51,8 +58,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // with a specific account without exposing personally-identifiable data.
       if (session?.user) {
         Sentry.setUser({ id: session.user.id });
+        identifyUser(session.user.id);
       } else {
         Sentry.setUser(null);
+        // Only reset analytics identity and record logout on an explicit sign-out,
+        // not on the initial INITIAL_SESSION event when no session exists.
+        if (event === 'SIGNED_OUT') {
+          resetIdentity();
+          trackLogout();
+        }
       }
     });
 
@@ -62,12 +76,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string) => {
     if (!supabase) return { error: 'Supabase no está configurado.' };
     const { error } = await supabase.auth.signUp({ email, password });
+    if (!error) trackSignUp();
     return { error: error?.message ?? null };
   };
 
   const signIn = async (email: string, password: string) => {
     if (!supabase) return { error: 'Supabase no está configurado.' };
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error) trackLogin();
     return { error: error?.message ?? null };
   };
 

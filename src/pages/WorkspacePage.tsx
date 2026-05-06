@@ -7,6 +7,7 @@ import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from '../eval
 import type { EvaluationResult, BlockFeedback, BlockId } from '../evaluator';
 import { exportCanvasToPdf } from '../lib/exportPdf';
 import { useCanvasSharing } from '../hooks/useCanvasSharing';
+import { trackStrategicAuditRun, trackPdfExported } from '../lib/analytics';
 import { ParticleBackground } from '../ParticleBackground';
 import { Toolbar } from '../components/toolbar/Toolbar';
 import { CanvasGrid } from '../components/canvas/CanvasGrid';
@@ -221,6 +222,7 @@ export function WorkspacePage() {
     setPdfExporting(true);
     try {
       await exportCanvasToPdf(activeProject);
+      trackPdfExported();
     } catch (err) {
       console.error('[exportPdf] Failed to generate PDF:', err);
       setAlertMessage({ title: 'Error al exportar', message: 'No se pudo generar el PDF. Inténtalo de nuevo.' });
@@ -233,6 +235,7 @@ export function WorkspacePage() {
     if (filledBlocks === 0) return;
     const result = evaluateCanvas(canvasData as Record<number, string>);
     setAuditResult(result);
+    trackStrategicAuditRun(filledBlocks);
   };
 
   const runBlockAudit = () => {
