@@ -59,6 +59,9 @@ export function AuditDialog({ auditResult, onClose }: AuditDialogProps) {
         <motion.div
           initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
           onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="audit-dialog-title"
           className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-700"
         >
           {/* Header */}
@@ -68,14 +71,14 @@ export function AuditDialog({ auditResult, onClose }: AuditDialogProps) {
                 <ShieldCheck className="text-white" size={24} />
               </div>
               <div>
-                <h3 className="text-white font-extrabold text-lg flex items-center gap-2">
+                <h3 id="audit-dialog-title" className="text-white font-extrabold text-lg flex items-center gap-2">
                   Auditoría Estratégica <Sparkles size={16} className="text-indigo-200" />
                 </h3>
                 <p className="text-indigo-100 text-[13px] font-medium">Motor heurístico local · Sin IA externa</p>
               </div>
             </div>
-            <button onClick={onClose} className="text-white/70 hover:text-white p-2 transition-colors">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <button onClick={onClose} aria-label="Cerrar auditoría" className="text-white/70 hover:text-white p-2 transition-colors rounded-lg hover:bg-white/10">
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 6 6 18" /><path d="m6 6 12 12" />
               </svg>
             </button>

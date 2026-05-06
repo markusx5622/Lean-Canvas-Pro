@@ -48,6 +48,9 @@ export function ConfirmDialog({
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.95, y: 16 }}
           onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-dialog-title"
           className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-800 p-6 flex flex-col gap-5"
         >
           {/* Icon + title */}
@@ -58,7 +61,7 @@ export function ConfirmDialog({
                 : <Info size={20} className="text-indigo-600 dark:text-indigo-400" strokeWidth={2.5} />}
             </div>
             <div className="flex-1 pt-0.5">
-              <h3 className="font-display text-[17px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug">
+              <h3 id="confirm-dialog-title" className="font-display text-[17px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug">
                 {title}
               </h3>
               <p className="text-[13.5px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed mt-1.5">

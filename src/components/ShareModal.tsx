@@ -51,6 +51,9 @@ export function ShareModal({ canvasName, sharing, onClose }: ShareModalProps) {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.95, y: 16 }}
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-modal-title"
         className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-800"
       >
         {/* Header */}
@@ -60,7 +63,7 @@ export function ShareModal({ canvasName, sharing, onClose }: ShareModalProps) {
               <Link2 size={20} className="text-indigo-600 dark:text-indigo-400" strokeWidth={2.5} />
             </div>
             <div>
-              <h3 className="font-display text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">
+              <h3 id="share-modal-title" className="font-display text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Compartir canvas
               </h3>
               <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate max-w-[260px]">
@@ -70,9 +73,10 @@ export function ShareModal({ canvasName, sharing, onClose }: ShareModalProps) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Cerrar"
             className="p-2 text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         </div>
 
@@ -116,6 +120,7 @@ export function ShareModal({ canvasName, sharing, onClose }: ShareModalProps) {
                 </span>
                 <button
                   onClick={handleCopy}
+                  aria-label={copied ? 'Enlace copiado' : 'Copiar enlace'}
                   title="Copiar enlace"
                   className="shrink-0 p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-500 dark:text-slate-400"
                 >

@@ -26,6 +26,13 @@ export function BlockCard({
   additionalClasses = '',
   onClick,
 }: BlockCardProps) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <motion.div
       layoutId={`block-${data.id}`}
@@ -35,7 +42,12 @@ export function BlockCard({
       whileHover={!isActive ? { y: -5, scale: 1.02, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } } : {}}
       whileTap={!isActive ? { scale: 0.98, transition: { duration: 0.15 } } : {}}
       onClick={onClick}
-      className={`group relative flex flex-col cursor-pointer overflow-hidden rounded-[20px] transition-all duration-300
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isActive}
+      aria-label={`${data.title}${hasContent ? ' (con contenido)' : ''}`}
+      className={`group relative flex flex-col cursor-pointer overflow-hidden rounded-[20px] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500
         ${isActive
           ? `bg-white dark:bg-slate-800 shadow-[0_15px_40px_-5px_rgba(0,0,0,0.12)] dark:shadow-[0_15px_40px_-5px_rgba(0,0,0,0.4)] ring-2 ring-offset-2 dark:ring-offset-slate-900 ${data.ringColor} z-20`
           : 'bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgb(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.10)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] border border-slate-200/80 dark:border-slate-700 hover:border-slate-300/80 dark:hover:border-slate-600'
@@ -43,11 +55,12 @@ export function BlockCard({
     >
       {/* Colored accent bar */}
       <div
+        aria-hidden="true"
         className={`absolute top-0 left-0 right-0 rounded-t-[20px] ${data.accentBar} transition-all duration-300
           ${isActive ? 'h-[4px] opacity-100' : 'h-[3px] opacity-50 group-hover:opacity-80 group-hover:h-[4px]'}`}
       />
 
-      <div className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 group-hover:opacity-100 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none border-none transition-all duration-500`} />
+      <div aria-hidden="true" className={`absolute top-0 left-0 w-48 h-48 bg-gradient-to-br ${data.color} opacity-60 group-hover:opacity-100 rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none border-none transition-all duration-500`} />
 
       <div className="p-6 relative h-full flex flex-col z-10 w-full">
         <div className="flex items-start justify-between mb-3">

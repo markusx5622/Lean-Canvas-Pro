@@ -37,15 +37,19 @@ export function MobileEditor({
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         className="md:hidden fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex flex-col justify-end cursor-pointer"
         onClick={onClose}
+        aria-hidden="true"
       >
         <motion.div
           initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className="bg-white dark:bg-slate-800 rounded-t-[32px] h-[92vh] w-full flex flex-col shadow-2xl p-6 cursor-auto relative overflow-hidden"
           onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Editor: ${selectedBlock.title}`}
         >
           {/* Drag handle */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full" />
+          <div aria-hidden="true" className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full" />
 
           {/* Block header */}
           <div className="mt-5 flex items-center gap-4 mb-5 shrink-0">
@@ -63,18 +67,22 @@ export function MobileEditor({
           </div>
 
           {/* Guide / Examples tabs */}
-          <div className="flex bg-slate-50 dark:bg-slate-700/80 p-1.5 rounded-xl mb-4 shrink-0 border border-slate-200/60 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
+          <div role="tablist" aria-label="Contenido del bloque" className="flex bg-slate-50 dark:bg-slate-700/80 p-1.5 rounded-xl mb-4 shrink-0 border border-slate-200/60 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
             <button
+              role="tab"
+              aria-selected={activeTab === 'guide'}
               onClick={() => onChangeTab('guide')}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[13px] font-bold rounded-lg transition-all duration-200 ${activeTab === 'guide' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}
             >
-              <BookOpen size={14} strokeWidth={2.5} /> Guía
+              <BookOpen size={14} strokeWidth={2.5} aria-hidden="true" /> Guía
             </button>
             <button
+              role="tab"
+              aria-selected={activeTab === 'examples'}
               onClick={() => onChangeTab('examples')}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[13px] font-bold rounded-lg transition-all duration-200 ${activeTab === 'examples' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}
             >
-              <MessageSquare size={14} strokeWidth={2.5} /> Ejemplos
+              <MessageSquare size={14} strokeWidth={2.5} aria-hidden="true" /> Ejemplos
             </button>
           </div>
 
@@ -118,9 +126,9 @@ export function MobileEditor({
 
           {/* Textarea + save status header */}
           <div className="flex items-center justify-between mb-2 shrink-0">
-            <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">
+            <label htmlFor="mobile-editor-textarea" className="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">
               Tus notas estratégicas
-            </span>
+            </label>
             <div className="flex items-center gap-2">
               <button
                 onClick={onAuditBlock}
@@ -144,6 +152,8 @@ export function MobileEditor({
           </div>
 
           <textarea
+            id="mobile-editor-textarea"
+            aria-label={`Notas estratégicas para ${selectedBlock.title}`}
             className={`flex-1 w-full p-4 mb-3 bg-slate-50 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-[15px] font-medium text-slate-800 dark:text-slate-200 leading-relaxed focus:bg-white focus:dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:dark:ring-offset-slate-900 ${selectedBlock.ringColor} resize-none shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]`}
             placeholder="Escribe tus ideas..."
             value={editorText}

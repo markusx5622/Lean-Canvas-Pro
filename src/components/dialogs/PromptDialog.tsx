@@ -54,6 +54,9 @@ export function PromptDialog({
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.95, y: 16 }}
           onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="prompt-dialog-title"
           className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-800 p-6 flex flex-col gap-5"
         >
           {/* Icon + title */}
@@ -61,7 +64,7 @@ export function PromptDialog({
             <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 bg-indigo-50 dark:bg-indigo-500/10">
               <Edit2 size={18} className="text-indigo-600 dark:text-indigo-400" strokeWidth={2.5} />
             </div>
-            <h3 className="font-display text-[17px] font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <h3 id="prompt-dialog-title" className="font-display text-[17px] font-extrabold text-slate-900 dark:text-white tracking-tight">
               {title}
             </h3>
           </div>
@@ -69,12 +72,13 @@ export function PromptDialog({
           {/* Input */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {label && (
-              <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+              <label htmlFor="prompt-input" className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 {label}
               </label>
             )}
             <input
               ref={inputRef}
+              id="prompt-input"
               type="text"
               value={value}
               onChange={(e) => setValue(e.target.value)}

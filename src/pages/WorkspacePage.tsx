@@ -248,8 +248,8 @@ export function WorkspacePage() {
   // Show spinner while cloud canvases are first fetched with no local cache.
   if (canvasLoading && projects.length === 0) {
     return (
-      <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-950 flex items-center justify-center">
-        <svg className="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-950 flex items-center justify-center" role="status" aria-label="Cargando espacio de trabajo">
+        <svg aria-hidden="true" className="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
         </svg>
@@ -263,7 +263,7 @@ export function WorkspacePage() {
     <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex justify-center pb-16 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
       <ParticleBackground theme={theme} />
       {/* Ambient glow blobs — same system used on landing and auth pages */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      <div aria-hidden="true" className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-[120px]" />
         <div className="absolute top-[30%] -right-[15%] w-[40%] h-[60%] rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-[120px]" />
         <div className="absolute bottom-[0%] left-[20%] w-[60%] h-[40%] rounded-full bg-purple-500/10 dark:bg-purple-500/5 blur-[120px]" />
@@ -281,7 +281,8 @@ export function WorkspacePage() {
       </AnimatePresence>
 
       {/* Hidden file input for JSON import */}
-      <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleImportJson} />
+      <label className="sr-only" htmlFor="json-import-input">Importar canvas desde JSON</label>
+      <input id="json-import-input" type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleImportJson} />
 
       <style dangerouslySetInnerHTML={{ __html: '::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }' }} />
 

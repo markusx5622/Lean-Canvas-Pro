@@ -50,7 +50,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
         >
           {/* ── Header banner ── */}
           <div className="relative bg-gradient-to-br from-indigo-600 to-violet-600 px-8 pt-10 pb-8 rounded-t-3xl overflow-hidden">
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 70% 50%, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+            <div aria-hidden="true" className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 70% 50%, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
             <div className="relative">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles size={14} className="text-indigo-200" />
@@ -152,10 +152,11 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
           {/* Close button */}
           <button
             onClick={onClose}
+            aria-label="Cerrar"
             title="Cerrar"
             className="absolute top-4 right-4 p-2 text-white/80 hover:text-white transition-colors rounded-full hover:bg-white/10"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6 6 18" /><path d="m6 6 12 12" />
             </svg>
           </button>
