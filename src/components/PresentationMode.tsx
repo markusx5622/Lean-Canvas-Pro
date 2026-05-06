@@ -4,7 +4,8 @@ import { X, Rocket, ChevronLeft, ChevronRight, EyeOff } from 'lucide-react';
 import { BLOCK_META } from '../data/blocks';
 import type { CanvasData } from '../hooks/useCanvases';
 
-// Canvas block order (follows the visual grid layout)
+// Canvas block order: matches the visual grid layout left-to-right, top-to-bottom.
+// Column positions: 1=col1, 4+8=col2, 3=col3, 9+5=col4, 2=col5, then 7+6 bottom row.
 const BLOCK_ORDER = [1, 4, 8, 3, 9, 5, 2, 7, 6];
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -49,7 +50,7 @@ function PresentationBlock({
       onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
-      aria-label={`${meta.title}${value.trim() ? '' : ' (sin contenido)'} · ampliar`}
+      aria-label={`${meta.title}${value.trim() ? '' : ', sin contenido'}, ampliar`}
       className={`group relative flex flex-col overflow-hidden rounded-[20px] bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 cursor-pointer hover:shadow-xl hover:shadow-black/10 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 transition-all duration-300 ${additionalClasses}`}
       style={{ '--glow-color': meta.glowColor } as React.CSSProperties}
     >
@@ -228,7 +229,7 @@ export function PresentationMode({ canvasName, canvasData, onClose }: Presentati
     };
   }, []);
 
-  const data = canvasData as Record<string, string | undefined>;
+  const data = canvasData;
 
   return (
     <motion.div
@@ -279,19 +280,19 @@ export function PresentationMode({ canvasName, canvasData, onClose }: Presentati
         <div className="max-w-[1360px] mx-auto px-4 md:px-8 py-6 flex flex-col gap-5 pb-16">
           {/* Top 7 blocks */}
           <div className="grid grid-cols-1 md:grid-cols-10 md:grid-rows-[minmax(200px,auto)_minmax(200px,auto)] gap-5">
-            <PresentationBlock blockId={1} index={0} value={data['1'] ?? ''} additionalClasses="md:col-span-2 md:row-span-2" onClick={() => setFocusedBlockId(1)} />
-            <PresentationBlock blockId={4} index={1} value={data['4'] ?? ''} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-1" onClick={() => setFocusedBlockId(4)} />
-            <PresentationBlock blockId={8} index={2} value={data['8'] ?? ''} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-2" onClick={() => setFocusedBlockId(8)} />
-            <PresentationBlock blockId={3} index={3} value={data['3'] ?? ''} additionalClasses="md:col-span-2 md:col-start-5 md:row-span-2" onClick={() => setFocusedBlockId(3)} />
-            <PresentationBlock blockId={9} index={4} value={data['9'] ?? ''} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-1" onClick={() => setFocusedBlockId(9)} />
-            <PresentationBlock blockId={5} index={5} value={data['5'] ?? ''} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-2" onClick={() => setFocusedBlockId(5)} />
-            <PresentationBlock blockId={2} index={6} value={data['2'] ?? ''} additionalClasses="md:col-span-2 md:col-start-9 md:row-span-2" onClick={() => setFocusedBlockId(2)} />
+            <PresentationBlock blockId={1} index={0} value={data[1] ?? ''} additionalClasses="md:col-span-2 md:row-span-2" onClick={() => setFocusedBlockId(1)} />
+            <PresentationBlock blockId={4} index={1} value={data[4] ?? ''} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-1" onClick={() => setFocusedBlockId(4)} />
+            <PresentationBlock blockId={8} index={2} value={data[8] ?? ''} additionalClasses="md:col-span-2 md:col-start-3 md:row-start-2" onClick={() => setFocusedBlockId(8)} />
+            <PresentationBlock blockId={3} index={3} value={data[3] ?? ''} additionalClasses="md:col-span-2 md:col-start-5 md:row-span-2" onClick={() => setFocusedBlockId(3)} />
+            <PresentationBlock blockId={9} index={4} value={data[9] ?? ''} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-1" onClick={() => setFocusedBlockId(9)} />
+            <PresentationBlock blockId={5} index={5} value={data[5] ?? ''} additionalClasses="md:col-span-2 md:col-start-7 md:row-start-2" onClick={() => setFocusedBlockId(5)} />
+            <PresentationBlock blockId={2} index={6} value={data[2] ?? ''} additionalClasses="md:col-span-2 md:col-start-9 md:row-span-2" onClick={() => setFocusedBlockId(2)} />
           </div>
 
           {/* Bottom 2 blocks */}
           <div className="grid grid-cols-1 md:grid-cols-10 gap-5">
-            <PresentationBlock blockId={7} index={7} value={data['7'] ?? ''} additionalClasses="md:col-span-5 md:h-[180px]" onClick={() => setFocusedBlockId(7)} />
-            <PresentationBlock blockId={6} index={8} value={data['6'] ?? ''} additionalClasses="md:col-span-5 md:h-[180px]" onClick={() => setFocusedBlockId(6)} />
+            <PresentationBlock blockId={7} index={7} value={data[7] ?? ''} additionalClasses="md:col-span-5 md:h-[180px]" onClick={() => setFocusedBlockId(7)} />
+            <PresentationBlock blockId={6} index={8} value={data[6] ?? ''} additionalClasses="md:col-span-5 md:h-[180px]" onClick={() => setFocusedBlockId(6)} />
           </div>
 
           <p className="text-center text-[12px] text-slate-400 dark:text-slate-600 font-medium mt-2">
@@ -304,7 +305,7 @@ export function PresentationMode({ canvasName, canvasData, onClose }: Presentati
           {focusedBlockId !== null && (
             <FocusedBlock
               blockId={focusedBlockId}
-              value={String(data[String(focusedBlockId)] ?? '')}
+              value={data[focusedBlockId] ?? ''}
               blockIndex={focusedIndex}
               totalBlocks={BLOCK_ORDER.length}
               onPrev={handlePrev}
