@@ -289,8 +289,6 @@ export function Toolbar({
           <Share2 size={15} strokeWidth={2.5} />
         </button>
 
-        <div className="h-6 w-px bg-slate-200/60 dark:bg-slate-700 mx-1" />
-
         {/* User avatar (compact) */}
         <button
           onClick={onOpenSettings}
