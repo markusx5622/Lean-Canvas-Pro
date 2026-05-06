@@ -8,7 +8,7 @@ import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from '../eval
 import type { EvaluationResult, BlockFeedback, BlockId } from '../evaluator';
 import { exportCanvasToPdf } from '../lib/exportPdf';
 import { useCanvasSharing } from '../hooks/useCanvasSharing';
-import { trackStrategicAuditRun, trackPdfExported } from '../lib/analytics';
+import { trackStrategicAuditRun, trackPdfExported, trackPresentationModeEntered } from '../lib/analytics';
 import { ParticleBackground } from '../ParticleBackground';
 import { Toolbar } from '../components/toolbar/Toolbar';
 import { CanvasGrid } from '../components/canvas/CanvasGrid';
@@ -22,6 +22,7 @@ import { SettingsModal } from '../components/dialogs/SettingsModal';
 import { InviteModal } from '../components/dialogs/InviteModal';
 import { TemplatePickerDialog } from '../components/dialogs/TemplatePickerDialog';
 import { ShareModal } from '../components/ShareModal';
+import { PresentationMode } from '../components/PresentationMode';
 import { SplashPage } from './SplashPage';
 import { BLOCKS } from '../data/blocks';
 import type { CanvasTemplate } from '../data/templates';
@@ -70,6 +71,7 @@ export function WorkspacePage() {
   const [showAboutDialog, setShowAboutDialog] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showPresentation, setShowPresentation] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [canvasEntryKey, setCanvasEntryKey] = useState(0);
   const [pdfExporting, setPdfExporting] = useState(false);
@@ -124,12 +126,12 @@ export function WorkspacePage() {
   }, [canvasLoading, projects]);
 
   useEffect(() => {
-    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showShareModal || !!auditResult;
+    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showShareModal || showPresentation || !!auditResult;
     if (!shouldLock) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
-  }, [showSplash, showAboutDialog, showSettingsModal, showShareModal, auditResult]);
+  }, [showSplash, showAboutDialog, showSettingsModal, showShareModal, showPresentation, auditResult]);
 
   /** Immediately persists any dirty text (used when switching context). */
   const flushPendingSave = useCallback(() => {
@@ -352,6 +354,17 @@ export function WorkspacePage() {
         )}
       </AnimatePresence>
 
+      {/* Presentation mode */}
+      <AnimatePresence>
+        {showPresentation && activeProject && (
+          <PresentationMode
+            canvasName={activeProject.name}
+            canvasData={canvasData}
+            onClose={() => setShowPresentation(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Hidden file input for JSON import */}
       <label className="sr-only" htmlFor="json-import-input">Importar canvas desde JSON</label>
       <input id="json-import-input" type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleImportJson} />
@@ -386,6 +399,7 @@ export function WorkspacePage() {
           onOpenSettings={() => setShowSettingsModal(true)}
           onExportPdf={handleExportPdf}
           onShare={() => setShowShareModal(true)}
+          onPresent={() => { setShowPresentation(true); trackPresentationModeEntered(); }}
           onLogoClick={() => setShowSplash(true)}
         />
 
