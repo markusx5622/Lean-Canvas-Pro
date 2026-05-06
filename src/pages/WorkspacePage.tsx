@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AnimatePresence, useReducedMotion } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
+import { useWorkspaceContext } from '../contexts/WorkspaceContext';
 import { useCanvases } from '../hooks/useCanvases';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from '../evaluator';
@@ -35,6 +36,14 @@ function asBlockId(id: number): BlockId | null {
 export function WorkspacePage() {
   const { user, signOut } = useAuth();
   const {
+    workspaces,
+    activeWorkspaceId,
+    setActiveWorkspaceId,
+    createWs,
+    renameWs,
+    deleteWs,
+  } = useWorkspaceContext();
+  const {
     projects,
     loading: canvasLoading,
     createProject,
@@ -43,7 +52,7 @@ export function WorkspacePage() {
     clearProject,
     updateBlock,
     importProject,
-  } = useCanvases();
+  } = useCanvases(activeWorkspaceId);
 
   const [activeProjectId, setActiveProjectId] = useLocalStorage<string>('lean-canvas-pro-active', '');
   const [selectedBlockId, setSelectedBlockId] = useState<number | null>(null);
@@ -64,6 +73,9 @@ export function WorkspacePage() {
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showCreateWorkspaceDialog, setShowCreateWorkspaceDialog] = useState(false);
+  const [showRenameWorkspaceDialog, setShowRenameWorkspaceDialog] = useState(false);
+  const [showDeleteWorkspaceConfirm, setShowDeleteWorkspaceConfirm] = useState(false);
   const [alertMessage, setAlertMessage] = useState<{ title: string; message: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -246,6 +258,42 @@ export function WorkspacePage() {
     setBlockAuditResult(result);
   };
 
+  // ── Workspace handlers ────────────────────────────────────────────────────────
+
+  const handleCreateWorkspace = async (name: string) => {
+    const id = await createWs(name).catch((err: unknown) => {
+      console.error('[workspace] create failed:', err);
+      setAlertMessage({ title: 'Error', message: 'No se pudo crear el workspace.' });
+      return null;
+    });
+    if (id) {
+      setActiveWorkspaceId(id);
+      setActiveProjectId('');
+      setSelectedBlockId(null);
+    }
+  };
+
+  const handleRenameWorkspace = async (name: string) => {
+    if (!activeWorkspaceId) return;
+    await renameWs(activeWorkspaceId, name).catch((err: unknown) => {
+      console.error('[workspace] rename failed:', err);
+      setAlertMessage({ title: 'Error', message: 'No se pudo renombrar el workspace.' });
+    });
+  };
+
+  const handleDeleteWorkspace = async () => {
+    if (!activeWorkspaceId) return;
+    await deleteWs(activeWorkspaceId).catch((err: unknown) => {
+      console.error('[workspace] delete failed:', err);
+      setAlertMessage({ title: 'Error', message: 'No se pudo eliminar el workspace.' });
+    });
+    // activeWorkspaceId is reset to null by WorkspaceContext on delete.
+    setActiveProjectId('');
+    setSelectedBlockId(null);
+  };
+
+  const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) ?? null;
+
   const selectedBlock = BLOCKS.find((b) => b.id === selectedBlockId);
 
   // Show spinner while cloud canvases are first fetched with no local cache.
@@ -301,6 +349,12 @@ export function WorkspacePage() {
           user={user}
           prefersReducedMotion={prefersReducedMotion}
           hasActiveShare={sharing.share !== null}
+          workspaces={workspaces}
+          activeWorkspaceId={activeWorkspaceId}
+          onSelectWorkspace={(id) => { setActiveWorkspaceId(id); setActiveProjectId(''); setSelectedBlockId(null); }}
+          onCreateWorkspace={() => setShowCreateWorkspaceDialog(true)}
+          onRenameWorkspace={() => setShowRenameWorkspaceDialog(true)}
+          onDeleteWorkspace={() => setShowDeleteWorkspaceConfirm(true)}
           onCreateProject={handleCreateProject}
           onRenameProject={handleRenameProject}
           onDeleteProject={handleDeleteProject}
@@ -412,6 +466,57 @@ export function WorkspacePage() {
               confirmLabel="Entendido"
               alertOnly
               onConfirm={() => setAlertMessage(null)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Create workspace dialog */}
+        <AnimatePresence>
+          {showCreateWorkspaceDialog && (
+            <PromptDialog
+              title="Nuevo workspace"
+              label="Nombre del workspace"
+              initialValue=""
+              confirmLabel="Crear"
+              onConfirm={(name) => {
+                setShowCreateWorkspaceDialog(false);
+                if (name.trim()) handleCreateWorkspace(name.trim());
+              }}
+              onCancel={() => setShowCreateWorkspaceDialog(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Rename workspace dialog */}
+        <AnimatePresence>
+          {showRenameWorkspaceDialog && activeWorkspace && (
+            <PromptDialog
+              title="Renombrar workspace"
+              label="Nombre del workspace"
+              initialValue={activeWorkspace.name}
+              confirmLabel="Guardar"
+              onConfirm={(name) => {
+                setShowRenameWorkspaceDialog(false);
+                if (name.trim() && name !== activeWorkspace.name) handleRenameWorkspace(name.trim());
+              }}
+              onCancel={() => setShowRenameWorkspaceDialog(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Delete workspace confirm dialog */}
+        <AnimatePresence>
+          {showDeleteWorkspaceConfirm && activeWorkspace && (
+            <ConfirmDialog
+              title="Eliminar workspace"
+              message={`¿Eliminar el workspace '${activeWorkspace.name}'? Los lienzos del workspace perderán su asociación.`}
+              confirmLabel="Eliminar"
+              variant="danger"
+              onConfirm={() => {
+                setShowDeleteWorkspaceConfirm(false);
+                handleDeleteWorkspace();
+              }}
+              onCancel={() => setShowDeleteWorkspaceConfirm(false)}
             />
           )}
         </AnimatePresence>

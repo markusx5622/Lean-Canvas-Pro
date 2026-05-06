@@ -49,6 +49,10 @@ const CACHE_KEY_PREFIX = 'lean-canvas-pro-cache-';
 const LEGACY_PROJECTS_KEY = 'lean-canvas-pro-projects';
 const MIGRATED_FLAG_PREFIX = 'lean-canvas-pro-migrated-';
 
+function workspaceSuffix(workspaceId: string | null) {
+  return workspaceId === null ? 'personal' : workspaceId;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function rowToProject(row: CanvasRow): Project {
@@ -72,12 +76,18 @@ function projectDataToRecord(data: CanvasData): Record<string, string> {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useCanvases(): UseCanvasesReturn {
+/**
+ * Manages the canvas list scoped to the given workspace.
+ * Pass `null` (default) for the Personal scope (canvases with no workspace).
+ */
+export function useCanvases(workspaceId: string | null = null): UseCanvasesReturn {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const cacheKey = user ? `${CACHE_KEY_PREFIX}${user.id}` : null;
+  const cacheKey = user
+    ? `${CACHE_KEY_PREFIX}${user.id}-${workspaceSuffix(workspaceId)}`
+    : null;
   const migratedFlag = user ? `${MIGRATED_FLAG_PREFIX}${user.id}` : null;
 
   // Ref always points to the latest projects array for use in callbacks
@@ -124,6 +134,10 @@ export function useCanvases(): UseCanvasesReturn {
       return;
     }
 
+    // Reset state when workspace scope changes before fetching.
+    setProjects([]);
+    setLoading(true);
+
     // 1. Seed immediately from localStorage cache so the UI is instant.
     if (cacheKey) {
       try {
@@ -138,7 +152,7 @@ export function useCanvases(): UseCanvasesReturn {
     }
 
     // 2. Fetch authoritative data from Supabase.
-    listCanvases()
+    listCanvases(workspaceId)
       .then(async (rows) => {
         if (rows.length > 0) {
           // Cloud is the source of truth.
@@ -148,7 +162,14 @@ export function useCanvases(): UseCanvasesReturn {
           return;
         }
 
-        // No canvases in cloud yet – check whether migration is needed.
+        // Workspace scope: start empty (no default canvas seeding for workspaces).
+        if (workspaceId !== null) {
+          setProjects([]);
+          persist([]);
+          return;
+        }
+
+        // Personal scope: check whether legacy migration is needed.
         if (migratedFlag && !localStorage.getItem(migratedFlag)) {
           const legacyRaw = localStorage.getItem(LEGACY_PROJECTS_KEY);
           if (legacyRaw) {
@@ -199,7 +220,7 @@ export function useCanvases(): UseCanvasesReturn {
       })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.id, workspaceId]);
 
   // ── Shared state updater ───────────────────────────────────────────────────
 
@@ -229,10 +250,10 @@ export function useCanvases(): UseCanvasesReturn {
       ...prev,
       { id: newId, name, lastModified: Date.now(), data: {} },
     ]);
-    createCanvas(newId, name).catch(console.error);
+    createCanvas(newId, name, {}, workspaceId).catch(console.error);
     trackCanvasCreated();
     return newId;
-  }, [updateProjects]);
+  }, [updateProjects, workspaceId]);
 
   const renameProject = useCallback(
     (id: string, name: string) => {
@@ -306,10 +327,10 @@ export function useCanvases(): UseCanvasesReturn {
         ...prev,
         { id: newId, name, lastModified: Date.now(), data },
       ]);
-      createCanvas(newId, name, projectDataToRecord(data)).catch(console.error);
+      createCanvas(newId, name, projectDataToRecord(data), workspaceId).catch(console.error);
       return newId;
     },
-    [updateProjects]
+    [updateProjects, workspaceId]
   );
 
   const restoreProject = useCallback(

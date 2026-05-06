@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
+import { WorkspaceProvider } from './contexts/WorkspaceContext';
 import { AuthPage } from './components/auth/AuthPage';
 import { SharedCanvasView } from './components/SharedCanvasView';
 import { WorkspacePage } from './pages/WorkspacePage';
@@ -90,7 +91,7 @@ const App = () => {
     return <AuthPage theme={theme} />;
   }
 
-  return <WorkspacePage />;
+  return <WorkspaceProvider><WorkspacePage /></WorkspaceProvider>;
 };
 
 export default App;

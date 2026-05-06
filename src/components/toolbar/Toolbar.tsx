@@ -2,10 +2,11 @@ import React from 'react';
 import { motion } from 'motion/react';
 import {
   Rocket, Plus, Edit2, Trash2, ShieldCheck, Settings,
-  FileDown, Share2, LogOut, Loader2,
+  FileDown, Share2, LogOut, Loader2, Layers, ChevronRight,
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Project } from '../../hooks/useCanvases';
+import type { WorkspaceRow } from '../../hooks/useWorkspaces';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -19,6 +20,12 @@ export interface ToolbarProps {
   user: User | null;
   prefersReducedMotion: boolean | null | undefined;
   hasActiveShare: boolean;
+  workspaces: WorkspaceRow[];
+  activeWorkspaceId: string | null;
+  onSelectWorkspace: (id: string | null) => void;
+  onCreateWorkspace: () => void;
+  onRenameWorkspace: () => void;
+  onDeleteWorkspace: () => void;
   onCreateProject: () => void;
   onRenameProject: () => void;
   onDeleteProject: () => void;
@@ -42,6 +49,12 @@ export function Toolbar({
   user,
   prefersReducedMotion,
   hasActiveShare,
+  workspaces,
+  activeWorkspaceId,
+  onSelectWorkspace,
+  onCreateWorkspace,
+  onRenameWorkspace,
+  onDeleteWorkspace,
   onCreateProject,
   onRenameProject,
   onDeleteProject,
@@ -52,6 +65,13 @@ export function Toolbar({
   onSignOut,
   onLogoClick,
 }: ToolbarProps) {
+  const activeWorkspaceName = activeWorkspaceId
+    ? (workspaces.find((w) => w.id === activeWorkspaceId)?.name ?? 'Workspace')
+    : 'Personal';
+  const handleWorkspaceChange = (e: { target: { value: string } }) =>
+    onSelectWorkspace(e.target.value === '' ? null : e.target.value);
+  const handleProjectChange = (e: { target: { value: string } }) =>
+    onSelectProject(e.target.value);
   return (
     <motion.div
       initial={{ y: -20, opacity: 0 }}
@@ -59,7 +79,7 @@ export function Toolbar({
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border text-sm border-slate-200/60 dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-[20px] py-3.5 px-5 flex flex-col md:flex-row items-center justify-between gap-3 sticky top-4 z-[100]"
     >
-      {/* Logo & project dropdown */}
+      {/* Logo & workspace + project selectors */}
       <div className="flex items-center gap-3 w-full md:w-auto">
         <div className="relative shrink-0">
           <motion.div
@@ -93,15 +113,62 @@ export function Toolbar({
           </motion.button>
         </div>
 
-        <div className="flex flex-col relative w-full group">
+        {/* Workspace selector */}
+        <div className="flex flex-col relative group">
           <div className="text-[9px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 mb-[2px] ml-[5px]">
             Workspace
           </div>
           <div className="flex items-center gap-1 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl p-0.5 transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700">
             <div className="relative flex items-center">
+              <Layers size={12} className="absolute left-2 text-indigo-500 pointer-events-none" aria-hidden="true" />
+              <select
+                value={activeWorkspaceId ?? ''}
+                onChange={handleWorkspaceChange}
+                aria-label="Seleccionar workspace"
+                className="font-display appearance-none bg-transparent text-slate-700 dark:text-slate-300 font-bold text-[13px] py-1 pl-7 pr-8 focus:outline-none min-w-[110px] max-w-[150px] cursor-pointer tracking-tight"
+              >
+                <option value="" className="dark:bg-slate-800 dark:text-slate-200">Personal</option>
+                {workspaces.map((w) => (
+                  <option key={w.id} value={w.id} className="dark:bg-slate-800 dark:text-slate-200">{w.name}</option>
+                ))}
+              </select>
+              <div aria-hidden="true" className="pointer-events-none absolute right-2 text-slate-400 dark:text-slate-500 transition-colors group-hover:text-slate-600 dark:group-hover:text-slate-400">
+                <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <button onClick={onCreateWorkspace} aria-label="Crear workspace" title="Crear workspace" className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90">
+                <Plus size={13} strokeWidth={2.5} />
+              </button>
+              {activeWorkspaceId && (
+                <>
+                  <button onClick={onRenameWorkspace} aria-label="Renombrar workspace" title="Renombrar workspace" className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90">
+                    <Edit2 size={13} strokeWidth={2.5} />
+                  </button>
+                  <button onClick={onDeleteWorkspace} aria-label="Eliminar workspace" title="Eliminar workspace" className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90">
+                    <Trash2 size={13} strokeWidth={2.5} />
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Breadcrumb divider */}
+        <ChevronRight size={14} className="hidden lg:block text-slate-300 dark:text-slate-600 shrink-0" aria-hidden="true" />
+
+        {/* Canvas selector */}
+        <div className="flex flex-col relative w-full group">
+          <div className="text-[9px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 mb-[2px] ml-[5px]">
+            {activeWorkspaceName}
+          </div>
+          <div className="flex items-center gap-1 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl p-0.5 transition-all border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700">
+            <div className="relative flex items-center">
               <select
                 value={activeProjectId}
-                onChange={(e) => onSelectProject(e.target.value)}
+                onChange={handleProjectChange}
                 aria-label="Seleccionar lienzo"
                 className="font-display appearance-none bg-transparent text-slate-800 dark:text-slate-200 font-extrabold text-[15px] py-1 pl-2 pr-8 focus:outline-none min-w-[150px] cursor-pointer tracking-tight"
               >
