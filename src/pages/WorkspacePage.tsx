@@ -19,6 +19,7 @@ import { AuditDialog } from '../components/dialogs/AuditDialog';
 import { ConfirmDialog } from '../components/dialogs/ConfirmDialog';
 import { PromptDialog } from '../components/dialogs/PromptDialog';
 import { SettingsModal } from '../components/dialogs/SettingsModal';
+import { InviteModal } from '../components/dialogs/InviteModal';
 import { ShareModal } from '../components/ShareModal';
 import { SplashPage } from './SplashPage';
 import { BLOCKS } from '../data/blocks';
@@ -76,6 +77,7 @@ export function WorkspacePage() {
   const [showCreateWorkspaceDialog, setShowCreateWorkspaceDialog] = useState(false);
   const [showRenameWorkspaceDialog, setShowRenameWorkspaceDialog] = useState(false);
   const [showDeleteWorkspaceConfirm, setShowDeleteWorkspaceConfirm] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [alertMessage, setAlertMessage] = useState<{ title: string; message: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -293,6 +295,7 @@ export function WorkspacePage() {
   };
 
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) ?? null;
+  const isWorkspaceOwner = activeWorkspace?.owner_id === user?.id;
 
   const selectedBlock = BLOCKS.find((b) => b.id === selectedBlockId);
 
@@ -355,6 +358,8 @@ export function WorkspacePage() {
           onCreateWorkspace={() => setShowCreateWorkspaceDialog(true)}
           onRenameWorkspace={() => setShowRenameWorkspaceDialog(true)}
           onDeleteWorkspace={() => setShowDeleteWorkspaceConfirm(true)}
+          onInviteToWorkspace={() => setShowInviteModal(true)}
+          isWorkspaceOwner={isWorkspaceOwner}
           onCreateProject={handleCreateProject}
           onRenameProject={handleRenameProject}
           onDeleteProject={handleDeleteProject}
@@ -517,6 +522,16 @@ export function WorkspacePage() {
                 handleDeleteWorkspace();
               }}
               onCancel={() => setShowDeleteWorkspaceConfirm(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Invite to workspace modal */}
+        <AnimatePresence>
+          {showInviteModal && activeWorkspace && (
+            <InviteModal
+              workspace={activeWorkspace}
+              onClose={() => setShowInviteModal(false)}
             />
           )}
         </AnimatePresence>

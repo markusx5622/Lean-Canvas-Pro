@@ -30,7 +30,22 @@ Lean Canvas Pro soporta **workspaces de equipo**. Un usuario puede pertenecer a 
 
 > **Trigger `workspaces_add_owner`**: al insertar un workspace, el creador queda automáticamente añadido a `workspace_members` con `role = 'owner'`.
 
-### `canvases` (columna añadida)
+### `workspace_invitations`
+
+| Columna        | Tipo                   | Descripción                                                        |
+|---------------|------------------------|--------------------------------------------------------------------|
+| `id`           | `uuid` PK              | Identificador único de la invitación.                              |
+| `workspace_id` | `uuid` → `workspaces`  | FK al workspace. ON DELETE CASCADE.                                |
+| `invited_by`   | `uuid` → `auth.users`  | FK al owner que emite la invitación. ON DELETE CASCADE.            |
+| `email`        | `text`                 | Correo electrónico del invitado (almacenado en minúsculas).        |
+| `token`        | `uuid` UNIQUE          | Token secreto incluido en el enlace de invitación.                 |
+| `status`       | `text`                 | `'pending'` → `'accepted'` o `'revoked'`.                          |
+| `created_at`   | `timestamptz`          | Fecha de creación.                                                 |
+| `expires_at`   | `timestamptz`          | Expira 7 días después de la creación.                              |
+
+> **Índice único**: una sola invitación `pending` por par `(workspace_id, lower(email))`.
+
+
 
 | Columna        | Tipo                   | Descripción                                                  |
 |---------------|------------------------|--------------------------------------------------------------|
@@ -57,6 +72,15 @@ Lean Canvas Pro soporta **workspaces de equipo**. Un usuario puede pertenecer a 
 | INSERT    | Solo el owner del workspace. |
 | DELETE    | El owner puede eliminar a cualquier miembro; un miembro puede eliminarse a sí mismo (abandonar). |
 
+### `workspace_invitations`
+
+| Operación | Quién puede |
+|-----------|-------------|
+| SELECT    | Solo el owner del workspace (para ver sus invitaciones pendientes). |
+| INSERT    | Solo el owner del workspace (`invited_by` = `auth.uid()`). |
+| UPDATE    | Solo el owner (para revocar — cambia `status` a `'revoked'`). |
+| Aceptar   | Vía RPC `accept_workspace_invitation` (SECURITY DEFINER); el invitado debe estar autenticado con el email exacto de la invitación. |
+
 ### `canvases`
 
 | Policy                       | Scope                   | Quién puede |
@@ -74,6 +98,25 @@ Lean Canvas Pro soporta **workspaces de equipo**. Un usuario puede pertenecer a 
 4. **Sin colaboración en tiempo real** — no hay Supabase Realtime habilitado sobre estas tablas. Cada usuario ve su propia sesión.
 
 ---
+
+## Flujo de invitación
+
+```
+Owner abre modal "Invitar" en un workspace activo
+  → Introduce email del invitado → crea invitación (INSERT workspace_invitations)
+  → El modal muestra el enlace /invite/<token> para compartir manualmente
+
+Invitado navega a /invite/<token>
+  → AcceptInvitePage llama RPC get_workspace_invitation_by_token(token)
+  → Se muestran: nombre del workspace + email al que va dirigida
+  → Si no está autenticado: se le pide que inicie sesión con ese email
+  → Si está autenticado: botón "Aceptar invitación"
+    → Llama RPC accept_workspace_invitation(token)
+    → El RPC valida: token pending, no expirado, email coincide con auth.email()
+    → INSERT workspace_members (role = 'member')
+    → UPDATE workspace_invitations SET status = 'accepted'
+    → Redirige al usuario a la app
+```
 
 ## Flujo de uso
 
@@ -99,5 +142,5 @@ Futuro: owner invita a otro usuario
 ## Preparado para crecer
 
 - La tabla `workspace_members` ya soporta múltiples roles. Se pueden añadir `admin`, `viewer`, etc.
-- La invitación por email requiere una función Edge (lookup por email con service role) — no incluida en esta versión.
+- Las invitaciones están preparadas para integrarse con un servicio de email (Edge Function con service role) — el envío manual del enlace cubre la fase actual.
 - La colaboración en tiempo real se puede habilitar suscribiéndose a los cambios de Supabase Realtime en `canvases` filtrados por `workspace_id`.
