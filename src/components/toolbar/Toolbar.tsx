@@ -146,7 +146,7 @@ export function Toolbar({
               <button onClick={onCreateWorkspace} aria-label="Crear workspace" title="Crear workspace" className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90">
                 <Plus size={13} strokeWidth={2.5} />
               </button>
-              {activeWorkspaceId && (
+              {activeWorkspaceId && isWorkspaceOwner && (
                 <>
                   <button onClick={onRenameWorkspace} aria-label="Renombrar workspace" title="Renombrar workspace" className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90">
                     <Edit2 size={13} strokeWidth={2.5} />
@@ -154,11 +154,9 @@ export function Toolbar({
                   <button onClick={onDeleteWorkspace} aria-label="Eliminar workspace" title="Eliminar workspace" className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90">
                     <Trash2 size={13} strokeWidth={2.5} />
                   </button>
-                  {isWorkspaceOwner && (
-                    <button onClick={onInviteToWorkspace} aria-label="Invitar al workspace" title="Invitar colaborador" className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90">
-                      <UserPlus size={13} strokeWidth={2.5} />
-                    </button>
-                  )}
+                  <button onClick={onInviteToWorkspace} aria-label="Invitar al workspace" title="Invitar colaborador" className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90">
+                    <UserPlus size={13} strokeWidth={2.5} />
+                  </button>
                 </>
               )}
             </div>

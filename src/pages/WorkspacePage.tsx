@@ -43,6 +43,7 @@ export function WorkspacePage() {
     createWs,
     renameWs,
     deleteWs,
+    isOwner,
   } = useWorkspaceContext();
   const {
     projects,
@@ -295,7 +296,8 @@ export function WorkspacePage() {
   };
 
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) ?? null;
-  const isWorkspaceOwner = activeWorkspace?.owner_id === user?.id;
+  // isOwner comes from WorkspaceContext (derived via permissions.ts)
+  const isWorkspaceOwner = isOwner;
 
   const selectedBlock = BLOCKS.find((b) => b.id === selectedBlockId);
 

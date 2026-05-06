@@ -83,10 +83,36 @@ Lean Canvas Pro soporta **workspaces de equipo**. Un usuario puede pertenecer a 
 
 ### `canvases`
 
-| Policy                       | Scope                   | Quién puede |
-|-----------------------------|-------------------------|-------------|
-| `Manage personal canvases`  | `workspace_id IS NULL`  | Solo el `user_id` (propietario del lienzo). |
-| `Members manage workspace canvases` | `workspace_id IS NOT NULL` | Cualquier miembro del workspace (`workspace_members`). |
+| Policy                                  | Op     | Scope                      | Quién puede |
+|----------------------------------------|--------|----------------------------|-------------|
+| `Manage personal canvases`             | ALL    | `workspace_id IS NULL`     | Solo el `user_id` (propietario del lienzo). |
+| `Members can view workspace canvases`  | SELECT | `workspace_id IS NOT NULL` | Cualquier miembro del workspace. |
+| `Members can create workspace canvases`| INSERT | `workspace_id IS NOT NULL` | Cualquier miembro del workspace. |
+| `Members can update workspace canvases`| UPDATE | `workspace_id IS NOT NULL` | Cualquier miembro del workspace. |
+| `Creator or owner can delete workspace canvas` | DELETE | `workspace_id IS NOT NULL` | El creador del lienzo (`user_id`) o el owner del workspace. |
+
+---
+
+## Modelo de permisos de roles
+
+> Implementado en `src/lib/permissions.ts` · Expuesto vía `WorkspaceContext` (`userRole`, `isOwner`).
+
+| Acción                              | owner | member |
+|-------------------------------------|:-----:|:------:|
+| Ver lienzos del workspace           | ✅    | ✅     |
+| Crear lienzo en el workspace        | ✅    | ✅     |
+| Editar bloques de cualquier lienzo  | ✅    | ✅     |
+| Compartir lienzo (enlace público)   | ✅    | ✅     |
+| Eliminar lienzo propio              | ✅    | ✅     |
+| Eliminar lienzo de otro miembro     | ✅    | ❌     |
+| Renombrar workspace                 | ✅    | ❌     |
+| Eliminar workspace                  | ✅    | ❌     |
+| Invitar miembros                    | ✅    | ❌     |
+| Revocar invitaciones                | ✅    | ❌     |
+
+> Los permisos de workspace (renombrar, eliminar, invitar) se refuerzan en dos capas:
+> 1. **UI** — los botones solo se renderizan cuando `isOwner === true` (Toolbar).
+> 2. **DB** — las políticas RLS rechazan cualquier operación no autorizada aunque se intente directamente contra la API.
 
 ---
 
@@ -132,9 +158,10 @@ Usuario crea un lienzo en workspace "Acme"
   → createCanvas(id, name, data, workspaceId = "acme-uuid")
   → INSERT canvases (workspace_id = "acme-uuid")
 
-Futuro: owner invita a otro usuario
+Owner invita a otro usuario
   → INSERT workspace_members (workspace_id, user_id, role = 'member')
   → El invitado puede leer/escribir todos los lienzos del workspace
+  → El invitado NO puede renombrar/eliminar el workspace ni invitar a otros
 ```
 
 ---
