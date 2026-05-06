@@ -8,7 +8,8 @@ import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from '../eval
 import type { EvaluationResult, BlockFeedback, BlockId } from '../evaluator';
 import { exportCanvasToPdf } from '../lib/exportPdf';
 import { useCanvasSharing } from '../hooks/useCanvasSharing';
-import { trackStrategicAuditRun, trackPdfExported, trackPresentationModeEntered } from '../lib/analytics';
+import { useCanvasComments } from '../hooks/useCanvasComments';
+import { trackStrategicAuditRun, trackPdfExported, trackPresentationModeEntered, trackFeedbackPanelOpened } from '../lib/analytics';
 import { ParticleBackground } from '../ParticleBackground';
 import { Toolbar } from '../components/toolbar/Toolbar';
 import { CanvasGrid } from '../components/canvas/CanvasGrid';
@@ -22,6 +23,7 @@ import { SettingsModal } from '../components/dialogs/SettingsModal';
 import { InviteModal } from '../components/dialogs/InviteModal';
 import { TemplatePickerDialog } from '../components/dialogs/TemplatePickerDialog';
 import { ShareModal } from '../components/ShareModal';
+import { CommentPanel } from '../components/comments/CommentPanel';
 import { PresentationMode } from '../components/PresentationMode';
 import { SplashPage } from './SplashPage';
 import { BLOCKS } from '../data/blocks';
@@ -71,6 +73,7 @@ export function WorkspacePage() {
   const [showAboutDialog, setShowAboutDialog] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showFeedbackPanel, setShowFeedbackPanel] = useState(false);
   const [showPresentation, setShowPresentation] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [canvasEntryKey, setCanvasEntryKey] = useState(0);
@@ -104,6 +107,9 @@ export function WorkspacePage() {
   // without a separate DB fetch, and ShareModal reuses the same state.
   const sharing = useCanvasSharing(activeProject?.id);
 
+  // Comments state — lifted here so Toolbar can show the unread-count badge.
+  const canvasComments = useCanvasComments(activeProject?.id);
+
   // ── Effects ─────────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -126,7 +132,7 @@ export function WorkspacePage() {
   }, [canvasLoading, projects]);
 
   useEffect(() => {
-    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showShareModal || showPresentation || !!auditResult;
+    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showShareModal || showFeedbackPanel || showPresentation || !!auditResult;
     if (!shouldLock) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -401,6 +407,11 @@ export function WorkspacePage() {
           onShare={() => setShowShareModal(true)}
           onPresent={() => { setShowPresentation(true); trackPresentationModeEntered(); }}
           onLogoClick={() => setShowSplash(true)}
+          onOpenFeedback={() => {
+            setShowFeedbackPanel(true);
+            trackFeedbackPanelOpened(canvasComments.comments.length);
+          }}
+          feedbackCount={canvasComments.comments.length}
         />
 
         {/* Dialogs */}
@@ -445,6 +456,16 @@ export function WorkspacePage() {
               canvasName={activeProject.name}
               sharing={sharing}
               onClose={() => setShowShareModal(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showFeedbackPanel && activeProject && (
+            <CommentPanel
+              canvasName={activeProject.name}
+              comments={canvasComments}
+              onClose={() => setShowFeedbackPanel(false)}
             />
           )}
         </AnimatePresence>
