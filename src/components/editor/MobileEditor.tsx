@@ -153,6 +153,7 @@ export function MobileEditor({
 
           <textarea
             id="mobile-editor-textarea"
+            aria-label={`Notas estratégicas para ${selectedBlock.title}`}
             className={`flex-1 w-full p-4 mb-3 bg-slate-50 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-[15px] font-medium text-slate-800 dark:text-slate-200 leading-relaxed focus:bg-white focus:dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:dark:ring-offset-slate-900 ${selectedBlock.ringColor} resize-none shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]`}
             placeholder="Escribe tus ideas..."
             value={editorText}
