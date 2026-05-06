@@ -129,3 +129,15 @@ export function trackShareLinkCreated() {
 export function trackShareLinkRevoked() {
   track('share_link_revoked');
 }
+
+// ── Invitation events ─────────────────────────────────────────────────────────
+
+/** An invitation was sent to a collaborator. */
+export function trackInvitationSent() {
+  track('invitation_sent');
+}
+
+/** A user accepted a workspace invitation. */
+export function trackInvitationAccepted() {
+  track('invitation_accepted');
+}

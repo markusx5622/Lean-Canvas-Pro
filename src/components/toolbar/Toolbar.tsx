@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import {
   Rocket, Plus, Edit2, Trash2, ShieldCheck, Settings,
-  FileDown, Share2, LogOut, Loader2, Layers, ChevronRight,
+  FileDown, Share2, LogOut, Loader2, Layers, ChevronRight, UserPlus,
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Project } from '../../hooks/useCanvases';
@@ -26,6 +26,8 @@ export interface ToolbarProps {
   onCreateWorkspace: () => void;
   onRenameWorkspace: () => void;
   onDeleteWorkspace: () => void;
+  onInviteToWorkspace: () => void;
+  isWorkspaceOwner: boolean;
   onCreateProject: () => void;
   onRenameProject: () => void;
   onDeleteProject: () => void;
@@ -55,6 +57,8 @@ export function Toolbar({
   onCreateWorkspace,
   onRenameWorkspace,
   onDeleteWorkspace,
+  onInviteToWorkspace,
+  isWorkspaceOwner,
   onCreateProject,
   onRenameProject,
   onDeleteProject,
@@ -150,6 +154,11 @@ export function Toolbar({
                   <button onClick={onDeleteWorkspace} aria-label="Eliminar workspace" title="Eliminar workspace" className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90">
                     <Trash2 size={13} strokeWidth={2.5} />
                   </button>
+                  {isWorkspaceOwner && (
+                    <button onClick={onInviteToWorkspace} aria-label="Invitar al workspace" title="Invitar colaborador" className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90">
+                      <UserPlus size={13} strokeWidth={2.5} />
+                    </button>
+                  )}
                 </>
               )}
             </div>

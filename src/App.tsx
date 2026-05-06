@@ -3,6 +3,7 @@ import { useAuth } from './contexts/AuthContext';
 import { WorkspaceProvider } from './contexts/WorkspaceContext';
 import { AuthPage } from './components/auth/AuthPage';
 import { SharedCanvasView } from './components/SharedCanvasView';
+import { AcceptInvitePage } from './pages/AcceptInvitePage';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { LegalPage } from './pages/LegalPage';
 import { PrivacyPage } from './pages/PrivacyPage';
@@ -13,6 +14,13 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 function getShareToken(): string | null {
   const match = window.location.pathname.match(
     /^\/share\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i
+  );
+  return match ? match[1] : null;
+}
+
+function getInviteToken(): string | null {
+  const match = window.location.pathname.match(
+    /^\/invite\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i
   );
   return match ? match[1] : null;
 }
@@ -42,6 +50,11 @@ const App = () => {
   const shareToken = getShareToken();
   if (shareToken) {
     return <SharedCanvasView token={shareToken} />;
+  }
+
+  const inviteToken = getInviteToken();
+  if (inviteToken) {
+    return <AcceptInvitePage token={inviteToken} />;
   }
 
   const legalRoute = getLegalRoute();
