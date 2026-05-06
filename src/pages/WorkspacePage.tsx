@@ -340,7 +340,7 @@ export function WorkspacePage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#F4F5F8] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-row overflow-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
+    <div className="h-screen bg-[#F4F5F8] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-row overflow-hidden selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-500">
       {/* Splash screen */}
       <AnimatePresence>
         {showSplash && (
