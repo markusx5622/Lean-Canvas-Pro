@@ -61,18 +61,22 @@ export function EditorPanel({
             </div>
 
             {/* Guide / Examples tabs */}
-            <div className="flex bg-slate-50 dark:bg-slate-700/80 p-1.5 rounded-xl mb-6 shrink-0 border border-slate-200/60 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
+            <div role="tablist" aria-label="Contenido del bloque" className="flex bg-slate-50 dark:bg-slate-700/80 p-1.5 rounded-xl mb-6 shrink-0 border border-slate-200/60 dark:border-slate-700 shadow-inner dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
               <button
+                role="tab"
+                aria-selected={activeTab === 'guide'}
                 onClick={() => onChangeTab('guide')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[13px] font-bold rounded-lg transition-all duration-300 ${activeTab === 'guide' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
               >
-                <BookOpen size={16} strokeWidth={2.5} /> Guía
+                <BookOpen size={16} strokeWidth={2.5} aria-hidden="true" /> Guía
               </button>
               <button
+                role="tab"
+                aria-selected={activeTab === 'examples'}
                 onClick={() => onChangeTab('examples')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[13px] font-bold rounded-lg transition-all duration-300 ${activeTab === 'examples' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
               >
-                <MessageSquare size={16} strokeWidth={2.5} /> Ejemplos
+                <MessageSquare size={16} strokeWidth={2.5} aria-hidden="true" /> Ejemplos
               </button>
             </div>
 

@@ -87,12 +87,15 @@ export function SettingsModal({
           exit={{ scale: 0.96, y: 16 }}
           transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
           onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-modal-title"
           className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-800 relative"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 pt-6 pb-4">
             <div>
-              <h2 className="font-display text-[17px] font-extrabold text-slate-900 dark:text-white tracking-tight">
+              <h2 id="settings-modal-title" className="font-display text-[17px] font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Ajustes
               </h2>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
@@ -101,6 +104,7 @@ export function SettingsModal({
             </div>
             <button
               onClick={onClose}
+              aria-label="Cerrar ajustes"
               className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90"
             >
               <X size={17} strokeWidth={2.5} />

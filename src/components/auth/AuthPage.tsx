@@ -65,7 +65,7 @@ export function AuthPage({ theme }: { theme: 'light' | 'dark' }) {
       <ParticleBackground theme={theme} />
 
       {/* Background glow blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-[120px]" />
         <div className="absolute top-[30%] -right-[15%] w-[40%] h-[60%] rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-[120px]" />
         <div className="absolute bottom-0 left-[20%] w-[60%] h-[40%] rounded-full bg-purple-500/10 dark:bg-purple-500/5 blur-[120px]" />
@@ -79,6 +79,7 @@ export function AuthPage({ theme }: { theme: 'light' | 'dark' }) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           transition={{ duration: 0.6, type: 'spring', bounce: 0.4 }}
           className="mb-8 relative"
+          aria-hidden="true"
         >
           <div className="absolute inset-0 bg-indigo-500 blur-xl opacity-20 dark:opacity-30 rounded-[28px]" />
           <div className="relative bg-white dark:bg-slate-800/80 backdrop-blur-xl p-4 rounded-[24px] shadow-sm border border-slate-200/50 dark:border-slate-700/50">
@@ -94,7 +95,7 @@ export function AuthPage({ theme }: { theme: 'light' | 'dark' }) {
           className="text-center mb-8"
         >
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-bold text-xs tracking-wide uppercase mb-4 border border-indigo-100 dark:border-indigo-500/20">
-            <Sparkles size={12} /> Lean Canvas Pro
+            <Sparkles size={12} aria-hidden="true" /> Lean Canvas Pro
           </div>
           <h1 className="font-display text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             {mode === 'signin' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
@@ -197,10 +198,13 @@ export function AuthPage({ theme }: { theme: 'light' | 'dark' }) {
               className="mt-2 w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-2xl transition-colors shadow-[0_8px_24px_-4px_rgba(79,70,229,0.3)] hover:shadow-[0_12px_32px_-4px_rgba(79,70,229,0.45)] text-[15px]"
             >
               {loading ? (
-                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
+                <>
+                  <svg aria-hidden="true" className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  <span>{mode === 'signin' ? 'Iniciando sesión...' : 'Creando cuenta...'}</span>
+                </>
               ) : mode === 'signin' ? (
                 'Iniciar sesión'
               ) : (
