@@ -52,6 +52,7 @@ export function useCanvasSharing(canvasId: string | undefined): UseCanvasSharing
     return () => { cancelled = true; };
   }, [canvasId, fetchTick]);
 
+  /** Triggers a manual re-fetch of the share data by incrementing fetchTick. */
   const refetch = useCallback(() => setFetchTick((t) => t + 1), []);
 
   const generateLink = useCallback(async () => {
