@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import {
   Rocket, Plus, Edit2, Trash2, ShieldCheck, Settings,
-  FileDown, Share2, Loader2, Layers, ChevronRight, UserPlus, Monitor,
+  FileDown, Share2, Loader2, Layers, ChevronRight, UserPlus, Monitor, MessageSquare,
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Project } from '../../hooks/useCanvases';
@@ -39,6 +39,8 @@ export interface ToolbarProps {
   onShare: () => void;
   onPresent: () => void;
   onLogoClick: () => void;
+  onOpenFeedback: () => void;
+  feedbackCount: number;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -71,6 +73,8 @@ export function Toolbar({
   onShare,
   onPresent,
   onLogoClick,
+  onOpenFeedback,
+  feedbackCount,
 }: ToolbarProps) {
   const activeWorkspaceName = activeWorkspaceId
     ? (workspaces.find((w) => w.id === activeWorkspaceId)?.name ?? 'Workspace')
@@ -289,6 +293,21 @@ export function Toolbar({
             <span aria-hidden="true" className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-800 shadow-sm" />
           )}
           <Share2 size={15} strokeWidth={2.5} />
+        </button>
+
+        <button
+          onClick={onOpenFeedback}
+          disabled={!hasActiveCanvas}
+          aria-label={feedbackCount > 0 ? `Ver feedback (${feedbackCount} comentarios)` : 'Ver feedback de revisores'}
+          title={feedbackCount > 0 ? `Feedback · ${feedbackCount} comentario${feedbackCount === 1 ? '' : 's'}` : 'Ver feedback de revisores'}
+          className="relative flex items-center px-2.5 py-2 text-slate-600 dark:text-slate-300 font-bold rounded-[10px] hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border border-slate-200/60 dark:border-slate-700 hover:border-indigo-200/80 dark:hover:border-indigo-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {feedbackCount > 0 && (
+            <span aria-hidden="true" className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-indigo-600 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center border border-white dark:border-slate-800 leading-none">
+              {feedbackCount > 99 ? '99+' : feedbackCount}
+            </span>
+          )}
+          <MessageSquare size={15} strokeWidth={2.5} />
         </button>
 
         <button

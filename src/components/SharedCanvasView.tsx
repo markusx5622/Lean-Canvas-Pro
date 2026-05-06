@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Rocket, EyeOff, Loader2 } from 'lucide-react';
+import { Rocket, EyeOff, Loader2, MessageSquarePlus } from 'lucide-react';
 import { getCanvasByShareToken, type SharedCanvasRow } from '../lib/shareService';
 import { BLOCK_META } from '../data/blocks';
+import { FeedbackForm } from './comments/FeedbackForm';
 
 // ── Read-only block card ─────────────────────────────────────────────────────
 
@@ -157,6 +158,31 @@ export function SharedCanvasView({ token }: { token: string }) {
           <ReadOnlyBlock blockId={7} index={7} value={data['7'] ?? ''} additionalClasses="md:col-span-5 md:h-[180px]" />
           <ReadOnlyBlock blockId={6} index={8} value={data['6'] ?? ''} additionalClasses="md:col-span-5 md:h-[180px]" />
         </div>
+
+        {/* Feedback section */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="max-w-xl mx-auto w-full mt-4"
+        >
+          <div className="bg-white dark:bg-slate-800 rounded-[20px] border border-slate-200/80 dark:border-slate-700 p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 bg-indigo-50 dark:bg-indigo-500/10 rounded-[14px] flex items-center justify-center">
+                <MessageSquarePlus size={18} className="text-indigo-600 dark:text-indigo-400" strokeWidth={2.5} />
+              </div>
+              <div>
+                <h2 className="font-display text-[16px] font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  Deja tu feedback
+                </h2>
+                <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                  El propietario recibirá tu comentario de forma privada.
+                </p>
+              </div>
+            </div>
+            <FeedbackForm shareToken={token} />
+          </div>
+        </motion.div>
 
         <p className="text-center text-[12px] text-slate-400 dark:text-slate-600 font-medium mt-2">
           Vista de solo lectura · Creado con{' '}

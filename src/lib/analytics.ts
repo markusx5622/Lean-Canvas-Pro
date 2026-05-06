@@ -153,3 +153,15 @@ export function trackInvitationAccepted() {
 export function trackPresentationModeEntered() {
   track('presentation_mode_entered');
 }
+
+// ── Feedback / comment events ─────────────────────────────────────────────────
+
+/** An external reviewer submitted feedback on a shared canvas. */
+export function trackFeedbackSubmitted(hasBlockId: boolean) {
+  track('feedback_submitted', { targeted: hasBlockId });
+}
+
+/** The canvas owner opened the feedback panel to review comments. */
+export function trackFeedbackPanelOpened(commentCount: number) {
+  track('feedback_panel_opened', { comment_count: commentCount });
+}

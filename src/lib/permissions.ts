@@ -68,4 +68,11 @@ export const WorkspacePermissions = {
    * Parameter kept for API consistency — future roles (e.g. viewer) may restrict this.
    */
   canShareCanvas: (_role: WorkspaceRole): boolean => true,
+
+  /**
+   * View feedback (comments) left by external reviewers on a canvas.
+   * Only the canvas owner can read comments.
+   * The `isCanvasOwner` flag is true when `canvas.user_id === auth.uid()`.
+   */
+  canViewFeedback: (_role: WorkspaceRole, isCanvasOwner: boolean): boolean => isCanvasOwner,
 } as const;
