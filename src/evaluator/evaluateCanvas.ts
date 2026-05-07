@@ -260,7 +260,7 @@ function detectCrossBlockIssues(canvasData: CanvasData): CrossBlockIssue[] {
 
   // Rule 11: UVP defined but no quantified benefit
   if (uvp.trim().length > 0) {
-    const hasQuantifiedBenefit = /\d[\d.,]*\s*(%|€|\$|hora|horas|vece|min|x |x\d|veces|minuto|minutos|días|dias|semana|mes|año|ano)/.test(canvasData[3] ?? '');
+    const hasQuantifiedBenefit = /\d[\d.,]*\s*(%|€|\$|hora|horas|veces|min|x |x\d|minuto|minutos|días|semana|mes|año)/.test(canvasData[3] ?? '');
     if (!hasQuantifiedBenefit) {
       issues.push({
         code: 'UVP_NOT_QUANTIFIED',
@@ -423,7 +423,7 @@ function computeValuePropositionScore(canvasData: CanvasData): number {
   if (hasOutcome) score += 20;
 
   // Quantified benefit (%, €, hours, multiplier, time)
-  const hasQuantified = /\d[\d.,]*\s*(%|€|\$|hora|horas|vece|minuto|minutos|x |x\d|días|dia|semana|mes)/.test(uvp);
+  const hasQuantified = /\d[\d.,]*\s*(%|€|\$|hora|horas|veces|minuto|minutos|x |x\d|días|días|semana|mes)/.test(uvp);
   if (hasQuantified) score += 15;
 
   // Conciseness bonus (a good UVP fits in 1–2 sentences)
@@ -433,7 +433,7 @@ function computeValuePropositionScore(canvasData: CanvasData): number {
 
   // Comparison/differentiation language
   const comparisonTerms = ['a diferencia de', 'frente a', 'en lugar de', 'mejor que',
-    'sin necesidad de', 'a diferencia', 'alternativas', 'unico', 'diferente', 'a diferencia'];
+    'sin necesidad de', 'alternativas', 'unico', 'diferente'];
   const hasComparison = comparisonTerms.some(t => uvpLower.includes(t));
   if (hasComparison) score += 10;
 
@@ -623,7 +623,7 @@ function computeInvestorFlags(canvasData: CanvasData): {
 
   const hasPriceSignal = /\d[\d.,]*\s*(€|\$|eur|usd|£)|\b\d{2,}\b.*(mes|año|semana)/.test(canvasData[6] ?? '');
 
-  const hasQuantifiedUVP = /\d[\d.,]*\s*(%|€|\$|hora|horas|vece|minuto|minutos|x |x\d|dias|semana|mes)/.test(uvpRaw);
+  const hasQuantifiedUVP = /\d[\d.,]*\s*(%|€|\$|hora|horas|veces|minuto|minutos|x |x\d|días|semana|mes)/.test(uvpRaw);
 
   return {
     hasUnitEconomics: hasCac && hasLtv,
