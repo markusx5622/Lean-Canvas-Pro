@@ -5,6 +5,33 @@ import path from "path";
 import { fileURLToPath } from "url";
 import * as Sentry from "@sentry/node";
 
+// ── Gemini assistant types ─────────────────────────────────────────────────────
+
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface BlockContext {
+  id: number;
+  title: string;
+  content: string;
+}
+
+interface CanvasContext {
+  name: string;
+  blocks: BlockContext[];
+  filledCount: number;
+  totalBlocks: number;
+  auditScore?: number;
+  auditVerdict?: string;
+}
+
+interface AssistantRequestBody {
+  messages: ChatMessage[];
+  canvasContext: CanvasContext;
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -60,6 +87,127 @@ async function startServer() {
   // Health check (available in all environments)
   app.get("/health", (_req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // ── AI Assistant endpoint ──────────────────────────────────────────────────
+  // The Gemini API key is kept strictly server-side (no VITE_ prefix).
+  // The client sends canvas context + conversation history; the server builds
+  // the Gemini request, calls the API, and returns only the model reply.
+  app.post("/api/assistant", async (req: Request, res: Response) => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      res
+        .status(503)
+        .json({ error: "El asistente no está configurado en este entorno." });
+      return;
+    }
+
+    const body = req.body as AssistantRequestBody;
+
+    // Basic input validation
+    if (
+      !body ||
+      !Array.isArray(body.messages) ||
+      body.messages.length === 0 ||
+      typeof body.canvasContext !== "object"
+    ) {
+      res.status(400).json({ error: "Petición inválida." });
+      return;
+    }
+
+    // Guard against oversized inputs
+    const MAX_MESSAGES = 40;
+    const MAX_CONTENT_LENGTH = 2000;
+    if (body.messages.length > MAX_MESSAGES) {
+      res.status(400).json({ error: "Demasiados mensajes en el historial." });
+      return;
+    }
+
+    // Build a structured system prompt with canvas context
+    const ctx = body.canvasContext;
+    const filledBlocks = ctx.blocks.filter((b) => b.content.trim().length > 0);
+    const emptyBlocks = ctx.blocks.filter((b) => b.content.trim().length === 0);
+
+    const blocksText = filledBlocks
+      .map((b) => `## ${b.title}\n${b.content.slice(0, MAX_CONTENT_LENGTH)}`)
+      .join("\n\n");
+
+    const emptyText =
+      emptyBlocks.length > 0
+        ? `\nBloques vacíos (sin contenido aún): ${emptyBlocks.map((b) => b.title).join(", ")}.`
+        : "";
+
+    const auditText =
+      ctx.auditScore !== undefined
+        ? `\nAuditoría heurística reciente: ${ctx.auditScore}/100 (${ctx.auditVerdict ?? ""}).`
+        : "";
+
+    const systemInstruction = `Eres un asistente estratégico experto en metodología Lean Canvas y startups. \
+Tu rol es ayudar al usuario a mejorar, analizar y fortalecer su Lean Canvas de forma práctica y accionable. \
+Responde siempre en el mismo idioma que use el usuario (español por defecto). \
+Sé conciso, directo y orientado a la acción. Cuando detectes problemas, ofrece alternativas concretas. \
+No inventes datos que no estén en el canvas; trabaja siempre sobre el contenido real.
+
+CANVAS ACTIVO: "${ctx.name}"
+Progreso: ${ctx.filledCount}/${ctx.totalBlocks} bloques completados.${auditText}${emptyText}
+
+${filledBlocks.length > 0 ? `CONTENIDO DEL CANVAS:\n\n${blocksText}` : "El canvas está vacío por ahora. Ayuda al usuario a empezar."}`;
+
+    // Map conversation history to Gemini's format
+    const contents = body.messages.map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content.slice(0, MAX_CONTENT_LENGTH) }],
+    }));
+
+    const geminiPayload = {
+      system_instruction: { parts: [{ text: systemInstruction }] },
+      contents,
+      generationConfig: {
+        maxOutputTokens: 1024,
+        temperature: 0.7,
+      },
+    };
+
+    try {
+      const geminiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(geminiPayload),
+        }
+      );
+
+      if (!geminiRes.ok) {
+        const errText = await geminiRes.text();
+        console.error("[assistant] Gemini API error:", geminiRes.status, errText);
+        res
+          .status(502)
+          .json({ error: "Error al contactar con el asistente. Inténtalo de nuevo." });
+        return;
+      }
+
+      const geminiData = (await geminiRes.json()) as {
+        candidates?: { content?: { parts?: { text?: string }[] } }[];
+      };
+
+      const reply =
+        geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+
+      if (!reply) {
+        res
+          .status(502)
+          .json({ error: "El asistente no devolvió una respuesta válida." });
+        return;
+      }
+
+      res.json({ reply });
+    } catch (err) {
+      console.error("[assistant] Fetch error:", err);
+      res
+        .status(502)
+        .json({ error: "Error de red al contactar con el asistente." });
+    }
   });
 
   // Vite middleware for development
