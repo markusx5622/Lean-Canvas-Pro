@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import {
   Rocket, Plus, Edit2, Trash2, ShieldCheck, Settings,
-  FileDown, Share2, Loader2, Layers, ChevronRight, UserPlus, Monitor, MessageSquare,
+  FileDown, Loader2, Layers, ChevronRight, UserPlus, Monitor, MessageSquare,
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Project } from '../../hooks/useCanvases';
@@ -19,7 +19,6 @@ export interface ToolbarProps {
   pdfExporting: boolean;
   user: User | null;
   prefersReducedMotion: boolean | null | undefined;
-  hasActiveShare: boolean;
   /** Whether there is an active canvas — used to disable canvas-specific actions. */
   hasActiveCanvas: boolean;
   workspaces: WorkspaceRow[];
@@ -36,7 +35,6 @@ export interface ToolbarProps {
   onAudit: () => void;
   onOpenSettings: () => void;
   onExportPdf: () => void;
-  onShare: () => void;
   onPresent: () => void;
   onLogoClick: () => void;
   onOpenFeedback: () => void;
@@ -54,7 +52,6 @@ export function Toolbar({
   pdfExporting,
   user,
   prefersReducedMotion,
-  hasActiveShare,
   hasActiveCanvas,
   workspaces,
   activeWorkspaceId,
@@ -70,7 +67,6 @@ export function Toolbar({
   onAudit,
   onOpenSettings,
   onExportPdf,
-  onShare,
   onPresent,
   onLogoClick,
   onOpenFeedback,
@@ -282,19 +278,6 @@ export function Toolbar({
           {pdfExporting ? <Loader2 size={14} strokeWidth={2.5} className="animate-spin" /> : <FileDown size={14} strokeWidth={2.5} />}
           <span className="hidden sm:inline">{pdfExporting ? 'Generando...' : 'Exportar PDF'}</span>
         </button>
-        <button
-          onClick={onShare}
-          disabled={!hasActiveCanvas}
-          aria-label={hasActiveShare ? 'Canvas compartido · gestionar enlace' : 'Compartir canvas (solo lectura)'}
-          title={hasActiveShare ? 'Canvas compartido · gestionar enlace' : 'Compartir canvas (solo lectura)'}
-          className="relative flex items-center px-2.5 py-2 text-slate-600 dark:text-slate-300 font-bold rounded-[10px] hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border border-slate-200/60 dark:border-slate-700 hover:border-indigo-200/80 dark:hover:border-indigo-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {hasActiveShare && (
-            <span aria-hidden="true" className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-800 shadow-sm" />
-          )}
-          <Share2 size={15} strokeWidth={2.5} />
-        </button>
-
         <button
           onClick={onOpenFeedback}
           disabled={!hasActiveCanvas}
