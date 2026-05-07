@@ -1,6 +1,10 @@
 // ── Assistant Service ─────────────────────────────────────────────────────────
-// Thin client that proxies requests through the Express server endpoint so that
-// the Gemini API key is never exposed in the browser bundle.
+// Thin client that proxies requests through the server-side assistant endpoint
+// so that the Gemini API key is never exposed in the browser bundle.
+// The active Supabase session JWT is attached to every request so the endpoint
+// can reject unauthenticated callers before touching the Gemini API.
+
+import { supabase } from './supabase';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -40,13 +44,29 @@ export async function sendAssistantMessage(
   messages: ChatMessage[],
   canvasContext: CanvasContext
 ): Promise<string> {
+  // Retrieve the current session token to authenticate the request.
+  const sessionResult = supabase ? await supabase.auth.getSession() : null;
+  const token = sessionResult?.data.session?.access_token ?? null;
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const res = await fetch('/api/assistant', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ messages, canvasContext }),
   });
 
-  const data = (await res.json()) as AssistantResponse | AssistantError;
+  // Guard against non-JSON responses (e.g. an HTML fallback page on a
+  // misconfigured deployment) to avoid cryptic SyntaxError exceptions.
+  let data: AssistantResponse | AssistantError;
+  try {
+    data = (await res.json()) as AssistantResponse | AssistantError;
+  } catch {
+    throw new Error('Respuesta inesperada del servidor. Comprueba la configuración del despliegue.');
+  }
 
   if (!res.ok || 'error' in data) {
     throw new Error(
@@ -57,3 +77,4 @@ export async function sendAssistantMessage(
 
   return (data as AssistantResponse).reply;
 }
+

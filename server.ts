@@ -4,6 +4,7 @@ import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from "url";
 import * as Sentry from "@sentry/node";
+import { createClient } from "@supabase/supabase-js";
 
 // ── Gemini assistant types ─────────────────────────────────────────────────────
 
@@ -39,6 +40,8 @@ const MAX_MESSAGES = 40;
 const MAX_CONTENT_LENGTH = 2000;
 /** Rough cap on the total canvas context text sent to Gemini (chars). */
 const MAX_TOTAL_CONTEXT_LENGTH = 12_000;
+/** Abort the Gemini fetch if no response arrives within this window. */
+const GEMINI_TIMEOUT_MS = 25_000;
 
 function buildSystemInstruction(ctx: CanvasContext): string {
   const filledBlocks = ctx.blocks.filter((b) => b.content.trim().length > 0);
@@ -77,6 +80,7 @@ ${canvasSection}`;
   // Hard-cap total context length to prevent unexpected token overruns
   return base.slice(0, MAX_TOTAL_CONTEXT_LENGTH);
 }
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const isProd = process.env.NODE_ENV === "production";
@@ -135,9 +139,39 @@ async function startServer() {
 
   // ── AI Assistant endpoint ──────────────────────────────────────────────────
   // The Gemini API key is kept strictly server-side (no VITE_ prefix).
-  // The client sends canvas context + conversation history; the server builds
-  // the Gemini request, calls the API, and returns only the model reply.
+  // The client sends its Supabase session JWT as a Bearer token; we verify it
+  // before calling Gemini so the endpoint is not open to anonymous traffic.
+  // The canvas context + conversation history are used to build the Gemini
+  // request server-side; only the model reply is returned to the client.
   app.post("/api/assistant", async (req: Request, res: Response) => {
+    // ── Auth guard ──────────────────────────────────────────────────────────
+    const authHeader = req.headers.authorization;
+    const token =
+      typeof authHeader === "string" && authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : null;
+
+    if (!token) {
+      res.status(401).json({ error: "No autenticado." });
+      return;
+    }
+
+    // Verify the JWT against Supabase when credentials are available.
+    // The VITE_SUPABASE_* variables are accessible server-side via process.env.
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseAnonKey) {
+      const sb = createClient(supabaseUrl, supabaseAnonKey);
+      const {
+        data: { user },
+        error,
+      } = await sb.auth.getUser(token);
+      if (error || !user) {
+        res.status(401).json({ error: "No autenticado." });
+        return;
+      }
+    }
+
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       res
@@ -148,11 +182,13 @@ async function startServer() {
 
     const body = req.body as AssistantRequestBody;
 
-    // Basic input validation
+    // Basic input validation – note: typeof null === "object", so we check
+    // for a falsy value explicitly before the type guard.
     if (
       !body ||
       !Array.isArray(body.messages) ||
       body.messages.length === 0 ||
+      !body.canvasContext ||
       typeof body.canvasContext !== "object"
     ) {
       res.status(400).json({ error: "Petición inválida." });
@@ -183,15 +219,26 @@ async function startServer() {
       },
     };
 
+    // AbortController ensures the request never hangs indefinitely.
+    // The API key is sent as a header (x-goog-api-key) rather than a
+    // query-string parameter to keep it out of access logs and Sentry breadcrumbs.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+
     try {
       const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
+          },
           body: JSON.stringify(geminiPayload),
+          signal: controller.signal,
         }
       );
+      clearTimeout(timeoutId);
 
       if (!geminiRes.ok) {
         const errText = await geminiRes.text();
@@ -218,10 +265,18 @@ async function startServer() {
 
       res.json({ reply });
     } catch (err) {
-      console.error("[assistant] Fetch error:", err);
-      res
-        .status(502)
-        .json({ error: "Error de red al contactar con el asistente." });
+      clearTimeout(timeoutId);
+      if (err instanceof Error && err.name === "AbortError") {
+        console.error("[assistant] Gemini request timed out");
+        res
+          .status(504)
+          .json({ error: "El asistente tardó demasiado en responder. Inténtalo de nuevo." });
+      } else {
+        console.error("[assistant] Fetch error:", err);
+        res
+          .status(502)
+          .json({ error: "Error de red al contactar con el asistente." });
+      }
     }
   });
 
