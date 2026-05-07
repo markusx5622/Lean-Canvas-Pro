@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutTemplate, X, ArrowRight, Sparkles } from 'lucide-react';
 import { TEMPLATES, type CanvasTemplate } from '../../data/templates';
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const ALL_CATEGORIES = 'Todos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -77,6 +81,20 @@ export function TemplatePickerDialog({
   onCancel,
 }: TemplatePickerDialogProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>(ALL_CATEGORIES);
+
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(TEMPLATES.map((t) => t.category)));
+    return [ALL_CATEGORIES, ...cats];
+  }, []);
+
+  const visibleTemplates = useMemo(
+    () =>
+      activeCategory === ALL_CATEGORIES
+        ? TEMPLATES
+        : TEMPLATES.filter((t) => t.category === activeCategory),
+    [activeCategory]
+  );
 
   const handleConfirm = () => {
     if (selectedId === null) {
@@ -177,9 +195,30 @@ export function TemplatePickerDialog({
               <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
             </div>
 
+            {/* Category filter chips */}
+            <div className="flex flex-wrap gap-1.5 mb-4" role="group" aria-label="Filtrar por categoría">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory(cat);
+                    setSelectedId(null);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    activeCategory === cat
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
             {/* Template grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {TEMPLATES.map((tpl) => (
+              {visibleTemplates.map((tpl) => (
                 <TemplateCard
                   key={tpl.id}
                   template={tpl}
