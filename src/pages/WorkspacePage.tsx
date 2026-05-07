@@ -25,12 +25,13 @@ import type { ExportOptions } from '../components/dialogs/ExportOptionsDialog';
 import { TemplatePickerDialog } from '../components/dialogs/TemplatePickerDialog';
 import { CommentPanel } from '../components/comments/CommentPanel';
 import { AssistantPanel } from '../components/assistant/AssistantPanel';
-import { ExecutiveSummaryDialog } from '../components/dialogs/ExecutiveSummaryDialog';
+import { AiContentStudio } from '../components/assistant/AiContentStudio';
 import { PresentationMode } from '../components/PresentationMode';
 import { SplashPage } from './SplashPage';
 import { BLOCKS } from '../data/blocks';
 import type { CanvasTemplate } from '../data/templates';
 import type { CanvasContext } from '../lib/assistantService';
+import type { AiContentType } from '../lib/aiContentPrompts';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -77,7 +78,7 @@ export function WorkspacePage() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showFeedbackPanel, setShowFeedbackPanel] = useState(false);
   const [showAssistantPanel, setShowAssistantPanel] = useState(false);
-  const [showSummaryDialog, setShowSummaryDialog] = useState(false);
+  const [activeWorkspaceSection, setActiveWorkspaceSection] = useState<'canvas' | 'ai-content'>('canvas');
   const [showPresentation, setShowPresentation] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [canvasEntryKey, setCanvasEntryKey] = useState(0);
@@ -133,12 +134,12 @@ export function WorkspacePage() {
   }, [canvasLoading, projects]);
 
   useEffect(() => {
-    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showFeedbackPanel || showAssistantPanel || showSummaryDialog || showPresentation || !!auditResult;
+    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showFeedbackPanel || showAssistantPanel || showPresentation || !!auditResult;
     if (!shouldLock) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
-  }, [showSplash, showAboutDialog, showSettingsModal, showFeedbackPanel, showAssistantPanel, showSummaryDialog, showPresentation, auditResult]);
+  }, [showSplash, showAboutDialog, showSettingsModal, showFeedbackPanel, showAssistantPanel, showPresentation, auditResult]);
 
   /** Immediately persists any dirty text (used when switching context). */
   const flushPendingSave = useCallback(() => {
@@ -330,6 +331,33 @@ export function WorkspacePage() {
   const isWorkspaceOwner = isOwner;
 
   const selectedBlock = BLOCKS.find((b) => b.id === selectedBlockId);
+  const activeCanvasContext: CanvasContext | null = activeProject
+    ? {
+      name: activeProject.name,
+      blocks: BLOCKS.map((b) => ({
+        id: b.id,
+        title: b.title,
+        content: canvasData[b.id] ?? '',
+      })),
+      filledCount: filledBlocks,
+      totalBlocks: 9,
+      auditScore: auditResult?.summary.overallScore,
+      auditVerdict: auditResult?.summary.verdict,
+    }
+    : null;
+
+  const handleOpenAiContentStudio = () => {
+    if (!activeProject) return;
+    flushPendingSave();
+    setSelectedBlockId(null);
+    setActiveWorkspaceSection('ai-content');
+  };
+
+  const handleAiContentGenerated = (type: AiContentType) => {
+    if (type === 'executiveSummary') {
+      trackExecutiveSummaryGenerated();
+    }
+  };
 
   // Show spinner while cloud canvases are first fetched with no local cache.
   if (canvasLoading && projects.length === 0) {
@@ -408,7 +436,7 @@ export function WorkspacePage() {
         }}
         feedbackCount={canvasComments.comments.length}
         onOpenAssistant={() => setShowAssistantPanel(true)}
-        onGenerateSummary={() => { setShowSummaryDialog(true); trackExecutiveSummaryGenerated(); }}
+        onOpenAiContentStudio={handleOpenAiContentStudio}
       />
 
       {/* Main scrollable area */}
@@ -480,41 +508,10 @@ export function WorkspacePage() {
         </AnimatePresence>
 
         <AnimatePresence>
-          {showAssistantPanel && activeProject && (
+          {showAssistantPanel && activeCanvasContext && (
             <AssistantPanel
-              canvasContext={{
-                name: activeProject.name,
-                blocks: BLOCKS.map((b) => ({
-                  id: b.id,
-                  title: b.title,
-                  content: canvasData[b.id] ?? '',
-                })),
-                filledCount: filledBlocks,
-                totalBlocks: 9,
-                auditScore: auditResult?.summary.overallScore,
-                auditVerdict: auditResult?.summary.verdict,
-              }}
+              canvasContext={activeCanvasContext}
               onClose={() => setShowAssistantPanel(false)}
-            />
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {showSummaryDialog && activeProject && (
-            <ExecutiveSummaryDialog
-              canvasContext={{
-                name: activeProject.name,
-                blocks: BLOCKS.map((b) => ({
-                  id: b.id,
-                  title: b.title,
-                  content: canvasData[b.id] ?? '',
-                })),
-                filledCount: filledBlocks,
-                totalBlocks: 9,
-                auditScore: auditResult?.summary.overallScore,
-                auditVerdict: auditResult?.summary.verdict,
-              }}
-              onClose={() => setShowSummaryDialog(false)}
             />
           )}
         </AnimatePresence>
@@ -650,55 +647,77 @@ export function WorkspacePage() {
           )}
         </AnimatePresence>
 
-        {/* Main layout: canvas grid + editor panel */}
-        <div className="flex flex-col lg:flex-row gap-5 items-stretch relative md:px-2 pt-2">
-          <CanvasGrid
-            canvasData={canvasData}
-            selectedBlockId={selectedBlockId}
-            canvasEntryKey={canvasEntryKey}
-            onSelectBlock={setSelectedBlockId}
-          />
-
-          <AnimatePresence>
-            {selectedBlockId && selectedBlock && (
-              <motion.div
-                key="editor-panel-outer"
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 440, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                style={{ minWidth: 0, flexShrink: 0 }}
-                className="hidden md:block overflow-hidden"
+        {activeWorkspaceSection === 'canvas' ? (
+          <>
+            <div className="flex justify-end pt-1">
+              <button
+                onClick={handleOpenAiContentStudio}
+                disabled={!activeProject}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-[13px] font-bold tracking-tight transition-all shadow-sm shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <EditorPanel
-                  selectedBlock={selectedBlock}
-                  editorText={editorText}
-                  onChangeText={setEditorText}
-                  activeTab={activeTab}
-                  onChangeTab={setActiveTab}
-                  saveStatus={saveStatus}
-                  blockAuditResult={blockAuditResult}
-                  onAuditBlock={runBlockAudit}
-                  onClose={() => setSelectedBlockId(null)}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                ✨ Generar contenido IA
+              </button>
+            </div>
 
-        {/* Mobile editor bottom sheet */}
-        {selectedBlockId && selectedBlock && (
-          <MobileEditor
-            selectedBlock={selectedBlock}
-            editorText={editorText}
-            onChangeText={setEditorText}
-            activeTab={activeTab}
-            onChangeTab={setActiveTab}
-            saveStatus={saveStatus}
-            blockAuditResult={blockAuditResult}
-            onAuditBlock={runBlockAudit}
-            onClose={() => setSelectedBlockId(null)}
-          />
+            {/* Main layout: canvas grid + editor panel */}
+            <div className="flex flex-col lg:flex-row gap-5 items-stretch relative md:px-2 pt-2">
+              <CanvasGrid
+                canvasData={canvasData}
+                selectedBlockId={selectedBlockId}
+                canvasEntryKey={canvasEntryKey}
+                onSelectBlock={setSelectedBlockId}
+              />
+
+              <AnimatePresence>
+                {selectedBlockId && selectedBlock && (
+                  <motion.div
+                    key="editor-panel-outer"
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: 440, opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ minWidth: 0, flexShrink: 0 }}
+                    className="hidden md:block overflow-hidden"
+                  >
+                    <EditorPanel
+                      selectedBlock={selectedBlock}
+                      editorText={editorText}
+                      onChangeText={setEditorText}
+                      activeTab={activeTab}
+                      onChangeTab={setActiveTab}
+                      saveStatus={saveStatus}
+                      blockAuditResult={blockAuditResult}
+                      onAuditBlock={runBlockAudit}
+                      onClose={() => setSelectedBlockId(null)}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Mobile editor bottom sheet */}
+            {selectedBlockId && selectedBlock && (
+              <MobileEditor
+                selectedBlock={selectedBlock}
+                editorText={editorText}
+                onChangeText={setEditorText}
+                activeTab={activeTab}
+                onChangeTab={setActiveTab}
+                saveStatus={saveStatus}
+                blockAuditResult={blockAuditResult}
+                onAuditBlock={runBlockAudit}
+                onClose={() => setSelectedBlockId(null)}
+              />
+            )}
+          </>
+        ) : (
+          activeCanvasContext && (
+            <AiContentStudio
+              canvasContext={activeCanvasContext}
+              onBack={() => setActiveWorkspaceSection('canvas')}
+              onGenerated={handleAiContentGenerated}
+            />
+          )
         )}
 
         </div>{/* end flex-1 px-4 */}
