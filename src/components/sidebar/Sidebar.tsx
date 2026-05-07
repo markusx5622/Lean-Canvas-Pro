@@ -128,6 +128,7 @@ export function Sidebar({
     badge,
     greenDot,
     spinning,
+    ariaLabel,
   }: {
     icon: React.ReactNode;
     label: string;
@@ -136,12 +137,14 @@ export function Sidebar({
     badge?: number;
     greenDot?: boolean;
     spinning?: boolean;
+    /** Overrides the accessible name independently of the visible label. */
+    ariaLabel?: string;
   }) => (
     <button
       onClick={onClick}
       disabled={disabled}
-      title={label}
-      aria-label={label}
+      title={ariaLabel ?? label}
+      aria-label={ariaLabel ?? label}
       className={
         collapsed
           ? `flex items-center justify-center relative w-full p-2.5 rounded-xl transition-all ${
@@ -415,7 +418,8 @@ export function Sidebar({
           />
           <ActionItem
             icon={<Share2 size={17} strokeWidth={2.5} />}
-            label={hasActiveShare ? 'Canvas compartido · gestionar' : 'Compartir'}
+            label="Compartir"
+            ariaLabel={hasActiveShare ? 'Canvas compartido · gestionar' : 'Compartir'}
             onClick={onShare}
             disabled={!hasActiveCanvas}
             greenDot={hasActiveShare}

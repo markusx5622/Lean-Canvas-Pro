@@ -78,7 +78,8 @@ export function useCanvasSharing(canvasId: string | undefined): UseCanvasSharing
             setShare(existing);
             return;
           }
-        } catch {
+        } catch (fetchErr: unknown) {
+          console.error('[useCanvasSharing] Failed to fetch existing share after unique violation:', fetchErr);
           // Fall through to generic error state below.
         }
       }
