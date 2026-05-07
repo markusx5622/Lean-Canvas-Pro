@@ -107,7 +107,7 @@ export function CommentPanel({ canvasName, comments: commentsState, onClose }: C
                 Sin comentarios todavía
               </p>
               <p className="text-[12.5px] text-slate-400 dark:text-slate-500 font-medium max-w-[240px] leading-relaxed">
-                Comparte el enlace del canvas con mentores o advisors para recibir feedback.
+                El feedback externo de revisores aparecerá aquí cuando envíen comentarios.
               </p>
             </div>
           ) : (
