@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { AnimatePresence, useReducedMotion } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWorkspaceContext } from '../contexts/WorkspaceContext';
 import { useCanvases } from '../hooks/useCanvases';
@@ -636,19 +636,31 @@ export function WorkspacePage() {
             onSelectBlock={setSelectedBlockId}
           />
 
-          {selectedBlockId && selectedBlock && (
-            <EditorPanel
-              selectedBlock={selectedBlock}
-              editorText={editorText}
-              onChangeText={setEditorText}
-              activeTab={activeTab}
-              onChangeTab={setActiveTab}
-              saveStatus={saveStatus}
-              blockAuditResult={blockAuditResult}
-              onAuditBlock={runBlockAudit}
-              onClose={() => setSelectedBlockId(null)}
-            />
-          )}
+          <AnimatePresence>
+            {selectedBlockId && selectedBlock && (
+              <motion.div
+                key="editor-panel-outer"
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 440, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                style={{ minWidth: 0, flexShrink: 0 }}
+                className="hidden md:block overflow-hidden"
+              >
+                <EditorPanel
+                  selectedBlock={selectedBlock}
+                  editorText={editorText}
+                  onChangeText={setEditorText}
+                  activeTab={activeTab}
+                  onChangeTab={setActiveTab}
+                  saveStatus={saveStatus}
+                  blockAuditResult={blockAuditResult}
+                  onAuditBlock={runBlockAudit}
+                  onClose={() => setSelectedBlockId(null)}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Mobile editor bottom sheet */}

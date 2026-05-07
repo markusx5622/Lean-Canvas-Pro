@@ -32,7 +32,7 @@ export function EditorPanel({
   onClose,
 }: EditorPanelProps) {
   return (
-    <div className="lg:w-[440px] shrink-0 sticky top-5 h-[calc(100vh-40px)] hidden md:block overflow-hidden relative rounded-[28px]">
+    <div className="w-[440px] sticky top-5 h-[calc(100vh-40px)] overflow-hidden relative rounded-[28px]">
       <AnimatePresence mode="wait">
         <motion.div
             key="editor"
