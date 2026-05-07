@@ -18,6 +18,9 @@ export interface UseCanvasSharingReturn {
   refetch: () => void;
 }
 
+/** PostgreSQL unique-violation code returned by Supabase/PostgREST. */
+const PG_UNIQUE_VIOLATION = '23505';
+
 /**
  * Manages the read-only share state for a single canvas.
  * Re-fetches whenever `canvasId` changes.
@@ -64,6 +67,22 @@ export function useCanvasSharing(canvasId: string | undefined): UseCanvasSharing
       setShare(row);
       trackShareLinkCreated();
     } catch (err: unknown) {
+      // A unique-constraint violation (23505) means a share already exists —
+      // another workspace member may have created it.  Fetch and display it
+      // instead of showing a confusing error.
+      const pgCode = (err as { code?: string })?.code;
+      if (pgCode === PG_UNIQUE_VIOLATION) {
+        try {
+          const existing = await getShareForCanvas(canvasId);
+          if (existing) {
+            setShare(existing);
+            return;
+          }
+        } catch (fetchErr: unknown) {
+          console.error('[useCanvasSharing] Failed to fetch existing share after unique violation:', fetchErr);
+          // Fall through to generic error state below.
+        }
+      }
       console.error('[useCanvasSharing] Failed to create share:', err);
       setError('No se pudo generar el enlace. Inténtalo de nuevo.');
     } finally {
