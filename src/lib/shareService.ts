@@ -17,16 +17,24 @@ export interface SharedCanvasRow {
   updated_at: string;
 }
 
+/** Thrown by all share functions when the Supabase client is not configured. */
+export class SupabaseNotConfiguredError extends Error {
+  constructor() {
+    super('Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+    this.name = 'SupabaseNotConfiguredError';
+  }
+}
+
 /**
  * Create a share record for a canvas (one per canvas, enforced by DB unique constraint).
  * Returns the new row including the generated token.
+ * The DB fills `user_id` automatically via DEFAULT auth.uid(), so we omit it here.
  */
 export async function createShare(canvasId: string): Promise<ShareRow> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Not authenticated');
+  if (!supabase) throw new SupabaseNotConfiguredError();
   const { data, error } = await supabase
     .from('canvas_shares')
-    .insert({ canvas_id: canvasId, user_id: user.id })
+    .insert({ canvas_id: canvasId })
     .select('id, canvas_id, token, created_at')
     .single();
   if (error) throw error;
@@ -35,6 +43,7 @@ export async function createShare(canvasId: string): Promise<ShareRow> {
 
 /** Retrieve the active share for a canvas (if one exists). */
 export async function getShareForCanvas(canvasId: string): Promise<ShareRow | null> {
+  if (!supabase) throw new SupabaseNotConfiguredError();
   // Use .limit(1) instead of .maybeSingle() to avoid PostgREST
   // Accept: application/vnd.pgrst.object+json semantics, which can
   // return a 406/404 error on some Supabase versions when 0 rows match.
@@ -50,6 +59,7 @@ export async function getShareForCanvas(canvasId: string): Promise<ShareRow | nu
 
 /** Delete a share record, effectively revoking the link. */
 export async function revokeShare(shareId: string): Promise<void> {
+  if (!supabase) throw new SupabaseNotConfiguredError();
   const { error } = await supabase
     .from('canvas_shares')
     .delete()
@@ -62,6 +72,7 @@ export async function revokeShare(shareId: string): Promise<void> {
  * This calls the SECURITY DEFINER RPC so it works without authentication.
  */
 export async function getCanvasByShareToken(token: string): Promise<SharedCanvasRow | null> {
+  if (!supabase) throw new SupabaseNotConfiguredError();
   const { data, error } = await supabase
     .rpc('get_canvas_by_share_token', { p_token: token });
   if (error) throw error;

@@ -51,7 +51,7 @@ La autenticación es completamente por email y contraseña; la sesión persiste 
    ```
 4. En el panel de Supabase, asegúrate de que **Email Auth** está habilitado en *Authentication → Providers*.  
    (Opcional) Desactiva la confirmación de email en entornos de desarrollo en *Authentication → Settings → Email confirmations*.
-5. Crea la tabla `canvases` ejecutando la migración (ver sección siguiente).
+5. Ejecuta **todas** las migraciones en orden (ver sección de base de datos más abajo).
 6. Arranca el servidor de desarrollo:
    ```bash
    npm run dev
@@ -82,13 +82,23 @@ Los 9 bloques del canvas (identificados por su número 1–9) se guardan como cl
 
 ### Migración
 
-Ejecuta el archivo `supabase/migrations/001_create_canvases.sql` **una sola vez** en tu proyecto de Supabase:
+Ejecuta **todos** los archivos de `supabase/migrations/` **una sola vez y en orden** en tu proyecto de Supabase:
 
 1. Abre **Dashboard → SQL Editor → New query**.
-2. Pega el contenido del archivo.
-3. Haz clic en **Run**.
+2. Para cada archivo de la lista siguiente, pega el contenido y haz clic en **Run**:
 
-El script crea la tabla, el índice por `user_id`, el trigger `set_updated_at` y la política RLS.
+| Archivo | Qué crea |
+|---|---|
+| `001_create_canvases.sql` | Tabla `canvases`, trigger `set_updated_at` y RLS |
+| `002_create_canvas_snapshots.sql` | Tabla `canvas_snapshots` y RLS |
+| `003_create_canvas_shares.sql` | Tabla `canvas_shares`, RLS básica y función RPC `get_canvas_by_share_token` |
+| `004_create_workspaces.sql` | Tablas `workspaces` y `workspace_members` |
+| `005_create_workspace_invitations.sql` | Tabla `workspace_invitations`, RPCs de invitación |
+| `006_workspace_canvas_permissions.sql` | Políticas de DELETE más restrictivas para canvases de workspace |
+| `007_create_canvas_comments.sql` | Tabla `canvas_comments` y RLS |
+| `008_workspace_share_read_policy.sql` | Política SELECT para que los miembros de workspace puedan leer shares existentes |
+
+> **Importante:** saltar cualquier migración provocará fallos silenciosos o errores de RLS en la feature correspondiente. Las migraciones son aditivas y seguras de re-ejecutar gracias a las cláusulas `IF NOT EXISTS` / `CREATE OR REPLACE`.
 
 ### Flujo de persistencia
 
@@ -130,6 +140,50 @@ updateBlock() ──► localStorage cache (escritura inmediata)
 | `supabase/migrations/001_create_canvases.sql` | Schema, trigger y RLS |
 
 
+
+---
+
+## 🔗 Compartir Canvas (Solo Lectura)
+
+Lean Canvas Pro permite generar un enlace público de solo lectura para cualquier canvas. Los destinatarios pueden ver el canvas sin necesidad de cuenta y sin poder editarlo.
+
+### Cómo funciona
+
+1. Abre la sidebar y pulsa **Compartir** sobre el canvas activo.
+2. Haz clic en **Generar enlace de solo lectura** → se crea un registro en `canvas_shares`.
+3. Copia el enlace generado (`/share/<token>`) y compártelo.
+4. Cualquier persona con el enlace puede ver el canvas en modo lectura en la ruta `/share/:token` — sin autenticación.
+
+### Modelo de datos
+
+```sql
+-- Tabla: canvas_shares
+id          uuid        PRIMARY KEY
+canvas_id   uuid        NOT NULL UNIQUE   -- FK → canvases; un share por canvas
+user_id     uuid        NOT NULL          -- DEFAULT auth.uid() — quién creó el share
+token       uuid        NOT NULL UNIQUE   -- slug del enlace público
+created_at  timestamptz NOT NULL
+```
+
+### Políticas RLS
+
+| Política | Operación | Permite |
+|---|---|---|
+| `Owners can manage their canvas shares` | ALL | Solo el creador del share (`user_id = auth.uid()`) |
+| `Workspace members can view canvas shares` | SELECT | Cualquier miembro del workspace al que pertenece el canvas |
+
+La función `get_canvas_by_share_token(p_token uuid)` es `SECURITY DEFINER` y permite a llamadas anónimas leer el canvas del share sin RLS.
+
+### Archivos relevantes
+
+| Archivo | Responsabilidad |
+|---|---|
+| `src/lib/shareService.ts` | CRUD + RPC helpers con null guards explícitos |
+| `src/hooks/useCanvasSharing.ts` | Estado del share por canvas; maneja error 23505 |
+| `src/components/ShareModal.tsx` | UI del modal de compartir |
+| `src/components/SharedCanvasView.tsx` | Vista pública de solo lectura (`/share/:token`) |
+| `supabase/migrations/003_create_canvas_shares.sql` | Tabla, RLS base y función RPC |
+| `supabase/migrations/008_workspace_share_read_policy.sql` | SELECT policy para miembros de workspace |
 
 ---
 

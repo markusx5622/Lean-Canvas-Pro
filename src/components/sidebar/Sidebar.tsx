@@ -415,7 +415,7 @@ export function Sidebar({
           />
           <ActionItem
             icon={<Share2 size={17} strokeWidth={2.5} />}
-            label="Compartir"
+            label={hasActiveShare ? 'Canvas compartido · gestionar' : 'Compartir'}
             onClick={onShare}
             disabled={!hasActiveCanvas}
             greenDot={hasActiveShare}
