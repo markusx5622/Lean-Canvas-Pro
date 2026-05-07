@@ -17,6 +17,7 @@ import {
   MessageSquare,
   FileText,
   Bot,
+  Sparkles,
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Project } from '../../hooks/useCanvases';
@@ -53,6 +54,7 @@ export interface SidebarProps {
   onPresent: () => void;
   onOpenFeedback: () => void;
   onOpenAssistant: () => void;
+  onGenerateSummary: () => void;
 
   // Bottom zone
   onOpenSettings: () => void;
@@ -99,6 +101,7 @@ export function Sidebar({
   onLogoClick,
   onOpenFeedback,
   onOpenAssistant,
+  onGenerateSummary,
   feedbackCount,
   pdfExporting,
 }: SidebarProps) {
@@ -441,6 +444,13 @@ export function Sidebar({
             onClick={onOpenAssistant}
             disabled={!hasActiveCanvas}
             ariaLabel={hasActiveCanvas ? 'Abrir asistente estratégico IA' : 'Asistente IA (activa un lienzo para usar)'}
+          />
+          <ActionItem
+            icon={<Sparkles size={17} strokeWidth={2} />}
+            label="Resumen ejecutivo"
+            onClick={onGenerateSummary}
+            disabled={!hasActiveCanvas}
+            ariaLabel={hasActiveCanvas ? 'Generar resumen ejecutivo del canvas' : 'Resumen ejecutivo (activa un lienzo para usar)'}
           />
         </div>
 
