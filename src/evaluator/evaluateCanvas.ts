@@ -48,13 +48,20 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
   // 8th dimension: financial viability
   const viabilityScore = computeViabilityScore(canvasData, filledBlocks, crossBlockIssues);
 
-  // Overall score = transparent weighted combination of the 8 dimensions.
+  // 9th dimension: defensibility / moat
+  const defensibilityScore = computeDefensibilityScore(canvasData);
+
+  // Investor readiness flags (deterministic, binary signals)
+  const investorFlags = computeInvestorFlags(canvasData);
+
+  // Overall score = transparent weighted combination of the 9 dimensions.
   // Empty canvas → 0; otherwise the formula drives the score.
   const overallScore: number = filledBlocks > 0
     ? computeOverallScore(
         completenessScore, clarityScore, specificityScore,
         consistencyScore, strategicReadinessScore,
         marketClarityScore, valuePropositionScore, viabilityScore,
+        defensibilityScore,
       )
     : 0;
 
@@ -74,7 +81,7 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
   const headline = buildHeadline(overallScore, completionPct, crossBlockIssues, strategicReadinessScore);
   const nextPriority = buildNextPriority(
     completionPct, crossBlockIssues, specificityScore, strategicReadinessScore,
-    marketClarityScore, valuePropositionScore, viabilityScore, blocks,
+    marketClarityScore, valuePropositionScore, viabilityScore, defensibilityScore, blocks,
   );
 
   const summary: GlobalSummary = {
@@ -89,6 +96,8 @@ export function evaluateCanvas(canvasData: CanvasData): EvaluationResult {
     marketClarityScore,
     valuePropositionScore,
     viabilityScore,
+    defensibilityScore,
+    investorFlags,
     verdict,
     headline,
     nextPriority,
@@ -249,6 +258,48 @@ function detectCrossBlockIssues(canvasData: CanvasData): CrossBlockIssue[] {
     });
   }
 
+  // Rule 11: UVP defined but no quantified benefit
+  if (uvp.trim().length > 0) {
+    const hasQuantifiedBenefit = /\d[\d.,]*\s*(%|€|\$|hora|horas|vece|min|x |x\d|veces|minuto|minutos|días|dias|semana|mes|año|ano)/.test(canvasData[3] ?? '');
+    if (!hasQuantifiedBenefit) {
+      issues.push({
+        code: 'UVP_NOT_QUANTIFIED',
+        message: 'La propuesta de valor no incluye ningún beneficio cuantificado.',
+        severity: 'warning',
+        relatedBlocks: [3],
+        hint: "Añade una cifra concreta a tu UVP: '3× más rápido', 'ahorra 4 h/semana', 'reduce costes un 30%'. Los números hacen la propuesta creíble y memorable.",
+      });
+    }
+  }
+
+  // Rule 12: Revenue block filled but no concrete price signal
+  if (ingresos.trim().length > 0) {
+    const hasPriceSignal = /\d[\d.,]*\s*(€|\$|eur|usd|£)|\b\d{2,}\b.*\/(mes|año|ano|semana|día|dia)|ticket\s+medio/i.test(canvasData[6] ?? '');
+    if (!hasPriceSignal) {
+      issues.push({
+        code: 'REVENUE_NO_PRICING',
+        message: 'El modelo de ingresos no menciona precios concretos.',
+        severity: 'warning',
+        relatedBlocks: [6],
+        hint: 'Incluye al menos un precio de referencia (ej. 49 €/mes, ticket medio 200 €). Sin precio, el potencial de mercado es incalculable para un inversor.',
+      });
+    }
+  }
+
+  // Rule 13: Metrics filled but no growth or traction signal when financial blocks exist
+  if (metricas.trim().length > 0 && hasCosts && hasRevenue) {
+    const hasGrowthSignal = /mrr|arr|crecimiento|growth|tracción|traccion|tasa de|%.*mes|mensual.*%|semanal.*%/.test(metricas);
+    if (!hasGrowthSignal) {
+      issues.push({
+        code: 'METRICS_NO_GROWTH_SIGNAL',
+        message: 'Las métricas no incluyen ningún indicador de crecimiento o tracción.',
+        severity: 'info',
+        relatedBlocks: [8],
+        hint: 'Añade al menos una métrica de crecimiento (MRR mensual, % activación semanal, tasa de conversión) para demostrar dinamismo al mercado.',
+      });
+    }
+  }
+
   return issues;
 }
 
@@ -305,26 +356,37 @@ function computeMarketClarityScore(canvasData: CanvasData): number {
 
   // Specific segment descriptors (terms are already lowercase, no accent normalisation needed)
   const specificTerms = ['b2b', 'b2c', 'pyme', 'startup', 'freelance', 'autonomo', 'director',
-    'sector', 'industria', 'empleados', 'facturacion', 'profesional', 'gerente', 'cto', 'ceo'];
+    'sector', 'industria', 'empleados', 'facturacion', 'profesional', 'gerente', 'cto', 'ceo',
+    'founder', 'responsable', 'manager', 'jefe', 'lider', 'empresa mediana', 'empresa grande',
+    'pequena empresa', 'autonomos', 'empresa familiar', 'corporacion', 'd2c', 'enterprise'];
   const specificMatches = specificTerms.filter(t => combined.includes(t)).length;
   if (specificMatches >= 3) score += 20;
   else if (specificMatches >= 1) score += 10;
 
-  // Early adopter defined (drop redundant 'adopter' — already matched by 'early adopter')
+  // Early adopter defined
   if (/early adopter|primer cliente|pionero|nicho/.test(segNorm)) score += 15;
 
   // Market size signals (TAM/SAM/SOM or size estimate)
   const hasSizeSignal = /\btam\b|\bsam\b|\bsom\b|tama[ñn]o de mercado|mercado de|millones de|miles de/.test(combined);
   if (hasSizeSignal) score += 10;
 
-  // Penalise broad-audience language (terms are already normalised — compare to segNorm)
+  // Geography or scope signal — shows the market is bounded
+  const hasGeography = /espa[ñn]a|europa|latinoamerica|latam|estados unidos|global|nacional|local|regional|ciudad|pa[ií]s/.test(combined);
+  if (hasGeography) score += 8;
+
+  // Competitive awareness in the Problem block — signals the founder knows the current landscape
+  if (hasAnyKeyword(problema, ['alternativas', 'workaround', 'cómo resuelven', 'competidores', 'solución actual', 'actualmente', 'hoy en día'])) {
+    score += 10;
+  }
+
+  // Penalise broad-audience language
   const broadTerms = ['todos', 'todo el mundo', 'cualquiera', 'personas en general', 'gente'];
   const hasBroad = broadTerms.some(t => segNorm.includes(t));
   if (hasBroad) score -= 20;
 
   // Bonus if segment has a reasonable word count
   const segWc = segmentos.trim().split(/\s+/).length;
-  if (segWc >= 15) score += 10;
+  if (segWc >= 15) score += 8;
   else if (segWc < 5 && segmentos.trim().length > 0) score -= 5;
 
   return Math.max(0, Math.min(100, score));
@@ -355,12 +417,13 @@ function computeValuePropositionScore(canvasData: CanvasData): number {
 
   // Outcome-focused language
   const outcomeTerms = ['ahorra', 'reduce', 'elimina', 'automatiza', 'simplifica',
-    'mas rapido', 'sin friccion', 'ahorro de', 'reduccion'];
+    'mas rapido', 'sin friccion', 'ahorro de', 'reduccion', 'mejora', 'incrementa',
+    'multiplica', 'convierte', 'transforma', 'acelera', 'optimiza'];
   const hasOutcome = outcomeTerms.some(t => uvpLower.includes(t));
   if (hasOutcome) score += 20;
 
-  // Quantified benefit
-  const hasQuantified = /\d[\d.,]*\s*(%|€|\$|hora|horas|veces|minuto|minutos)/.test(uvp);
+  // Quantified benefit (%, €, hours, multiplier, time)
+  const hasQuantified = /\d[\d.,]*\s*(%|€|\$|hora|horas|vece|minuto|minutos|x |x\d|días|dia|semana|mes)/.test(uvp);
   if (hasQuantified) score += 15;
 
   // Conciseness bonus (a good UVP fits in 1–2 sentences)
@@ -370,9 +433,17 @@ function computeValuePropositionScore(canvasData: CanvasData): number {
 
   // Comparison/differentiation language
   const comparisonTerms = ['a diferencia de', 'frente a', 'en lugar de', 'mejor que',
-    'sin necesidad de', 'a diferencia', 'alternativas', 'unico', 'diferente'];
+    'sin necesidad de', 'a diferencia', 'alternativas', 'unico', 'diferente', 'a diferencia'];
   const hasComparison = comparisonTerms.some(t => uvpLower.includes(t));
   if (hasComparison) score += 10;
+
+  // Customer-centric language (UVP mentions who it is for)
+  const hasCustomerRef = /cliente|usuario|empresa|equipo|profesional|autonomo|para ti|para tu|para los|para el|para las/.test(uvpLower);
+  if (hasCustomerRef) score += 8;
+
+  // Time-to-value signal (fast onboarding or immediate ROI)
+  const hasTimeToValue = /en minuto|inmediatamente|desde el primer|sin configuracion|en segundos|en horas|al instante/.test(uvpLower);
+  if (hasTimeToValue) score += 7;
 
   // Positive value keywords
   const valueTerms = BLOCK_KEYWORDS[3].positive;
@@ -448,6 +519,9 @@ function computeViabilityScore(
   // Retention/churn awareness
   if (/churn|retencion|retention/.test(combined)) score += 5;
 
+  // Break-even or runway signal — shows financial planning maturity
+  if (/breakeven|break.even|punto de equilibrio|runway|meses de caja|meses de capital/.test(combined)) score += 5;
+
   // Penalise critical viability cross-block issues
   const criticalViabilityIssues = crossBlockIssues.filter(
     i => i.severity === 'critical' && (i.relatedBlocks.includes(6) || i.relatedBlocks.includes(7)),
@@ -455,6 +529,109 @@ function computeViabilityScore(
   score -= Math.min(25, criticalViabilityIssues.length * 15);
 
   return Math.max(0, Math.min(100, score));
+}
+
+// ── Defensibility subscore ────────────────────────────────────
+
+/**
+ * Compute a defensibility / moat score [0–100].
+ *
+ * Evaluates how hard the competitive advantage is to replicate:
+ *   • Hard moat signals: patents, proprietary data, network effects, exclusive contracts, IP
+ *   • Soft (copyable) signals penalised: experience, passion, team effort
+ *   • Alignment bonus: moat signal also visible in UVP (internally consistent)
+ *
+ * Returns 0 when block 9 (Ventaja Injusta) is empty.
+ */
+function computeDefensibilityScore(canvasData: CanvasData): number {
+  const ventaja = canvasData[9] ?? '';
+  if (ventaja.trim().length === 0) return 0;
+
+  const ventajaNorm = normalise(ventaja);
+  const uvpNorm = normalise(canvasData[3] ?? '');
+
+  let score = 20; // baseline — defensibility must be earned
+
+  // Hard moat signals: each category adds points
+  const ipTerms = ['patente', 'propiedad intelectual', 'contrato exclusivo', 'marca registrada', 'licencia exclusiva'];
+  if (ipTerms.some(t => ventajaNorm.includes(normalise(t)))) score += 25;
+
+  const dataTerms = ['datos propios', 'datos unicos', 'dataset exclusivo', 'dataset propio', 'flywheel', 'volante de datos'];
+  if (dataTerms.some(t => ventajaNorm.includes(normalise(t)))) score += 20;
+
+  const networkTerms = ['efecto red', 'network effect', 'efectos de red', 'red de usuarios', 'plataforma bilateral'];
+  if (networkTerms.some(t => ventajaNorm.includes(normalise(t)))) score += 20;
+
+  const barrierTerms = ['regulacion', 'barrera regulatoria', 'certificacion', 'homologacion', 'acceso exclusivo', 'acuerdo preferente'];
+  if (barrierTerms.some(t => ventajaNorm.includes(normalise(t)))) score += 15;
+
+  const techTerms = ['algoritmo propio', 'tecnologia propia', 'modelo propio', 'ip tecnica', 'infraestructura propia'];
+  if (techTerms.some(t => ventajaNorm.includes(normalise(t)))) score += 15;
+
+  // Community / brand moat (weaker but real)
+  const communityTerms = ['comunidad', 'marca reconocida', 'confianza', 'reputacion', 'referente', 'prescriptor'];
+  if (communityTerms.some(t => ventajaNorm.includes(normalise(t)))) score += 10;
+
+  // Moat-UVP alignment: competitive advantage is also visible in the value proposition
+  const moatKeywords = [...ipTerms, ...dataTerms, ...networkTerms, ...barrierTerms, ...techTerms];
+  const moatInUVP = moatKeywords.some(t => uvpNorm.includes(normalise(t)));
+  if (moatInUVP) score += 8;
+
+  // Penalise purely copyable attributes (experience, passion, team)
+  const copyableTerms = ['experiencia', 'pasion', 'dedicacion', 'equipo', 'conocimiento general'];
+  const hasCopyableOnly = copyableTerms.some(t => ventajaNorm.includes(normalise(t)));
+  const hasRealMoat = BLOCK_KEYWORDS[9].positive.some(t => ventajaNorm.includes(normalise(t)));
+  if (hasCopyableOnly && !hasRealMoat) score -= 20;
+
+  return Math.max(0, Math.min(100, score));
+}
+
+// ── Investor flags ────────────────────────────────────────────
+
+/**
+ * Compute explicit, binary investor-readiness flags.
+ * Each flag is derived deterministically from canvas content.
+ * Intended as a quick checklist for founders preparing investor conversations.
+ */
+function computeInvestorFlags(canvasData: CanvasData): {
+  hasUnitEconomics: boolean;
+  hasMarketSize: boolean;
+  hasDefensibleMoat: boolean;
+  hasRevenueWithPricing: boolean;
+  hasQuantifiedUVP: boolean;
+} {
+  const ingresos  = normalise(canvasData[6] ?? '');
+  const costes    = normalise(canvasData[7] ?? '');
+  const metricas  = normalise(canvasData[8] ?? '');
+  const segmentos = normalise(canvasData[2] ?? '');
+  const problema  = normalise(canvasData[1] ?? '');
+  const ventaja   = normalise(canvasData[9] ?? '');
+  const uvpRaw    = canvasData[3] ?? '';
+
+  const financialCombined = ingresos + ' ' + costes + ' ' + metricas;
+
+  const hasCac = /cac|coste de adquisicion/.test(financialCombined);
+  const hasLtv = /ltv|valor de vida|valor del cliente/.test(financialCombined);
+
+  const marketSizeSignal = /\btam\b|\bsam\b|\bsom\b|tama[ñn]o de mercado|millones de|miles de/.test(segmentos + ' ' + problema);
+
+  const realMoatKeywords = BLOCK_KEYWORDS[9].positive;
+  const copyableOnly = ['experiencia', 'pasion', 'dedicacion', 'equipo', 'conocimiento general'];
+  const hasRealMoat = ventaja.length > 0 &&
+    realMoatKeywords.some(t => ventaja.includes(normalise(t))) &&
+    !copyableOnly.every(t => ventaja.includes(normalise(t)));
+
+  const hasPriceSignal = /\d[\d.,]*\s*(€|\$|eur|usd|£)|\b\d{2,}\b.*(mes|año|semana)/.test(canvasData[6] ?? '');
+
+  const hasQuantifiedUVP = /\d[\d.,]*\s*(%|€|\$|hora|horas|vece|minuto|minutos|x |x\d|dias|semana|mes)/.test(uvpRaw);
+
+  return {
+    hasUnitEconomics: hasCac && hasLtv,
+    hasMarketSize: marketSizeSignal,
+    hasDefensibleMoat: hasRealMoat,
+    hasRevenueWithPricing: ingresos.trim().length > 0 && hasPriceSignal,
+    hasQuantifiedUVP,
+  };
 }
 
 // ── Verdict & recommendation helpers ─────────────────────────
@@ -658,6 +835,7 @@ function buildNextPriority(
   marketClarityScore: number,
   valuePropositionScore: number,
   viabilityScore: number,
+  defensibilityScore: number,
   blocks: Array<{ filled: boolean; blockName: string }>,
 ): string {
   // 1. Completion gaps take absolute priority
@@ -703,11 +881,16 @@ function buildNextPriority(
     return 'Completa el modelo financiero: define precios concretos, estructura de costes con cifras y calcula CAC y LTV para demostrar la viabilidad económica.';
   }
 
-  // 8. Low strategic readiness: missing investment-ready signals
+  // 8. Weak defensibility: no hard-to-copy moat defined
+  if (defensibilityScore < 30) {
+    return 'Define tu ventaja injusta con más concreción: ¿tienes datos exclusivos, patentes, efectos de red o acceso preferente? Sin un moat claro, el modelo es fácilmente replicable.';
+  }
+
+  // 9. Low strategic readiness: missing investment-ready signals
   if (strategicReadinessScore < 50) {
     return 'Completa el modelo financiero (costes + ingresos + CAC/LTV) y define tu ventaja injusta para aumentar la preparación estratégica.';
   }
 
-  // 9. Canvas is solid — move to validation
+  // 10. Canvas is solid — move to validation
   return 'Realiza al menos 5 entrevistas con clientes potenciales para contrastar las hipótesis del canvas.';
 }

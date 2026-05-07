@@ -212,15 +212,15 @@ describe('aggregateSubscores', () => {
 
 describe('computeOverallScore', () => {
   it('returns 0 when all subscores are 0', () => {
-    expect(computeOverallScore(0, 0, 0, 0, 0, 0, 0, 0)).toBe(0);
+    expect(computeOverallScore(0, 0, 0, 0, 0, 0, 0, 0, 0)).toBe(0);
   });
 
   it('returns 100 when all subscores are 100', () => {
-    expect(computeOverallScore(100, 100, 100, 100, 100, 100, 100, 100)).toBe(100);
+    expect(computeOverallScore(100, 100, 100, 100, 100, 100, 100, 100, 100)).toBe(100);
   });
 
   it('matches manual weighted calculation', () => {
-    const c = 80, cl = 70, sp = 60, co = 90, sr = 50, mc = 60, vp = 70, vi = 40;
+    const c = 80, cl = 70, sp = 60, co = 90, sr = 50, mc = 60, vp = 70, vi = 40, def = 55;
     const expected = Math.round(
       c  * SCORE_WEIGHTS.completeness +
       cl * SCORE_WEIGHTS.clarity +
@@ -229,21 +229,23 @@ describe('computeOverallScore', () => {
       sr * SCORE_WEIGHTS.strategicReadiness +
       mc * SCORE_WEIGHTS.marketClarity +
       vp * SCORE_WEIGHTS.valueProposition +
-      vi * SCORE_WEIGHTS.viability,
+      vi * SCORE_WEIGHTS.viability +
+      def * SCORE_WEIGHTS.defensibility,
     );
-    expect(computeOverallScore(c, cl, sp, co, sr, mc, vp, vi)).toBe(expected);
+    expect(computeOverallScore(c, cl, sp, co, sr, mc, vp, vi, def)).toBe(expected);
   });
 
   it('clamps result to [0, 100]', () => {
     // Feeding values slightly above 100 shouldn't overflow
-    expect(computeOverallScore(100, 100, 100, 100, 100, 100, 100, 100)).toBeLessThanOrEqual(100);
-    expect(computeOverallScore(0, 0, 0, 0, 0, 0, 0, 0)).toBeGreaterThanOrEqual(0);
+    expect(computeOverallScore(100, 100, 100, 100, 100, 100, 100, 100, 100)).toBeLessThanOrEqual(100);
+    expect(computeOverallScore(0, 0, 0, 0, 0, 0, 0, 0, 0)).toBeGreaterThanOrEqual(0);
   });
 
   it('SCORE_WEIGHTS sum to 1.0', () => {
     const total = SCORE_WEIGHTS.completeness + SCORE_WEIGHTS.clarity +
       SCORE_WEIGHTS.specificity + SCORE_WEIGHTS.consistency + SCORE_WEIGHTS.strategicReadiness +
-      SCORE_WEIGHTS.marketClarity + SCORE_WEIGHTS.valueProposition + SCORE_WEIGHTS.viability;
+      SCORE_WEIGHTS.marketClarity + SCORE_WEIGHTS.valueProposition + SCORE_WEIGHTS.viability +
+      SCORE_WEIGHTS.defensibility;
     expect(total).toBeCloseTo(1.0);
   });
 });

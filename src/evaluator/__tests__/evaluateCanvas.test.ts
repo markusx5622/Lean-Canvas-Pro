@@ -413,13 +413,15 @@ describe('evaluateCanvas — scoreWeights transparency', () => {
     expect(result.summary.scoreWeights.marketClarity).toBe(SCORE_WEIGHTS.marketClarity);
     expect(result.summary.scoreWeights.valueProposition).toBe(SCORE_WEIGHTS.valueProposition);
     expect(result.summary.scoreWeights.viability).toBe(SCORE_WEIGHTS.viability);
+    expect(result.summary.scoreWeights.defensibility).toBe(SCORE_WEIGHTS.defensibility);
   });
 
   it('all weights sum to 1.0', () => {
     const weights = SCORE_WEIGHTS;
     const total = weights.completeness + weights.clarity + weights.specificity +
       weights.consistency + weights.strategicReadiness +
-      weights.marketClarity + weights.valueProposition + weights.viability;
+      weights.marketClarity + weights.valueProposition + weights.viability +
+      weights.defensibility;
     expect(total).toBeCloseTo(1.0);
   });
 
@@ -432,7 +434,7 @@ describe('evaluateCanvas — scoreWeights transparency', () => {
     const {
       completenessScore, clarityScore, specificityScore, consistencyScore,
       strategicReadinessScore, marketClarityScore, valuePropositionScore, viabilityScore,
-      overallScore,
+      defensibilityScore, overallScore,
     } = result.summary;
     const w = SCORE_WEIGHTS;
     const expected = Math.round(
@@ -443,7 +445,8 @@ describe('evaluateCanvas — scoreWeights transparency', () => {
       strategicReadinessScore * w.strategicReadiness +
       marketClarityScore      * w.marketClarity +
       valuePropositionScore   * w.valueProposition +
-      viabilityScore          * w.viability,
+      viabilityScore          * w.viability +
+      defensibilityScore      * w.defensibility,
     );
     expect(overallScore).toBe(expected);
   });
@@ -692,5 +695,181 @@ describe('evaluateCanvas — summary subscores', () => {
     const result = evaluateCanvas({});
     expect(() => new Date(result.evaluatedAt)).not.toThrow();
     expect(new Date(result.evaluatedAt).getFullYear()).toBeGreaterThan(2020);
+  });
+});
+
+// ── Defensibility score ───────────────────────────────────────
+
+describe('evaluateCanvas — defensibilityScore', () => {
+  it('returns 0 for empty canvas', () => {
+    expect(evaluateCanvas({}).summary.defensibilityScore).toBe(0);
+  });
+
+  it('returns 0 when block 9 (Ventaja Injusta) is empty', () => {
+    const canvas: CanvasData = {
+      1: 'El cliente pierde tiempo.',
+      2: 'Pymes B2B.',
+      3: 'Ahorra 5 horas semanales.',
+    };
+    expect(evaluateCanvas(canvas).summary.defensibilityScore).toBe(0);
+  });
+
+  it('is higher when real moat keywords are present', () => {
+    const withMoat: CanvasData = {
+      1: 'El cliente pierde tiempo.',
+      4: 'App de automatización.',
+      9: 'Patente registrada y dataset exclusivo de 50.000 transacciones anotadas.',
+    };
+    const withCopyable: CanvasData = {
+      1: 'El cliente pierde tiempo.',
+      4: 'App de automatización.',
+      9: 'Equipo con mucha experiencia y pasión por el producto.',
+    };
+    expect(evaluateCanvas(withMoat).summary.defensibilityScore)
+      .toBeGreaterThan(evaluateCanvas(withCopyable).summary.defensibilityScore);
+  });
+
+  it('is higher when network effects are mentioned', () => {
+    const withNetwork: CanvasData = {
+      9: 'Efecto red: cada nuevo usuario aumenta el valor para los existentes.',
+    };
+    const withoutNetwork: CanvasData = {
+      9: 'Nuestro equipo es el mejor del sector con años de dedicación.',
+    };
+    expect(evaluateCanvas(withNetwork).summary.defensibilityScore)
+      .toBeGreaterThan(evaluateCanvas(withoutNetwork).summary.defensibilityScore);
+  });
+
+  it('returns a value in [0, 100]', () => {
+    const canvas: CanvasData = {
+      9: 'Patente registrada, datos únicos, efecto red, acceso exclusivo a 3 bancos, algoritmo propio.',
+    };
+    const score = evaluateCanvas(canvas).summary.defensibilityScore;
+    expect(score).toBeGreaterThanOrEqual(0);
+    expect(score).toBeLessThanOrEqual(100);
+  });
+});
+
+// ── Investor flags ────────────────────────────────────────────
+
+describe('evaluateCanvas — investorFlags', () => {
+  it('all flags are false for empty canvas', () => {
+    const { investorFlags } = evaluateCanvas({}).summary;
+    expect(investorFlags.hasUnitEconomics).toBe(false);
+    expect(investorFlags.hasMarketSize).toBe(false);
+    expect(investorFlags.hasDefensibleMoat).toBe(false);
+    expect(investorFlags.hasRevenueWithPricing).toBe(false);
+    expect(investorFlags.hasQuantifiedUVP).toBe(false);
+  });
+
+  it('hasUnitEconomics is true when both CAC and LTV are mentioned', () => {
+    const canvas: CanvasData = {
+      8: 'CAC < 150 €, LTV > 900 €, churn < 2% mensual.',
+    };
+    expect(evaluateCanvas(canvas).summary.investorFlags.hasUnitEconomics).toBe(true);
+  });
+
+  it('hasUnitEconomics is false when only CAC is mentioned', () => {
+    const canvas: CanvasData = {
+      8: 'CAC < 150 €, activación mensual y MRR creciente.',
+    };
+    expect(evaluateCanvas(canvas).summary.investorFlags.hasUnitEconomics).toBe(false);
+  });
+
+  it('hasMarketSize is true when TAM/SAM/SOM are mentioned', () => {
+    const canvas: CanvasData = {
+      2: 'Contables autónomos en España. TAM estimado 500M€, SAM 50M€.',
+    };
+    expect(evaluateCanvas(canvas).summary.investorFlags.hasMarketSize).toBe(true);
+  });
+
+  it('hasDefensibleMoat is true when block 9 has real moat keywords', () => {
+    const canvas: CanvasData = {
+      9: 'Dataset exclusivo de 50.000 registros y patente en proceso.',
+    };
+    expect(evaluateCanvas(canvas).summary.investorFlags.hasDefensibleMoat).toBe(true);
+  });
+
+  it('hasRevenueWithPricing is true when block 6 has price figures', () => {
+    const canvas: CanvasData = {
+      6: 'Suscripción SaaS de 49 €/mes por empresa.',
+    };
+    expect(evaluateCanvas(canvas).summary.investorFlags.hasRevenueWithPricing).toBe(true);
+  });
+
+  it('hasQuantifiedUVP is true when block 3 contains a measurable benefit', () => {
+    const canvas: CanvasData = {
+      3: 'Automatiza el 80% de la conciliación bancaria. Ahorra 4 horas/semana.',
+    };
+    expect(evaluateCanvas(canvas).summary.investorFlags.hasQuantifiedUVP).toBe(true);
+  });
+
+  it('hasQuantifiedUVP is false for a vague UVP', () => {
+    const canvas: CanvasData = {
+      3: 'La mejor solución para gestionar tu contabilidad de forma sencilla.',
+    };
+    expect(evaluateCanvas(canvas).summary.investorFlags.hasQuantifiedUVP).toBe(false);
+  });
+});
+
+// ── New cross-block rules ─────────────────────────────────────
+
+describe('evaluateCanvas — new cross-block rules', () => {
+  it('detects UVP_NOT_QUANTIFIED when UVP has no numeric benefit', () => {
+    const canvas: CanvasData = {
+      1: 'El cliente pierde tiempo en procesos manuales repetitivos.',
+      3: 'La mejor solución para gestionar tu contabilidad de forma sencilla y eficiente.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'UVP_NOT_QUANTIFIED')).toBe(true);
+  });
+
+  it('does NOT detect UVP_NOT_QUANTIFIED when UVP is quantified', () => {
+    const canvas: CanvasData = {
+      1: 'El cliente pierde tiempo en procesos manuales.',
+      3: 'Ahorra 4 horas semanales y reduce errores un 80%.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'UVP_NOT_QUANTIFIED')).toBe(false);
+  });
+
+  it('detects REVENUE_NO_PRICING when revenue block has no price figures', () => {
+    const canvas: CanvasData = {
+      1: 'El cliente pierde tiempo en procesos manuales.',
+      2: 'Pymes del sector contable.',
+      6: 'Modelo de suscripción mensual con plan freemium y plan premium.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'REVENUE_NO_PRICING')).toBe(true);
+  });
+
+  it('does NOT detect REVENUE_NO_PRICING when revenue block includes a price', () => {
+    const canvas: CanvasData = {
+      1: 'El cliente pierde tiempo.',
+      2: 'Pymes del sector contable.',
+      6: 'Suscripción de 49 €/mes por empresa con plan anual.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'REVENUE_NO_PRICING')).toBe(false);
+  });
+
+  it('detects METRICS_NO_GROWTH_SIGNAL when metrics has no growth indicator with costs+revenue', () => {
+    const canvas: CanvasData = {
+      6: 'Suscripción de 49 €/mes por empresa.',
+      7: 'Servidores 500 €/mes, salarios 2.000 €/mes.',
+      8: 'CAC < 150 €, LTV > 900 €, churn mensual.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'METRICS_NO_GROWTH_SIGNAL')).toBe(true);
+  });
+
+  it('does NOT detect METRICS_NO_GROWTH_SIGNAL when MRR is mentioned', () => {
+    const canvas: CanvasData = {
+      6: 'Suscripción de 49 €/mes por empresa.',
+      7: 'Servidores 500 €/mes, salarios 2.000 €/mes.',
+      8: 'CAC < 150 €, LTV > 900 €, MRR crecimiento 15% mensual.',
+    };
+    const result = evaluateCanvas(canvas);
+    expect(result.summary.crossBlockIssues.some(i => i.code === 'METRICS_NO_GROWTH_SIGNAL')).toBe(false);
   });
 });
