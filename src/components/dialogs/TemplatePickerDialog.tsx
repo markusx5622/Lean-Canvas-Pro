@@ -201,11 +201,12 @@ export function TemplatePickerDialog({
                 <button
                   key={cat}
                   type="button"
+                  aria-pressed={activeCategory === cat}
                   onClick={() => {
                     setActiveCategory(cat);
                     setSelectedId(null);
                   }}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                     activeCategory === cat
                       ? 'bg-indigo-600 text-white shadow-sm'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
