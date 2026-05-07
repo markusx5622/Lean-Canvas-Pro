@@ -7,7 +7,6 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import { evaluateCanvas, evaluateBlock as evaluateBlockHeuristic } from '../evaluator';
 import type { EvaluationResult, BlockFeedback, BlockId } from '../evaluator';
 import { exportCanvasToPdf } from '../lib/exportPdf';
-import { useCanvasSharing } from '../hooks/useCanvasSharing';
 import { useCanvasComments } from '../hooks/useCanvasComments';
 import { trackStrategicAuditRun, trackPdfExported, trackPresentationModeEntered, trackFeedbackPanelOpened } from '../lib/analytics';
 import { ParticleBackground } from '../ParticleBackground';
@@ -24,7 +23,6 @@ import { InviteModal } from '../components/dialogs/InviteModal';
 import { ExportOptionsDialog } from '../components/dialogs/ExportOptionsDialog';
 import type { ExportOptions } from '../components/dialogs/ExportOptionsDialog';
 import { TemplatePickerDialog } from '../components/dialogs/TemplatePickerDialog';
-import { ShareModal } from '../components/ShareModal';
 import { CommentPanel } from '../components/comments/CommentPanel';
 import { PresentationMode } from '../components/PresentationMode';
 import { SplashPage } from './SplashPage';
@@ -74,7 +72,6 @@ export function WorkspacePage() {
   const [blockAuditResult, setBlockAuditResult] = useState<BlockFeedback | null>(null);
   const [showAboutDialog, setShowAboutDialog] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
   const [showFeedbackPanel, setShowFeedbackPanel] = useState(false);
   const [showPresentation, setShowPresentation] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
@@ -106,10 +103,6 @@ export function WorkspacePage() {
   ).length;
   const progressPercentage = Math.round((filledBlocks / 9) * 100);
 
-  // Sharing state — lifted here so Toolbar can show the active-share indicator
-  // without a separate DB fetch, and ShareModal reuses the same state.
-  const sharing = useCanvasSharing(activeProject?.id);
-
   // Comments state — lifted here so Toolbar can show the unread-count badge.
   const canvasComments = useCanvasComments(activeProject?.id);
 
@@ -135,12 +128,12 @@ export function WorkspacePage() {
   }, [canvasLoading, projects]);
 
   useEffect(() => {
-    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showShareModal || showFeedbackPanel || showPresentation || !!auditResult;
+    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showFeedbackPanel || showPresentation || !!auditResult;
     if (!shouldLock) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
-  }, [showSplash, showAboutDialog, showSettingsModal, showShareModal, showPresentation, auditResult]);
+  }, [showSplash, showAboutDialog, showSettingsModal, showPresentation, auditResult]);
 
   /** Immediately persists any dirty text (used when switching context). */
   const flushPendingSave = useCallback(() => {
@@ -387,7 +380,6 @@ export function WorkspacePage() {
         pdfExporting={pdfExporting}
         user={user}
         prefersReducedMotion={prefersReducedMotion}
-        hasActiveShare={sharing.share !== null}
         hasActiveCanvas={!!activeProject}
         workspaces={workspaces}
         activeWorkspaceId={activeWorkspaceId}
@@ -403,7 +395,6 @@ export function WorkspacePage() {
         onAudit={runCanvasAudit}
         onOpenSettings={() => setShowSettingsModal(true)}
         onExportPdf={handleExportPdf}
-        onShare={() => setShowShareModal(true)}
         onPresent={() => { setShowPresentation(true); trackPresentationModeEntered(); }}
         onLogoClick={() => setShowSplash(true)}
         onOpenFeedback={() => {
@@ -469,16 +460,6 @@ export function WorkspacePage() {
 
         <AnimatePresence>
           {auditResult && <AuditDialog auditResult={auditResult} onClose={() => setAuditResult(null)} />}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {showShareModal && activeProject && (
-            <ShareModal
-              canvasName={activeProject.name}
-              sharing={sharing}
-              onClose={() => setShowShareModal(false)}
-            />
-          )}
         </AnimatePresence>
 
         <AnimatePresence>

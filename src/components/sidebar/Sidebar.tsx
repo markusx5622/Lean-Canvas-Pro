@@ -8,7 +8,6 @@ import {
   ShieldCheck,
   Settings,
   FileDown,
-  Share2,
   Loader2,
   Layers,
   ChevronLeft,
@@ -46,12 +45,10 @@ export interface SidebarProps {
 
   // Primary actions
   pdfExporting: boolean;
-  hasActiveShare: boolean;
   hasActiveCanvas: boolean;
   feedbackCount: number;
   onAudit: () => void;
   onExportPdf: () => void;
-  onShare: () => void;
   onPresent: () => void;
   onOpenFeedback: () => void;
 
@@ -81,7 +78,6 @@ export function Sidebar({
   progressPercentage,
   user,
   prefersReducedMotion,
-  hasActiveShare,
   hasActiveCanvas,
   workspaces,
   activeWorkspaceId,
@@ -97,7 +93,6 @@ export function Sidebar({
   onAudit,
   onOpenSettings,
   onExportPdf,
-  onShare,
   onPresent,
   onLogoClick,
   onOpenFeedback,
@@ -415,14 +410,6 @@ export function Sidebar({
             label="Auditoría Estratégica"
             onClick={onAudit}
             disabled={filledBlocks === 0}
-          />
-          <ActionItem
-            icon={<Share2 size={17} strokeWidth={2.5} />}
-            label="Compartir"
-            ariaLabel={hasActiveShare ? 'Canvas compartido · gestionar' : 'Compartir'}
-            onClick={onShare}
-            disabled={!hasActiveCanvas}
-            greenDot={hasActiveShare}
           />
           <ActionItem
             icon={<FileDown size={17} strokeWidth={2.5} />}
