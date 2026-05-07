@@ -165,3 +165,10 @@ export function trackFeedbackSubmitted(hasBlockId: boolean) {
 export function trackFeedbackPanelOpened(commentCount: number) {
   track('feedback_panel_opened', { comment_count: commentCount });
 }
+
+// ── AI summary events ─────────────────────────────────────────────────────────
+
+/** The user generated an executive summary for a canvas. */
+export function trackExecutiveSummaryGenerated() {
+  track('executive_summary_generated');
+}
