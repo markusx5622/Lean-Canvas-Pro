@@ -32,7 +32,51 @@ interface AssistantRequestBody {
   canvasContext: CanvasContext;
 }
 
-const __filename = fileURLToPath(import.meta.url);
+// ── Gemini assistant prompt builder ───────────────────────────────────────────
+
+const MAX_MESSAGES = 40;
+/** Maximum characters per block/message content to prevent token overruns. */
+const MAX_CONTENT_LENGTH = 2000;
+/** Rough cap on the total canvas context text sent to Gemini (chars). */
+const MAX_TOTAL_CONTEXT_LENGTH = 12_000;
+
+function buildSystemInstruction(ctx: CanvasContext): string {
+  const filledBlocks = ctx.blocks.filter((b) => b.content.trim().length > 0);
+  const emptyBlocks = ctx.blocks.filter((b) => b.content.trim().length === 0);
+
+  const blocksText = filledBlocks
+    .map((b) => `## ${b.title}\n${b.content.slice(0, MAX_CONTENT_LENGTH)}`)
+    .join("\n\n");
+
+  const emptyText =
+    emptyBlocks.length > 0
+      ? `\nBloques vacíos (sin contenido aún): ${emptyBlocks.map((b) => b.title).join(", ")}.`
+      : "";
+
+  const auditText =
+    ctx.auditScore !== undefined
+      ? `\nAuditoría heurística reciente: ${ctx.auditScore}/100 (${ctx.auditVerdict ?? ""}).`
+      : "";
+
+  const canvasSection =
+    filledBlocks.length > 0
+      ? `CONTENIDO DEL CANVAS:\n\n${blocksText}`
+      : "El canvas está vacío por ahora. Ayuda al usuario a empezar.";
+
+  const base = `Eres un asistente estratégico experto en metodología Lean Canvas y startups. \
+Tu rol es ayudar al usuario a mejorar, analizar y fortalecer su Lean Canvas de forma práctica y accionable. \
+Responde siempre en el mismo idioma que use el usuario (español por defecto). \
+Sé conciso, directo y orientado a la acción. Cuando detectes problemas, ofrece alternativas concretas. \
+No inventes datos que no estén en el canvas; trabaja siempre sobre el contenido real.
+
+CANVAS ACTIVO: "${ctx.name}"
+Progreso: ${ctx.filledCount}/${ctx.totalBlocks} bloques completados.${auditText}${emptyText}
+
+${canvasSection}`;
+
+  // Hard-cap total context length to prevent unexpected token overruns
+  return base.slice(0, MAX_TOTAL_CONTEXT_LENGTH);
+}
 const __dirname = path.dirname(__filename);
 
 const isProd = process.env.NODE_ENV === "production";
@@ -116,42 +160,13 @@ async function startServer() {
     }
 
     // Guard against oversized inputs
-    const MAX_MESSAGES = 40;
-    const MAX_CONTENT_LENGTH = 2000;
     if (body.messages.length > MAX_MESSAGES) {
       res.status(400).json({ error: "Demasiados mensajes en el historial." });
       return;
     }
 
-    // Build a structured system prompt with canvas context
-    const ctx = body.canvasContext;
-    const filledBlocks = ctx.blocks.filter((b) => b.content.trim().length > 0);
-    const emptyBlocks = ctx.blocks.filter((b) => b.content.trim().length === 0);
-
-    const blocksText = filledBlocks
-      .map((b) => `## ${b.title}\n${b.content.slice(0, MAX_CONTENT_LENGTH)}`)
-      .join("\n\n");
-
-    const emptyText =
-      emptyBlocks.length > 0
-        ? `\nBloques vacíos (sin contenido aún): ${emptyBlocks.map((b) => b.title).join(", ")}.`
-        : "";
-
-    const auditText =
-      ctx.auditScore !== undefined
-        ? `\nAuditoría heurística reciente: ${ctx.auditScore}/100 (${ctx.auditVerdict ?? ""}).`
-        : "";
-
-    const systemInstruction = `Eres un asistente estratégico experto en metodología Lean Canvas y startups. \
-Tu rol es ayudar al usuario a mejorar, analizar y fortalecer su Lean Canvas de forma práctica y accionable. \
-Responde siempre en el mismo idioma que use el usuario (español por defecto). \
-Sé conciso, directo y orientado a la acción. Cuando detectes problemas, ofrece alternativas concretas. \
-No inventes datos que no estén en el canvas; trabaja siempre sobre el contenido real.
-
-CANVAS ACTIVO: "${ctx.name}"
-Progreso: ${ctx.filledCount}/${ctx.totalBlocks} bloques completados.${auditText}${emptyText}
-
-${filledBlocks.length > 0 ? `CONTENIDO DEL CANVAS:\n\n${blocksText}` : "El canvas está vacío por ahora. Ayuda al usuario a empezar."}`;
+    // Build structured system prompt with canvas context
+    const systemInstruction = buildSystemInstruction(body.canvasContext);
 
     // Map conversation history to Gemini's format
     const contents = body.messages.map((m) => ({
