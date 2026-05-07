@@ -24,7 +24,6 @@ import { ExportOptionsDialog } from '../components/dialogs/ExportOptionsDialog';
 import type { ExportOptions } from '../components/dialogs/ExportOptionsDialog';
 import { TemplatePickerDialog } from '../components/dialogs/TemplatePickerDialog';
 import { CommentPanel } from '../components/comments/CommentPanel';
-import { AssistantPanel } from '../components/assistant/AssistantPanel';
 import { AiContentStudio } from '../components/assistant/AiContentStudio';
 import { PresentationMode } from '../components/PresentationMode';
 import { SplashPage } from './SplashPage';
@@ -77,7 +76,6 @@ export function WorkspacePage() {
   const [showAboutDialog, setShowAboutDialog] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showFeedbackPanel, setShowFeedbackPanel] = useState(false);
-  const [showAssistantPanel, setShowAssistantPanel] = useState(false);
   const [activeWorkspaceSection, setActiveWorkspaceSection] = useState<'canvas' | 'ai-content'>('canvas');
   const [showPresentation, setShowPresentation] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
@@ -134,12 +132,12 @@ export function WorkspacePage() {
   }, [canvasLoading, projects]);
 
   useEffect(() => {
-    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showFeedbackPanel || showAssistantPanel || showPresentation || !!auditResult;
+    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showFeedbackPanel || showPresentation || !!auditResult;
     if (!shouldLock) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
-  }, [showSplash, showAboutDialog, showSettingsModal, showFeedbackPanel, showAssistantPanel, showPresentation, auditResult]);
+  }, [showSplash, showAboutDialog, showSettingsModal, showFeedbackPanel, showPresentation, auditResult]);
 
   /** Immediately persists any dirty text (used when switching context). */
   const flushPendingSave = useCallback(() => {
@@ -435,7 +433,6 @@ export function WorkspacePage() {
           trackFeedbackPanelOpened(canvasComments.comments.length);
         }}
         feedbackCount={canvasComments.comments.length}
-        onOpenAssistant={() => setShowAssistantPanel(true)}
         onOpenAiContentStudio={handleOpenAiContentStudio}
       />
 
@@ -503,15 +500,6 @@ export function WorkspacePage() {
               canvasName={activeProject.name}
               comments={canvasComments}
               onClose={() => setShowFeedbackPanel(false)}
-            />
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {showAssistantPanel && activeCanvasContext && (
-            <AssistantPanel
-              canvasContext={activeCanvasContext}
-              onClose={() => setShowAssistantPanel(false)}
             />
           )}
         </AnimatePresence>
@@ -655,7 +643,7 @@ export function WorkspacePage() {
                 disabled={!activeProject}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-[13px] font-bold tracking-tight transition-all shadow-sm shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                ✨ Generar contenido IA
+                ✨ Centro IA
               </button>
             </div>
 

@@ -16,9 +16,7 @@ import {
   Monitor,
   MessageSquare,
   FileText,
-  Bot,
   Sparkles,
-  WandSparkles,
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Project } from '../../hooks/useCanvases';
@@ -54,7 +52,6 @@ export interface SidebarProps {
   onExportPdf: () => void;
   onPresent: () => void;
   onOpenFeedback: () => void;
-  onOpenAssistant: () => void;
   onOpenAiContentStudio: () => void;
 
   // Bottom zone
@@ -101,7 +98,6 @@ export function Sidebar({
   onPresent,
   onLogoClick,
   onOpenFeedback,
-  onOpenAssistant,
   onOpenAiContentStudio,
   feedbackCount,
   pdfExporting,
@@ -440,18 +436,11 @@ export function Sidebar({
             badge={feedbackCount}
           />
           <ActionItem
-            icon={<Bot size={17} strokeWidth={2.5} />}
-            label="Asistente IA"
-            onClick={onOpenAssistant}
-            disabled={!hasActiveCanvas}
-            ariaLabel={hasActiveCanvas ? 'Abrir asistente estratégico IA' : 'Asistente IA (activa un lienzo para usar)'}
-          />
-          <ActionItem
-            icon={<WandSparkles size={17} strokeWidth={2} />}
-            label="Generar contenido IA"
+            icon={<Sparkles size={17} strokeWidth={2.2} />}
+            label="Centro IA"
             onClick={onOpenAiContentStudio}
             disabled={!hasActiveCanvas}
-            ariaLabel={hasActiveCanvas ? 'Abrir estudio de contenido IA del canvas' : 'Contenido IA (activa un lienzo para usar)'}
+            ariaLabel={hasActiveCanvas ? 'Abrir centro IA del canvas' : 'Centro IA (activa un lienzo para usar)'}
           />
         </div>
 
