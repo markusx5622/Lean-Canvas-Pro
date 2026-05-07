@@ -133,7 +133,7 @@ export function WorkspacePage() {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
-  }, [showSplash, showAboutDialog, showSettingsModal, showPresentation, auditResult]);
+  }, [showSplash, showAboutDialog, showSettingsModal, showFeedbackPanel, showPresentation, auditResult]);
 
   /** Immediately persists any dirty text (used when switching context). */
   const flushPendingSave = useCallback(() => {
@@ -612,22 +612,17 @@ export function WorkspacePage() {
             onSelectBlock={setSelectedBlockId}
           />
 
-          <AnimatePresence>
-            {selectedBlockId !== null && selectedBlock && (
-              <EditorPanel
-                key="editor-panel"
-                selectedBlock={selectedBlock}
-                editorText={editorText}
-                onChangeText={setEditorText}
-                activeTab={activeTab}
-                onChangeTab={setActiveTab}
-                saveStatus={saveStatus}
-                blockAuditResult={blockAuditResult}
-                onAuditBlock={runBlockAudit}
-                onClose={() => setSelectedBlockId(null)}
-              />
-            )}
-          </AnimatePresence>
+          <EditorPanel
+            selectedBlock={selectedBlock}
+            editorText={editorText}
+            onChangeText={setEditorText}
+            activeTab={activeTab}
+            onChangeTab={setActiveTab}
+            saveStatus={saveStatus}
+            blockAuditResult={blockAuditResult}
+            onAuditBlock={runBlockAudit}
+            onClose={() => setSelectedBlockId(null)}
+          />
         </div>
 
         {/* Mobile editor bottom sheet */}

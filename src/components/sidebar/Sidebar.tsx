@@ -99,7 +99,7 @@ export function Sidebar({
   feedbackCount,
   pdfExporting,
 }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
   const activeWorkspaceName = activeWorkspaceId
     ? (workspaces.find((w) => w.id === activeWorkspaceId)?.name ?? 'Workspace')
@@ -402,7 +402,7 @@ export function Sidebar({
         <div className="flex flex-col gap-0.5">
           <ActionItem
             icon={<Plus size={17} strokeWidth={2.5} />}
-            label="Nuevo canvas"
+            label="Nuevo lienzo"
             onClick={onCreateProject}
           />
           <ActionItem
@@ -410,6 +410,7 @@ export function Sidebar({
             label="Auditoría Estratégica"
             onClick={onAudit}
             disabled={filledBlocks === 0}
+            ariaLabel={filledBlocks === 0 ? 'Auditoría Estratégica (completa al menos un bloque para activar)' : 'Auditoría Estratégica'}
           />
           <ActionItem
             icon={<FileDown size={17} strokeWidth={2.5} />}
@@ -438,7 +439,7 @@ export function Sidebar({
           {collapsed ? (
             <div className="flex justify-center">
               <span
-                title={`Validación: ${progressPercentage}%`}
+                title={`Validación: ${filledBlocks}/9 bloques · ${progressPercentage}%`}
                 className={`text-[10px] font-extrabold tabular-nums ${progressPercentage === 100 ? 'text-emerald-400' : 'text-slate-400'}`}
               >
                 {progressPercentage}%
@@ -451,7 +452,7 @@ export function Sidebar({
                   Validación
                 </span>
                 <span className={`text-[11px] font-extrabold tabular-nums ${progressPercentage === 100 ? 'text-emerald-400' : 'text-slate-300'}`}>
-                  {progressPercentage}%
+                  {filledBlocks}/9 · {progressPercentage}%
                 </span>
               </div>
               <div
@@ -459,7 +460,7 @@ export function Sidebar({
                 aria-valuenow={progressPercentage}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-label={`Validación de la startup: ${progressPercentage}%`}
+                aria-label={`Validación de la startup: ${filledBlocks} de 9 bloques completados (${progressPercentage}%)`}
                 className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden"
               >
                 <motion.div
