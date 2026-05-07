@@ -226,7 +226,7 @@ async function startServer() {
     const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
 
     const geminiEndpoint =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
     console.log(
       `[assistant] Sending request to Gemini — messages: ${body.messages.length}, endpoint: ${geminiEndpoint}`
