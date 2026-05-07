@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link2, Copy, Trash2, Loader2, CheckCircle2, AlertCircle, EyeOff, RefreshCw } from 'lucide-react';
+import { Link2, Copy, Trash2, Loader2, CheckCircle2, AlertCircle, EyeOff, RefreshCw, User2, ChevronDown } from 'lucide-react';
 import type { UseCanvasSharingReturn } from '../hooks/useCanvasSharing';
 import { ConfirmDialog } from './dialogs/ConfirmDialog';
 
@@ -16,15 +16,24 @@ export function ShareModal({ canvasName, sharing, onClose }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
   const [showManualCopy, setShowManualCopy] = useState(false);
   const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
+  const [preparedFor, setPreparedFor] = useState('');
+  const [showPersonalize, setShowPersonalize] = useState(false);
 
   const shareUrl = share
     ? `${window.location.origin}/share/${share.token}`
     : null;
 
+  /** Returns the URL with the optional ?for= parameter appended when set. */
+  const personalizedUrl = shareUrl
+    ? preparedFor.trim()
+      ? `${shareUrl}?for=${encodeURIComponent(preparedFor.trim())}`
+      : shareUrl
+    : null;
+
   const handleCopy = async () => {
-    if (!shareUrl) return;
+    if (!personalizedUrl) return;
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(personalizedUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -124,7 +133,7 @@ export function ShareModal({ canvasName, sharing, onClose }: ShareModalProps) {
               </label>
               <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                 <span className="flex-1 text-[12.5px] text-slate-700 dark:text-slate-300 font-medium truncate select-all">
-                  {shareUrl}
+                  {personalizedUrl}
                 </span>
                 <button
                   onClick={handleCopy}
@@ -137,6 +146,50 @@ export function ShareModal({ canvasName, sharing, onClose }: ShareModalProps) {
                     : <Copy size={16} strokeWidth={2.5} />}
                 </button>
               </div>
+
+              {/* Personalization expander */}
+              <button
+                type="button"
+                onClick={() => setShowPersonalize((v) => !v)}
+                className="flex items-center gap-1.5 text-[11.5px] font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors self-start"
+              >
+                <User2 size={12} strokeWidth={2.5} />
+                Personalizar para destinatario
+                <ChevronDown
+                  size={12}
+                  strokeWidth={2.5}
+                  className={`transition-transform ${showPersonalize ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {showPersonalize && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-col gap-1.5 p-3.5 bg-indigo-50/60 dark:bg-indigo-500/5 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
+                      <label htmlFor="share-prepared-for" className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                        Preparado para (opcional)
+                      </label>
+                      <input
+                        id="share-prepared-for"
+                        type="text"
+                        value={preparedFor}
+                        onChange={(e) => setPreparedFor(e.target.value)}
+                        placeholder="Ej: Accel Partners, Investor ABC…"
+                        maxLength={80}
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-500/30 rounded-lg text-[12.5px] text-slate-800 dark:text-slate-200 font-medium placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 transition-all"
+                      />
+                      <p className="text-[11px] text-indigo-500 dark:text-indigo-400 font-medium leading-snug">
+                        El nombre se incluye en el enlace copiado y se muestra al destinatario en la vista compartida.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Manual copy fallback (shown when clipboard API is unavailable) */}
               <AnimatePresence>
@@ -152,7 +205,7 @@ export function ShareModal({ canvasName, sharing, onClose }: ShareModalProps) {
                     </p>
                     <input
                       readOnly
-                      value={shareUrl ?? ''}
+                      value={personalizedUrl ?? ''}
                       onFocus={(e) => e.target.select()}
                       className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-500/30 rounded-lg text-[12px] text-slate-700 dark:text-slate-300 font-mono focus:outline-none select-all"
                     />

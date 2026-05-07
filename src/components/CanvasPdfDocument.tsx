@@ -236,6 +236,40 @@ const styles = StyleSheet.create({
     fontSize: 6.5,
     color: '#6366f1',
   },
+  // Confidential notice
+  confidentialBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: '#fff1f2',
+    borderRadius: 4,
+    border: '0.5pt solid #fecdd3',
+  },
+  confidentialText: {
+    fontFamily: LABEL_FONT,
+    fontSize: 6,
+    color: '#e11d48',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  // Version badge in header
+  versionBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 4,
+    border: '0.5pt solid #e2e8f0',
+    marginTop: 3,
+    alignSelf: 'flex-start',
+  },
+  versionText: {
+    fontFamily: LABEL_FONT,
+    fontSize: 6.5,
+    color: '#475569',
+    letterSpacing: 0.5,
+  },
 });
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -290,6 +324,8 @@ const CanvasPdfDocument: React.FC<Props> = ({ project, options }) => {
 
   const preparedFor = options?.preparedFor ?? '';
   const subtitle = options?.subtitle ?? '';
+  const version = options?.version ?? '';
+  const confidential = options?.confidential ?? false;
 
   return (
     <Document
@@ -305,6 +341,11 @@ const CanvasPdfDocument: React.FC<Props> = ({ project, options }) => {
             <Text style={styles.headerTitle}>{project.name}</Text>
             {subtitle ? (
               <Text style={styles.headerSubtitle}>{subtitle}</Text>
+            ) : null}
+            {version ? (
+              <View style={styles.versionBadge}>
+                <Text style={styles.versionText}>{version}</Text>
+              </View>
             ) : null}
             <Text style={styles.headerSub}>Lean Canvas · Modelo de Negocio</Text>
           </View>
@@ -370,7 +411,11 @@ const CanvasPdfDocument: React.FC<Props> = ({ project, options }) => {
             <Text style={styles.footerBrand}>Lean Canvas Pro</Text>
             <Text style={styles.footerText}>lean-canvas-pro.app</Text>
           </View>
-          {preparedFor ? (
+          {confidential ? (
+            <View style={styles.confidentialBadge}>
+              <Text style={styles.confidentialText}>Confidencial · No distribuir</Text>
+            </View>
+          ) : preparedFor ? (
             <Text style={styles.footerText}>Preparado para: {preparedFor}</Text>
           ) : null}
           <Text style={styles.footerText}>

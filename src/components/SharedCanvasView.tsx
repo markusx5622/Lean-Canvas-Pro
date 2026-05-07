@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Rocket, EyeOff, Loader2, MessageSquarePlus, CheckCircle2 } from 'lucide-react';
+import { Rocket, EyeOff, Loader2, MessageSquarePlus, CheckCircle2, User2 } from 'lucide-react';
 import { getCanvasByShareToken, type SharedCanvasRow } from '../lib/shareService';
 import { BLOCK_META } from '../data/blocks';
 import { FeedbackForm } from './comments/FeedbackForm';
@@ -63,6 +63,15 @@ export function SharedCanvasView({ token }: { token: string }) {
   const [canvas, setCanvas] = useState<SharedCanvasRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+
+  // Read optional "prepared for" label from ?for= query param
+  const preparedFor = (() => {
+    try {
+      return new URLSearchParams(window.location.search).get('for') ?? '';
+    } catch {
+      return '';
+    }
+  })();
 
   useEffect(() => {
     getCanvasByShareToken(token)
@@ -129,17 +138,26 @@ export function SharedCanvasView({ token }: { token: string }) {
         className="sticky top-0 z-[100] bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-700 px-6 py-3 flex items-center justify-between gap-4"
       >
         <div className="flex items-center gap-3">
-          <div className="bg-indigo-600 text-white p-2 rounded-[12px] shadow-md shadow-indigo-600/30">
-            <Rocket size={16} strokeWidth={2.5} />
-          </div>
-          <div>
-            <div className="text-[9px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500">
-              Lean Canvas Pro
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-600 text-white p-2 rounded-[12px] shadow-md shadow-indigo-600/30">
+              <Rocket size={16} strokeWidth={2.5} />
             </div>
-            <div className="font-display text-[15px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-              {canvas.name}
+            <div>
+              <div className="text-[9px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500">
+                Lean Canvas Pro
+              </div>
+              <div className="font-display text-[15px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+                {canvas.name}
+              </div>
             </div>
           </div>
+
+          {preparedFor ? (
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold shrink-0">
+              <User2 size={11} strokeWidth={2.5} />
+              {preparedFor}
+            </div>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-3">

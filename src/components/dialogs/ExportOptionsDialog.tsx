@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, FileDown, User2, AlignLeft } from 'lucide-react';
+import { X, FileDown, User2, AlignLeft, Tag, Lock } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface ExportOptions {
   preparedFor: string;
   subtitle: string;
+  version: string;
+  confidential: boolean;
 }
 
 interface ExportOptionsDialogProps {
@@ -20,10 +22,12 @@ interface ExportOptionsDialogProps {
 export function ExportOptionsDialog({ canvasName, onConfirm, onCancel }: ExportOptionsDialogProps) {
   const [preparedFor, setPreparedFor] = useState('');
   const [subtitle, setSubtitle] = useState('');
+  const [version, setVersion] = useState('');
+  const [confidential, setConfidential] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onConfirm({ preparedFor: preparedFor.trim(), subtitle: subtitle.trim() });
+    onConfirm({ preparedFor: preparedFor.trim(), subtitle: subtitle.trim(), version: version.trim(), confidential });
   };
 
   return (
@@ -109,6 +113,53 @@ export function ExportOptionsDialog({ canvasName, onConfirm, onCancel }: ExportO
                 className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[13px] text-slate-800 dark:text-slate-200 font-medium placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 dark:focus:border-indigo-500 transition-all"
               />
             </div>
+
+            {/* Version / Stage */}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="export-version" className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                <Tag size={11} strokeWidth={2.5} />
+                Versión / Etapa
+              </label>
+              <input
+                id="export-version"
+                type="text"
+                value={version}
+                onChange={(e) => setVersion(e.target.value)}
+                placeholder="Ej: Seed Round · v1.0 · Draft"
+                maxLength={60}
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[13px] text-slate-800 dark:text-slate-200 font-medium placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 dark:focus:border-indigo-500 transition-all"
+              />
+            </div>
+
+            {/* Confidential toggle */}
+            <label
+              htmlFor="export-confidential"
+              className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-all"
+            >
+              <div className="flex items-center gap-2.5">
+                <Lock size={13} strokeWidth={2.5} className={confidential ? 'text-rose-500' : 'text-slate-400 dark:text-slate-500'} />
+                <div>
+                  <span className="block text-[13px] font-semibold text-slate-800 dark:text-slate-200">
+                    Marcar como confidencial
+                  </span>
+                  <span className="block text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
+                    Añade un aviso de confidencialidad al pie del PDF
+                  </span>
+                </div>
+              </div>
+              <div className="relative shrink-0">
+                <input
+                  id="export-confidential"
+                  type="checkbox"
+                  checked={confidential}
+                  onChange={(e) => setConfidential(e.target.checked)}
+                  className="sr-only"
+                />
+                <div className={`w-9 h-5 rounded-full transition-colors ${confidential ? 'bg-rose-500' : 'bg-slate-200 dark:bg-slate-600'}`}>
+                  <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${confidential ? 'translate-x-4' : 'translate-x-0'}`} />
+                </div>
+              </div>
+            </label>
 
             {/* Actions */}
             <div className="flex gap-2.5 pt-1">
