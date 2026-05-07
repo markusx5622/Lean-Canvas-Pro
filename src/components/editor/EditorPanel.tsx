@@ -1,13 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, MessageSquare, Rocket, ShieldCheck, CheckCircle2, AlertCircle, ArrowLeft, MousePointerClick } from 'lucide-react';
+import { BookOpen, MessageSquare, Rocket, ShieldCheck, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import type { BlockDefinition } from '../../data/blocks';
 import type { BlockFeedback } from '../../evaluator/types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface EditorPanelProps {
-  selectedBlock: BlockDefinition | undefined;
+  selectedBlock: BlockDefinition;
   editorText: string;
   onChangeText: (text: string) => void;
   activeTab: 'guide' | 'examples';
@@ -34,8 +34,7 @@ export function EditorPanel({
   return (
     <div className="lg:w-[440px] shrink-0 sticky top-5 h-[calc(100vh-40px)] hidden md:block overflow-hidden relative rounded-[28px]">
       <AnimatePresence mode="wait">
-        {selectedBlock ? (
-          <motion.div
+        <motion.div
             key="editor"
             initial={{ opacity: 0, x: 40, scale: 0.97 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -207,30 +206,6 @@ export function EditorPanel({
               </AnimatePresence>
             </div>
           </motion.div>
-        ) : (
-          <motion.div
-            key="empty"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-            className="bg-white/60 dark:bg-slate-800/60 border rounded-[28px] border-slate-200/60 dark:border-slate-700/60 border-dashed flex flex-col items-center justify-center h-full w-full relative overflow-hidden"
-          >
-            <div className="flex flex-col items-center gap-4 px-8 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-700/80 flex items-center justify-center">
-                <MousePointerClick size={26} className="text-slate-400 dark:text-slate-500" strokeWidth={1.5} />
-              </div>
-              <div>
-                <p className="font-display text-[15px] font-extrabold text-slate-500 dark:text-slate-400 tracking-tight mb-1.5">
-                  Selecciona un bloque
-                </p>
-                <p className="text-[13px] text-slate-400 dark:text-slate-500 font-medium leading-relaxed max-w-[200px]">
-                  Haz clic en cualquier bloque del lienzo para empezar a editar y auditar.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
       </AnimatePresence>
     </div>
   );

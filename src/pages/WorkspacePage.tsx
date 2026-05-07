@@ -636,17 +636,19 @@ export function WorkspacePage() {
             onSelectBlock={setSelectedBlockId}
           />
 
-          <EditorPanel
-            selectedBlock={selectedBlock}
-            editorText={editorText}
-            onChangeText={setEditorText}
-            activeTab={activeTab}
-            onChangeTab={setActiveTab}
-            saveStatus={saveStatus}
-            blockAuditResult={blockAuditResult}
-            onAuditBlock={runBlockAudit}
-            onClose={() => setSelectedBlockId(null)}
-          />
+          {selectedBlockId && selectedBlock && (
+            <EditorPanel
+              selectedBlock={selectedBlock}
+              editorText={editorText}
+              onChangeText={setEditorText}
+              activeTab={activeTab}
+              onChangeTab={setActiveTab}
+              saveStatus={saveStatus}
+              blockAuditResult={blockAuditResult}
+              onAuditBlock={runBlockAudit}
+              onClose={() => setSelectedBlockId(null)}
+            />
+          )}
         </div>
 
         {/* Mobile editor bottom sheet */}
