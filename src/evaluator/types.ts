@@ -153,6 +153,29 @@ export interface GlobalSummary {
    */
   viabilityScore: Score;
   /**
+   * Defensibility / moat score [0–100].
+   * Measures the strength and uniqueness of the competitive advantage:
+   * proprietary technology, IP, data assets, network effects, or regulatory moats.
+   * 0 = copyable or undefined  |  100 = strong, hard-to-replicate advantage.
+   */
+  defensibilityScore: Score;
+  /**
+   * Explicit investor-readiness checklist derived deterministically from canvas content.
+   * Each flag is true when the corresponding signal is detected.
+   */
+  investorFlags: {
+    /** CAC and LTV are both defined somewhere across the financial blocks. */
+    hasUnitEconomics: boolean;
+    /** TAM / SAM / SOM or a numeric market-size signal is present in segment/problem blocks. */
+    hasMarketSize: boolean;
+    /** A real, hard-to-copy competitive moat is defined in the Unfair Advantage block. */
+    hasDefensibleMoat: boolean;
+    /** Revenue model is defined AND includes at least one concrete price/amount. */
+    hasRevenueWithPricing: boolean;
+    /** UVP contains a measurable, quantified benefit (%, €, time units, multiplier). */
+    hasQuantifiedUVP: boolean;
+  };
+  /**
    * One-line VC-style verdict based on overallScore:
    *   ≥ 80 → "Sólido"  |  60–79 → "Prometedor"  |  40–59 → "En desarrollo"  |  < 40 → "Necesita trabajo"
    */
@@ -189,6 +212,7 @@ export interface GlobalSummary {
     marketClarity: number;
     valueProposition: number;
     viability: number;
+    defensibility: number;
   };
 }
 

@@ -233,33 +233,35 @@ export function computeSpecificityScore(
 
 /**
  * Transparent weights used to compute the canvas-level overallScore
- * from the eight quality dimensions.
+ * from the nine quality dimensions.
  *
- *   completeness      20% — Is the canvas fully filled?
- *   clarity           20% — Is the content specific and non-generic?
- *   specificity       15% — Is the content quantified and actionable?
- *   consistency       15% — Are the blocks strategically coherent?
- *   strategicReadiness 15% — Is the canvas ready for pitching / validation?
- *   marketClarity      7% — Is the target market clearly defined?
- *   valueProposition   5% — Is the differentiation claim strong and outcome-focused?
- *   viability          3% — Is the financial model internally sound?
+ *   completeness       15% — Is the canvas fully filled?
+ *   clarity            15% — Is the content specific and non-generic?
+ *   specificity        10% — Is the content quantified and actionable?
+ *   consistency        12% — Are the blocks strategically coherent?
+ *   strategicReadiness 10% — Is the canvas ready for pitching / validation?
+ *   marketClarity      12% — Is the target market clearly defined?
+ *   valueProposition   10% — Is the differentiation claim strong and outcome-focused?
+ *   viability           7% — Is the financial model internally sound?
+ *   defensibility       9% — Is the competitive moat real and hard to copy?
  *
  * All weights sum to 1.0.
  */
 export const SCORE_WEIGHTS = {
-  completeness:        0.20,
-  clarity:             0.20,
-  specificity:         0.15,
-  consistency:         0.15,
-  strategicReadiness:  0.15,
-  marketClarity:       0.07,
-  valueProposition:    0.05,
-  viability:           0.03,
+  completeness:        0.15,
+  clarity:             0.15,
+  specificity:         0.10,
+  consistency:         0.12,
+  strategicReadiness:  0.10,
+  marketClarity:       0.12,
+  valueProposition:    0.10,
+  viability:           0.07,
+  defensibility:       0.09,
 } as const;
 
 /**
  * Compute the transparent canvas-level overall score [0–100]
- * from the eight quality-dimension subscores using SCORE_WEIGHTS.
+ * from the nine quality-dimension subscores using SCORE_WEIGHTS.
  *
  * @param completenessScore      Average completeness across all 9 blocks [0–100].
  * @param clarityScore           Average clarity across all 9 blocks [0–100].
@@ -269,6 +271,7 @@ export const SCORE_WEIGHTS = {
  * @param marketClarityScore     Market clarity score [0–100].
  * @param valuePropositionScore  Value proposition strength score [0–100].
  * @param viabilityScore         Financial viability score [0–100].
+ * @param defensibilityScore     Competitive moat / defensibility score [0–100].
  */
 export function computeOverallScore(
   completenessScore: Score,
@@ -279,6 +282,7 @@ export function computeOverallScore(
   marketClarityScore: Score,
   valuePropositionScore: Score,
   viabilityScore: Score,
+  defensibilityScore: Score,
 ): Score {
   const raw =
     completenessScore       * SCORE_WEIGHTS.completeness +
@@ -288,7 +292,8 @@ export function computeOverallScore(
     strategicReadinessScore * SCORE_WEIGHTS.strategicReadiness +
     marketClarityScore      * SCORE_WEIGHTS.marketClarity +
     valuePropositionScore   * SCORE_WEIGHTS.valueProposition +
-    viabilityScore          * SCORE_WEIGHTS.viability;
+    viabilityScore          * SCORE_WEIGHTS.viability +
+    defensibilityScore      * SCORE_WEIGHTS.defensibility;
   return Math.round(Math.max(0, Math.min(100, raw))) as Score;
 }
 

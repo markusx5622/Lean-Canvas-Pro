@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShieldCheck, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Sparkles, CheckCircle2, AlertCircle, TrendingUp } from 'lucide-react';
 import type { EvaluationResult } from '../../evaluator/types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -26,7 +26,18 @@ function SubScoreBar({ label, value }: { label: string; value: number }) {
   );
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Investor flag row helper ──────────────────────────────────
+
+function InvestorFlag({ label, active }: { label: string; active: boolean }) {
+  return (
+    <div className={`flex items-center gap-2 text-[12px] font-semibold px-3 py-2 rounded-lg border ${active ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300' : 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300'}`}>
+      <span className="shrink-0">{active ? '✅' : '❌'}</span>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+// ── Component ─────────────────────────────────────────────────
 
 export function AuditDialog({ auditResult, onClose }: AuditDialogProps) {
   const { summary, blocks } = auditResult;
@@ -113,6 +124,21 @@ export function AuditDialog({ auditResult, onClose }: AuditDialogProps) {
               <SubScoreBar label="Claridad de Mercado" value={summary.marketClarityScore} />
               <SubScoreBar label="Propuesta de Valor" value={summary.valuePropositionScore} />
               <SubScoreBar label="Viabilidad" value={summary.viabilityScore} />
+              <SubScoreBar label="Defensibilidad" value={summary.defensibilityScore} />
+            </div>
+
+            {/* Investor readiness flags */}
+            <div className="mb-5">
+              <h4 className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+                <TrendingUp size={12} className="inline" /> Checklist Investor Readiness
+              </h4>
+              <div className="grid grid-cols-1 gap-1.5">
+                <InvestorFlag label="Unit economics definidos (CAC + LTV)" active={summary.investorFlags.hasUnitEconomics} />
+                <InvestorFlag label="Tamaño de mercado estimado (TAM/SAM/SOM)" active={summary.investorFlags.hasMarketSize} />
+                <InvestorFlag label="Ventaja injusta real y difícil de copiar" active={summary.investorFlags.hasDefensibleMoat} />
+                <InvestorFlag label="Modelo de ingresos con precio concreto" active={summary.investorFlags.hasRevenueWithPricing} />
+                <InvestorFlag label="Propuesta de valor cuantificada" active={summary.investorFlags.hasQuantifiedUVP} />
+              </div>
             </div>
 
             {/* Next priority */}
