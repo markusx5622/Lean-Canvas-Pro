@@ -203,7 +203,7 @@ export default async function handler(req: Request, res: Response) {
       let category: string;
       let clientHint: string;
       if (geminiRes.status === 400) {
-        category = 'INVALID_REQUEST (400) — bad payload or unrecognised field (e.g. system_instruction on v1 endpoint)';
+        category = 'INVALID_REQUEST (400) — bad payload or unrecognized field (e.g. system_instruction on v1 endpoint)';
         clientHint = 'Payload rechazado por Gemini (400). Revisa los logs del servidor.';
       } else if (geminiRes.status === 401) {
         category = 'UNAUTHENTICATED (401) — API key missing or malformed';

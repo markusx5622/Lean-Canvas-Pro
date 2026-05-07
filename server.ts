@@ -252,7 +252,7 @@ async function startServer() {
         let clientHint: string;
         if (geminiRes.status === 400) {
           category =
-            "INVALID_REQUEST (400) — bad payload or unrecognised field (e.g. system_instruction on v1 endpoint)";
+            "INVALID_REQUEST (400) — bad payload or unrecognized field (e.g. system_instruction on v1 endpoint)";
           clientHint =
             "Payload rechazado por Gemini (400). Revisa los logs del servidor.";
         } else if (geminiRes.status === 401) {
