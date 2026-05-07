@@ -16,6 +16,7 @@ import {
   Monitor,
   MessageSquare,
   FileText,
+  Bot,
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Project } from '../../hooks/useCanvases';
@@ -51,6 +52,7 @@ export interface SidebarProps {
   onExportPdf: () => void;
   onPresent: () => void;
   onOpenFeedback: () => void;
+  onOpenAssistant: () => void;
 
   // Bottom zone
   onOpenSettings: () => void;
@@ -96,6 +98,7 @@ export function Sidebar({
   onPresent,
   onLogoClick,
   onOpenFeedback,
+  onOpenAssistant,
   feedbackCount,
   pdfExporting,
 }: SidebarProps) {
@@ -431,6 +434,13 @@ export function Sidebar({
             onClick={onOpenFeedback}
             disabled={!hasActiveCanvas}
             badge={feedbackCount}
+          />
+          <ActionItem
+            icon={<Bot size={17} strokeWidth={2.5} />}
+            label="Asistente IA"
+            onClick={onOpenAssistant}
+            disabled={!hasActiveCanvas}
+            ariaLabel={hasActiveCanvas ? 'Abrir asistente estratégico IA' : 'Asistente IA (activa un lienzo para usar)'}
           />
         </div>
 

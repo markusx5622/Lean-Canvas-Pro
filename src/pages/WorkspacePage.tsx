@@ -24,10 +24,12 @@ import { ExportOptionsDialog } from '../components/dialogs/ExportOptionsDialog';
 import type { ExportOptions } from '../components/dialogs/ExportOptionsDialog';
 import { TemplatePickerDialog } from '../components/dialogs/TemplatePickerDialog';
 import { CommentPanel } from '../components/comments/CommentPanel';
+import { AssistantPanel } from '../components/assistant/AssistantPanel';
 import { PresentationMode } from '../components/PresentationMode';
 import { SplashPage } from './SplashPage';
 import { BLOCKS } from '../data/blocks';
 import type { CanvasTemplate } from '../data/templates';
+import type { CanvasContext } from '../lib/assistantService';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -73,6 +75,7 @@ export function WorkspacePage() {
   const [showAboutDialog, setShowAboutDialog] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showFeedbackPanel, setShowFeedbackPanel] = useState(false);
+  const [showAssistantPanel, setShowAssistantPanel] = useState(false);
   const [showPresentation, setShowPresentation] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [canvasEntryKey, setCanvasEntryKey] = useState(0);
@@ -128,12 +131,12 @@ export function WorkspacePage() {
   }, [canvasLoading, projects]);
 
   useEffect(() => {
-    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showFeedbackPanel || showPresentation || !!auditResult;
+    const shouldLock = showSplash || showAboutDialog || showSettingsModal || showFeedbackPanel || showAssistantPanel || showPresentation || !!auditResult;
     if (!shouldLock) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
-  }, [showSplash, showAboutDialog, showSettingsModal, showFeedbackPanel, showPresentation, auditResult]);
+  }, [showSplash, showAboutDialog, showSettingsModal, showFeedbackPanel, showAssistantPanel, showPresentation, auditResult]);
 
   /** Immediately persists any dirty text (used when switching context). */
   const flushPendingSave = useCallback(() => {
@@ -402,6 +405,7 @@ export function WorkspacePage() {
           trackFeedbackPanelOpened(canvasComments.comments.length);
         }}
         feedbackCount={canvasComments.comments.length}
+        onOpenAssistant={() => setShowAssistantPanel(true)}
       />
 
       {/* Main scrollable area */}
@@ -468,6 +472,26 @@ export function WorkspacePage() {
               canvasName={activeProject.name}
               comments={canvasComments}
               onClose={() => setShowFeedbackPanel(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showAssistantPanel && activeProject && (
+            <AssistantPanel
+              canvasContext={{
+                name: activeProject.name,
+                blocks: BLOCKS.map((b) => ({
+                  id: b.id,
+                  title: b.title,
+                  content: canvasData[b.id] ?? '',
+                })),
+                filledCount: filledBlocks,
+                totalBlocks: 9,
+                auditScore: auditResult?.summary.overallScore,
+                auditVerdict: auditResult?.summary.verdict,
+              }}
+              onClose={() => setShowAssistantPanel(false)}
             />
           )}
         </AnimatePresence>
