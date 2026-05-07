@@ -225,27 +225,62 @@ async function startServer() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
 
+    const geminiEndpoint =
+      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+
+    console.log(
+      `[assistant] Sending request to Gemini — messages: ${body.messages.length}, endpoint: ${geminiEndpoint}`
+    );
+
     try {
-      const geminiRes = await fetch(
-        "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": apiKey,
-          },
-          body: JSON.stringify(geminiPayload),
-          signal: controller.signal,
-        }
-      );
+      const geminiRes = await fetch(geminiEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify(geminiPayload),
+        signal: controller.signal,
+      });
       clearTimeout(timeoutId);
 
       if (!geminiRes.ok) {
         const errText = await geminiRes.text();
-        console.error("[assistant] Gemini API error:", geminiRes.status, errText);
-        res
-          .status(502)
-          .json({ error: "Error al contactar con el asistente. Inténtalo de nuevo." });
+
+        // Classify the error to make the root cause immediately visible in logs.
+        let category: string;
+        let clientHint: string;
+        if (geminiRes.status === 400) {
+          category =
+            "INVALID_REQUEST (400) — bad payload or unrecognized field (e.g. system_instruction on v1 endpoint)";
+          clientHint =
+            "Payload rechazado por Gemini (400). Revisa los logs del servidor.";
+        } else if (geminiRes.status === 401) {
+          category = "UNAUTHENTICATED (401) — API key missing or malformed";
+          clientHint = "API key de Gemini no válida o ausente (401).";
+        } else if (geminiRes.status === 403) {
+          category =
+            "PERMISSION_DENIED (403) — API key invalid/revoked or Generative Language API not enabled in GCP";
+          clientHint =
+            "Acceso denegado por Gemini (403). Verifica la API key y que la Generative Language API esté habilitada.";
+        } else if (geminiRes.status === 429) {
+          category =
+            "RESOURCE_EXHAUSTED (429) — quota or rate limit exceeded";
+          clientHint =
+            "Cuota de Gemini agotada (429). Inténtalo más tarde.";
+        } else if (geminiRes.status >= 500) {
+          category = `SERVER_ERROR (${geminiRes.status}) — Gemini-side problem`;
+          clientHint = `Error interno de Gemini (${geminiRes.status}). Inténtalo de nuevo.`;
+        } else {
+          category = `UNEXPECTED (${geminiRes.status})`;
+          clientHint = `Error inesperado de Gemini (${geminiRes.status}). Inténtalo de nuevo.`;
+        }
+
+        console.error("[assistant] Gemini error — category:", category);
+        console.error("[assistant] Gemini error — status:", geminiRes.status);
+        console.error("[assistant] Gemini error — body:", errText);
+
+        res.status(502).json({ error: clientHint });
         return;
       }
 
