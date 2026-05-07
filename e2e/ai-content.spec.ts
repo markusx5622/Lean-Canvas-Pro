@@ -31,10 +31,17 @@ test.describe('AI content studio', () => {
   });
 
   test('opens dedicated AI content section and generates outputs', async ({ page }) => {
-    await page.getByRole('button', { name: '✨ Generar contenido IA' }).click();
+    await page.getByRole('button', { name: '✨ Centro IA' }).click();
 
-    await expect(page.getByText('AI Content Studio')).toBeVisible();
-    await expect(page.getByText('Convierte tu Lean Canvas en contenido listo para usar')).toBeVisible();
+    await expect(page.getByText('Asistente y generación de contenido en un único lugar')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Asistente IA' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Generar contenido' })).toBeVisible();
+
+    await page.getByLabel('Mensaje para el asistente').fill('Dame una recomendación rápida');
+    await page.getByRole('button', { name: 'Enviar' }).click();
+    await expect(page.getByText('Respuesta generada de prueba.')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Generar contenido' }).click();
 
     const summaryCard = page.locator('article', { hasText: 'Resumen ejecutivo' });
     await summaryCard.getByRole('button', { name: 'Generar' }).click();
@@ -55,4 +62,3 @@ test.describe('AI content studio', () => {
     await expect(page.getByLabel('Seleccionar lienzo')).toBeVisible();
   });
 });
-
