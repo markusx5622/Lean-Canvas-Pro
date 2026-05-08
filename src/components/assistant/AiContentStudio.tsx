@@ -14,11 +14,13 @@ interface AiContentStudioProps {
 interface GenerationState {
   result: string | null;
   copied: boolean;
+  copyFailed: boolean;
 }
 
 const INITIAL_STATE: GenerationState = {
   result: null,
   copied: false,
+  copyFailed: false,
 };
 
 // ── Severity helpers ──────────────────────────────────────────────────────────
@@ -93,6 +95,99 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
   );
 }
 
+// ── Structured text renderer ──────────────────────────────────────────────────
+// Parses the plain-text / lightweight-markdown output from localStrategicTools
+// and renders it as semantic React elements.
+// Recognised tokens: # heading, ## subheading, ### section label,
+//   ✔/•/-/* bullet items, [CTA text], _hint text_, blank lines, plain text.
+// No dangerouslySetInnerHTML. No external dependencies.
+
+function GeneratedContent({ text }: { text: string }) {
+  const lines = text.split('\n');
+  const nodes: React.ReactNode[] = [];
+  const bulletBuffer: string[] = [];
+  let key = 0;
+
+  const flushBullets = () => {
+    if (bulletBuffer.length === 0) return;
+    nodes.push(
+      <ul key={key++} className="flex flex-col gap-1.5 my-0.5">
+        {bulletBuffer.map((b, i) => (
+          <li key={i} className="flex items-start gap-2 text-[13px] text-slate-700 dark:text-slate-200 leading-relaxed">
+            {/* Generators always produce ✔ benefits; display a consistent visual checkmark. */}
+            <span className="text-indigo-400 dark:text-indigo-500 shrink-0 mt-0.5" aria-hidden="true">✔</span>
+            <span>{b.replace(/^[✔•*-]\s+/, '')}</span>
+          </li>
+        ))}
+      </ul>,
+    );
+    bulletBuffer.length = 0;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+
+    if (!line) {
+      flushBullets();
+      continue;
+    }
+
+    if (line.startsWith('# ')) {
+      flushBullets();
+      nodes.push(
+        <h2 key={key++} className="font-display text-[16px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug">
+          {line.slice(2)}
+        </h2>,
+      );
+    } else if (line.startsWith('## ')) {
+      flushBullets();
+      nodes.push(
+        <h3 key={key++} className="font-display text-[14px] font-bold text-slate-700 dark:text-slate-200 tracking-tight">
+          {line.slice(3)}
+        </h3>,
+      );
+    } else if (line.startsWith('### ')) {
+      flushBullets();
+      nodes.push(
+        <p key={key++} className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-indigo-500 dark:text-indigo-400 mt-1.5">
+          {line.slice(4)}
+        </p>,
+      );
+    } else if (/^[✔•*-]\s/.test(line)) {
+      bulletBuffer.push(line);
+    } else if (line.startsWith('[') && line.endsWith(']')) {
+      flushBullets();
+      nodes.push(
+        <span key={key++} className="inline-block mt-1 px-3 py-1.5 bg-indigo-600 text-white text-[12px] font-bold rounded-lg">
+          {line.slice(1, -1)}
+        </span>,
+      );
+    } else if (line.startsWith('_') && line.endsWith('_')) {
+      flushBullets();
+      nodes.push(
+        <p key={key++} className="text-[11px] text-slate-400 dark:text-slate-500 italic">
+          {line.slice(1, -1)}
+        </p>,
+      );
+    } else {
+      flushBullets();
+      nodes.push(
+        <p key={key++} className="text-[13px] text-slate-700 dark:text-slate-200 leading-relaxed">
+          {line}
+        </p>,
+      );
+    }
+  }
+
+  flushBullets();
+
+  return (
+    <div data-testid="generated-output" className="flex flex-col gap-2">
+      {nodes}
+    </div>
+  );
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiContentStudioProps) {
@@ -115,7 +210,7 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
     const result = action.generate(canvasContext);
     setStateByType((prev) => ({
       ...prev,
-      [type]: { result, copied: false },
+      [type]: { result, copied: false, copyFailed: false },
     }));
     onGenerated?.(type);
   };
@@ -127,7 +222,7 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
       await navigator.clipboard.writeText(text);
       setStateByType((prev) => ({
         ...prev,
-        [type]: { ...prev[type], copied: true },
+        [type]: { ...prev[type], copied: true, copyFailed: false },
       }));
       setTimeout(() => {
         setStateByType((prev) => ({
@@ -136,7 +231,11 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
         }));
       }, 2000);
     } catch {
-      // Clipboard API unavailable (e.g. insecure context) — silent fail.
+      // Clipboard API unavailable (e.g. insecure context) — show manual-copy fallback.
+      setStateByType((prev) => ({
+        ...prev,
+        [type]: { ...prev[type], copyFailed: true },
+      }));
     }
   };
 
@@ -340,9 +439,10 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
               return (
                 <article
                   key={action.type}
-                  className="rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/70 dark:bg-slate-900/70 p-4 flex flex-col gap-4"
+                  className="rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/70 dark:bg-slate-900/70 p-4 flex flex-col gap-3"
                 >
-                  <div className="space-y-1.5">
+                  {/* Card header */}
+                  <div className="space-y-1">
                     <h3 className="font-display text-[16px] font-extrabold text-slate-900 dark:text-white tracking-tight">
                       {action.title}
                     </h3>
@@ -351,6 +451,7 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
                     </p>
                   </div>
 
+                  {/* Generate button */}
                   <button
                     onClick={() => generateContent(action.type)}
                     className="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[13px] font-bold transition-all"
@@ -359,10 +460,14 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
                     {item.result ? 'Regenerar' : 'Generar'}
                   </button>
 
+                  {/* Result section */}
                   {item.result && (
-                    <>
-                      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-3 text-[13px] text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap min-h-[170px]">
-                        {item.result}
+                    <div className="flex flex-col gap-3 border-t border-slate-200 dark:border-slate-700/80 pt-3">
+                      <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                        Resultado
+                      </p>
+                      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-4 min-h-[160px]">
+                        <GeneratedContent text={item.result} />
                       </div>
                       <button
                         onClick={() => copyContent(action.type)}
@@ -380,7 +485,23 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
                           </>
                         )}
                       </button>
-                    </>
+                      {/* Manual-copy fallback when clipboard API is unavailable */}
+                      {item.copyFailed && (
+                        <div className="flex flex-col gap-1.5 p-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/30">
+                          <p id={`copy-fallback-label-${action.type}`} className="text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                            Copia el texto manualmente:
+                          </p>
+                          <textarea
+                            readOnly
+                            value={item.result}
+                            onFocus={(e) => e.currentTarget.select()}
+                            rows={4}
+                            aria-label={`Texto generado de ${action.title} para copiar manualmente`}
+                            className="w-full px-2.5 py-2 bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800/50 rounded-lg text-[11px] text-slate-700 dark:text-slate-300 font-mono resize-none focus:outline-none"
+                          />
+                        </div>
+                      )}
+                    </div>
                   )}
                 </article>
               );

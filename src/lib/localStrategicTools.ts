@@ -42,45 +42,45 @@ export function generateExecutiveSummary(ctx: CanvasContext): string {
 
   // Opening line
   if (solution && uvp) {
-    lines.push(`${ctx.name} es una solución que ${trunc(solution, 120)}. Su propuesta única de valor: ${trunc(uvp, 120)}.`);
+    lines.push(`${ctx.name} es una solución que ${trunc(solution, 160)}. Su propuesta única de valor: ${trunc(uvp, 160)}.`);
   } else if (solution) {
-    lines.push(`${ctx.name} es una solución que ${trunc(solution, 150)}.`);
+    lines.push(`${ctx.name} es una solución que ${trunc(solution, 180)}.`);
   } else if (uvp) {
-    lines.push(`${ctx.name}: ${trunc(uvp, 180)}.`);
+    lines.push(`${ctx.name}: ${trunc(uvp, 200)}.`);
   } else {
     lines.push(`${ctx.name} es un proyecto en fase de definición.`);
   }
 
   // Problem
   if (problem) {
-    lines.push(`Problema que aborda: ${trunc(problem, 160)}.`);
+    lines.push(`Problema que aborda: ${trunc(problem, 200)}.`);
   }
 
   // Target segment
   if (segments) {
-    lines.push(`Dirigido a: ${trunc(segments, 120)}.`);
+    lines.push(`Dirigido a: ${trunc(segments, 160)}.`);
   }
 
   // Revenue model
   if (revenue) {
-    lines.push(`Modelo de ingresos: ${trunc(revenue, 120)}.`);
+    lines.push(`Modelo de ingresos: ${trunc(revenue, 160)}.`);
   }
 
   // Channels
   if (channels) {
-    lines.push(`Canales de distribución: ${trunc(channels, 100)}.`);
+    lines.push(`Canales de distribución: ${trunc(channels, 140)}.`);
   }
 
   // Unfair advantage
   if (unfair) {
-    lines.push(`Ventaja diferencial: ${trunc(unfair, 120)}.`);
+    lines.push(`Ventaja diferencial: ${trunc(unfair, 160)}.`);
   }
 
   if (lines.length === 1) {
     lines.push('Completa los bloques del canvas para enriquecer este resumen.');
   }
 
-  return lines.join('\n');
+  return lines.join('\n\n');
 }
 
 /**
@@ -94,46 +94,53 @@ export function generateElevatorPitch(ctx: CanvasContext): string {
   const revenue = block(ctx, 'Flujo de Ingresos');
   const unfair = block(ctx, 'Ventaja Injusta');
 
-  const sentences: string[] = [];
+  // ── Paragraph 1: hook + solution ─────────────────────────────────────────────
+  const hookPart: string[] = [];
 
   // Opening hook
   if (problem && segments) {
-    sentences.push(`¿Conoces el problema de ${trunc(segments, 60)} cuando ${trunc(problem, 80)}?`);
+    hookPart.push(`¿Conoces el problema de ${trunc(segments, 80)} cuando ${trunc(problem, 100)}?`);
   } else if (problem) {
-    sentences.push(`Muchas personas se enfrentan hoy a: ${trunc(problem, 100)}.`);
+    hookPart.push(`Muchas personas se enfrentan hoy a: ${trunc(problem, 120)}.`);
   }
 
   // Solution + value prop
   if (solution && uvp) {
-    sentences.push(`${ctx.name} es ${trunc(solution, 100)}, con una propuesta única: ${trunc(uvp, 100)}.`);
+    hookPart.push(`${ctx.name} es ${trunc(solution, 120)}, con una propuesta única: ${trunc(uvp, 120)}.`);
   } else if (solution) {
-    sentences.push(`${ctx.name} resuelve esto mediante ${trunc(solution, 120)}.`);
+    hookPart.push(`${ctx.name} resuelve esto mediante ${trunc(solution, 150)}.`);
   } else if (uvp) {
-    sentences.push(`${ctx.name} ofrece: ${trunc(uvp, 140)}.`);
+    hookPart.push(`${ctx.name} ofrece: ${trunc(uvp, 160)}.`);
   } else {
-    sentences.push(`${ctx.name} es la solución a este problema.`);
+    hookPart.push(`${ctx.name} es la solución a este problema.`);
   }
+
+  // ── Paragraph 2: business context ────────────────────────────────────────────
+  const businessPart: string[] = [];
 
   // Target segment
   if (segments) {
-    sentences.push(`Nuestro cliente objetivo: ${trunc(segments, 100)}.`);
+    businessPart.push(`Nuestro cliente objetivo: ${trunc(segments, 120)}.`);
   }
 
   // Revenue
   if (revenue) {
-    sentences.push(`Monetizamos mediante ${trunc(revenue, 100)}.`);
+    businessPart.push(`Monetizamos mediante ${trunc(revenue, 120)}.`);
   }
 
   // Unfair advantage
   if (unfair) {
-    sentences.push(`Lo que nos diferencia y hace difícil de copiar: ${trunc(unfair, 100)}.`);
+    businessPart.push(`Lo que nos diferencia y hace difícil de copiar: ${trunc(unfair, 120)}.`);
   }
 
-  if (sentences.length < 3) {
-    sentences.push('Rellena los bloques de Problema, Solución, Propuesta Única y Segmentos para obtener un pitch más completo.');
+  if (hookPart.length + businessPart.length < 3) {
+    businessPart.push('Rellena los bloques de Problema, Solución, Propuesta Única y Segmentos para obtener un pitch más completo.');
   }
 
-  return sentences.join(' ');
+  const parts: string[] = [];
+  if (hookPart.length > 0) parts.push(hookPart.join(' '));
+  if (businessPart.length > 0) parts.push(businessPart.join(' '));
+  return parts.join('\n\n');
 }
 
 /**
@@ -151,24 +158,24 @@ export function generateLandingPageText(ctx: CanvasContext): string {
 
   // Headline
   const headline = uvp
-    ? trunc(uvp, 80)
+    ? trunc(uvp, 110)
     : solution
-    ? trunc(solution, 80)
+    ? trunc(solution, 110)
     : ctx.name;
   sections.push(`# ${headline}`);
 
   // Subheadline
   if (solution && uvp) {
-    sections.push(`## ${trunc(solution, 100)}`);
+    sections.push(`## ${trunc(solution, 130)}`);
   } else if (problem) {
-    sections.push(`## La solución definitiva para: ${trunc(problem, 80)}`);
+    sections.push(`## La solución definitiva para: ${trunc(problem, 110)}`);
   }
 
   // Benefits section
   const benefits: string[] = [];
-  if (problem) benefits.push(`✔ Resuelve: ${trunc(problem, 80)}`);
-  if (unfair) benefits.push(`✔ ${trunc(unfair, 80)}`);
-  if (solution) benefits.push(`✔ ${trunc(solution, 80)}`);
+  if (problem) benefits.push(`✔ Resuelve: ${trunc(problem, 110)}`);
+  if (unfair) benefits.push(`✔ ${trunc(unfair, 110)}`);
+  if (solution) benefits.push(`✔ ${trunc(solution, 110)}`);
   if (benefits.length === 0) benefits.push('✔ Solución pensada para ti');
 
   sections.push('### ¿Por qué ' + ctx.name + '?');
@@ -177,19 +184,19 @@ export function generateLandingPageText(ctx: CanvasContext): string {
   // Target audience
   if (segments) {
     sections.push('### ¿Para quién?');
-    sections.push(trunc(segments, 200));
+    sections.push(trunc(segments, 250));
   }
 
   // How it works
   if (solution) {
     sections.push('### Cómo funciona');
-    sections.push(trunc(solution, 200));
+    sections.push(trunc(solution, 250));
   }
 
   // Pricing / revenue hint
   if (revenue) {
     sections.push('### Planes y precios');
-    sections.push(trunc(revenue, 150));
+    sections.push(trunc(revenue, 200));
   }
 
   // CTA
