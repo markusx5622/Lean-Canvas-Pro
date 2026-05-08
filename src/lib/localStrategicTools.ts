@@ -352,6 +352,23 @@ export function runStrategicChecks(ctx: CanvasContext): StrategicCheck[] {
 
 // ── Readiness Report Generator ────────────────────────────────────────────────
 
+// ── Readiness scoring constants ───────────────────────────────────────────────
+
+const CRITICAL_CLARITY_PENALTY = 25;
+const WARNING_CLARITY_PENALTY = 10;
+const TIP_CLARITY_PENALTY = 3;
+
+const COMPLETENESS_WEIGHT = 0.4;
+const CLARITY_WEIGHT = 0.6;
+
+const READY_SCORE_THRESHOLD = 75;
+const READY_FILLED_THRESHOLD = 7;
+const REFINEMENT_SCORE_THRESHOLD = 40;
+const REFINEMENT_FILLED_THRESHOLD = 4;
+
+const MAX_CRITICAL_REASONS = 3;
+const MAX_WARNING_REASONS = 2;
+
 /**
  * Evaluates whether the canvas is ready to be shared or presented.
  * Returns a structured readiness report with scores, status, reasons, and
@@ -368,16 +385,24 @@ export function generateReadinessReport(ctx: CanvasContext): ReadinessReport {
   const criticalCount = checks.filter((c) => c.severity === 'critical').length;
   const warningCount = checks.filter((c) => c.severity === 'warning').length;
   const tipCount = checks.filter((c) => c.severity === 'tip').length;
-  const clarityScore = Math.max(0, 100 - criticalCount * 25 - warningCount * 10 - tipCount * 3);
+  const clarityScore = Math.max(
+    0,
+    100
+      - criticalCount * CRITICAL_CLARITY_PENALTY
+      - warningCount * WARNING_CLARITY_PENALTY
+      - tipCount * TIP_CLARITY_PENALTY,
+  );
 
   // ── Overall score ──────────────────────────────────────────────────────────
-  const overallScore = Math.round(completenessScore * 0.4 + clarityScore * 0.6);
+  const overallScore = Math.round(
+    completenessScore * COMPLETENESS_WEIGHT + clarityScore * CLARITY_WEIGHT,
+  );
 
   // ── Status ─────────────────────────────────────────────────────────────────
   let status: ReadinessStatus;
-  if (overallScore >= 75 && criticalCount === 0 && ctx.filledCount >= 7) {
+  if (overallScore >= READY_SCORE_THRESHOLD && criticalCount === 0 && ctx.filledCount >= READY_FILLED_THRESHOLD) {
     status = 'listo';
-  } else if (overallScore >= 40 || ctx.filledCount >= 4) {
+  } else if (overallScore >= REFINEMENT_SCORE_THRESHOLD || ctx.filledCount >= REFINEMENT_FILLED_THRESHOLD) {
     status = 'refinamiento';
   } else {
     status = 'inicial';
@@ -388,10 +413,10 @@ export function generateReadinessReport(ctx: CanvasContext): ReadinessReport {
   if (ctx.filledCount < ctx.totalBlocks) {
     reasons.push(`${ctx.filledCount} de ${ctx.totalBlocks} bloques completados (${completenessScore}%).`);
   }
-  for (const c of checks.filter((c) => c.severity === 'critical').slice(0, 3)) {
+  for (const c of checks.filter((c) => c.severity === 'critical').slice(0, MAX_CRITICAL_REASONS)) {
     reasons.push(c.title);
   }
-  for (const c of checks.filter((c) => c.severity === 'warning').slice(0, 2)) {
+  for (const c of checks.filter((c) => c.severity === 'warning').slice(0, MAX_WARNING_REASONS)) {
     reasons.push(c.title);
   }
   if (reasons.length === 0) {

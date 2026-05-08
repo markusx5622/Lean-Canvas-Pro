@@ -67,13 +67,19 @@ function statusConfig(status: ReadinessStatus) {
   };
 }
 
+// ── Score display thresholds ──────────────────────────────────────────────────
+
+const SCORE_EXCELLENT = 75;
+const SCORE_MODERATE = 45;
+const MIN_FILLED_FOR_CONTENT_HINT = 4;
+
 function ScoreBar({ label, score }: { label: string; score: number }) {
-  const color = score >= 75 ? 'bg-emerald-500' : score >= 45 ? 'bg-amber-500' : 'bg-rose-500';
+  const color = score >= SCORE_EXCELLENT ? 'bg-emerald-500' : score >= SCORE_MODERATE ? 'bg-amber-500' : 'bg-rose-500';
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
         <span className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">{label}</span>
-        <span className={`text-[12px] font-extrabold tabular-nums ${score >= 75 ? 'text-emerald-600 dark:text-emerald-400' : score >= 45 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'}`}>
+        <span className={`text-[12px] font-extrabold tabular-nums ${score >= SCORE_EXCELLENT ? 'text-emerald-600 dark:text-emerald-400' : score >= SCORE_MODERATE ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'}`}>
           {score}/100
         </span>
       </div>
@@ -315,7 +321,7 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
             )}
 
             {/* Hint to generate content */}
-            {canvasContext.filledCount >= 4 && (
+            {canvasContext.filledCount >= MIN_FILLED_FOR_CONTENT_HINT && (
               <button
                 onClick={() => setActiveTab('generation')}
                 className="inline-flex items-center gap-2 self-start text-[13px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
@@ -501,7 +507,7 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
                 )}
 
                 {/* CTA to generate content when ready */}
-                {canvasContext.filledCount >= 4 && (
+                {canvasContext.filledCount >= MIN_FILLED_FOR_CONTENT_HINT && (
                   <button
                     onClick={() => setActiveTab('generation')}
                     className="inline-flex items-center gap-2 self-start text-[13px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
