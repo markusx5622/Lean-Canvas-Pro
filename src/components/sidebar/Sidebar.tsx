@@ -437,10 +437,10 @@ export function Sidebar({
           />
           <ActionItem
             icon={<Sparkles size={17} strokeWidth={2.2} />}
-            label="Centro IA"
+            label="Herramientas"
             onClick={onOpenAiContentStudio}
             disabled={!hasActiveCanvas}
-            ariaLabel={hasActiveCanvas ? 'Abrir centro IA del canvas' : 'Centro IA (activa un lienzo para usar)'}
+            ariaLabel={hasActiveCanvas ? 'Abrir herramientas estratégicas' : 'Herramientas estratégicas (activa un lienzo para usar)'}
           />
         </div>
 
