@@ -215,6 +215,25 @@ export interface StrategicCheck {
   blockTitle?: string;
 }
 
+// ── Readiness Report ──────────────────────────────────────────────────────────
+
+export type ReadinessStatus = 'listo' | 'refinamiento' | 'inicial';
+
+export interface ReadinessRecommendation {
+  priority: 'alta' | 'media' | 'baja';
+  text: string;
+}
+
+export interface ReadinessReport {
+  status: ReadinessStatus;
+  completenessScore: number;
+  clarityScore: number;
+  overallScore: number;
+  reasons: string[];
+  nextSteps: string[];
+  recommendations: ReadinessRecommendation[];
+}
+
 /** Generic terms that flag a potentially vague UVP. */
 const GENERIC_UVP_TERMS = [
   'mejor', 'bueno', 'rápido', 'fácil', 'innovador',
@@ -329,4 +348,100 @@ export function runStrategicChecks(ctx: CanvasContext): StrategicCheck[] {
   }
 
   return checks;
+}
+
+// ── Readiness Report Generator ────────────────────────────────────────────────
+
+/**
+ * Evaluates whether the canvas is ready to be shared or presented.
+ * Returns a structured readiness report with scores, status, reasons, and
+ * prioritised recommendations. All logic is deterministic and fully local.
+ */
+export function generateReadinessReport(ctx: CanvasContext): ReadinessReport {
+  const checks = runStrategicChecks(ctx);
+
+  // ── Completeness score (0–100) ─────────────────────────────────────────────
+  const completenessScore = Math.round((ctx.filledCount / ctx.totalBlocks) * 100);
+
+  // ── Clarity score (0–100) ──────────────────────────────────────────────────
+  // Penalise critical and warning checks; tips have minimal impact.
+  const criticalCount = checks.filter((c) => c.severity === 'critical').length;
+  const warningCount = checks.filter((c) => c.severity === 'warning').length;
+  const tipCount = checks.filter((c) => c.severity === 'tip').length;
+  const clarityScore = Math.max(0, 100 - criticalCount * 25 - warningCount * 10 - tipCount * 3);
+
+  // ── Overall score ──────────────────────────────────────────────────────────
+  const overallScore = Math.round(completenessScore * 0.4 + clarityScore * 0.6);
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  let status: ReadinessStatus;
+  if (overallScore >= 75 && criticalCount === 0 && ctx.filledCount >= 7) {
+    status = 'listo';
+  } else if (overallScore >= 40 || ctx.filledCount >= 4) {
+    status = 'refinamiento';
+  } else {
+    status = 'inicial';
+  }
+
+  // ── Reasons ────────────────────────────────────────────────────────────────
+  const reasons: string[] = [];
+  if (ctx.filledCount < ctx.totalBlocks) {
+    reasons.push(`${ctx.filledCount} de ${ctx.totalBlocks} bloques completados (${completenessScore}%).`);
+  }
+  for (const c of checks.filter((c) => c.severity === 'critical').slice(0, 3)) {
+    reasons.push(c.title);
+  }
+  for (const c of checks.filter((c) => c.severity === 'warning').slice(0, 2)) {
+    reasons.push(c.title);
+  }
+  if (reasons.length === 0) {
+    reasons.push('El canvas está completo y sin problemas detectados.');
+  }
+
+  // ── Next steps ─────────────────────────────────────────────────────────────
+  const NEXT_STEP_MAP: Record<string, string> = {
+    Problema: 'Describe el problema real que estás resolviendo y su impacto en el cliente.',
+    Solución: 'Define qué construyes exactamente para resolver el problema.',
+    'Propuesta Única': 'Articula tu propuesta única de valor con beneficios concretos y cuantificables.',
+    Segmentos: 'Identifica un perfil de cliente ideal específico (no "todos").',
+    'Flujo de Ingresos': 'Define tu modelo de monetización: precio, frecuencia y forma de cobro.',
+    'Ventaja Injusta': 'Explica qué hace tu proyecto difícil de copiar: tecnología, datos, red, etc.',
+    Canales: 'Especifica los canales de adquisición y distribución más relevantes para tu segmento.',
+    'Métricas Clave': 'Elige 2–3 métricas accionables que midan el éxito real del negocio.',
+  };
+
+  const nextSteps: string[] = [];
+  // Add next steps from critical blocks first
+  for (const c of checks.filter((c) => c.severity === 'critical')) {
+    const step = c.blockTitle ? NEXT_STEP_MAP[c.blockTitle] : null;
+    if (step && !nextSteps.includes(step)) nextSteps.push(step);
+  }
+  // Then warnings
+  for (const c of checks.filter((c) => c.severity === 'warning')) {
+    const step = c.blockTitle ? NEXT_STEP_MAP[c.blockTitle] : null;
+    if (step && !nextSteps.includes(step)) nextSteps.push(step);
+  }
+  if (nextSteps.length === 0 && status !== 'listo') {
+    nextSteps.push('Revisa los bloques existentes para aumentar la especificidad y claridad.');
+  }
+  if (status === 'listo') {
+    nextSteps.push('Comparte el canvas con tu equipo o inversores.');
+    nextSteps.push('Usa "Generar contenido" para crear el resumen ejecutivo o el pitch.');
+  }
+
+  // ── Recommendations ────────────────────────────────────────────────────────
+  const recommendations: ReadinessRecommendation[] = checks.map((c) => ({
+    priority: c.severity === 'critical' ? 'alta' : c.severity === 'warning' ? 'media' : 'baja',
+    text: c.description,
+  }));
+
+  return {
+    status,
+    completenessScore,
+    clarityScore,
+    overallScore,
+    reasons,
+    nextSteps,
+    recommendations,
+  };
 }

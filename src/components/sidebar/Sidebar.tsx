@@ -437,7 +437,7 @@ export function Sidebar({
           />
           <ActionItem
             icon={<Sparkles size={17} strokeWidth={2.2} />}
-            label="Herramientas"
+            label="Herramientas Estratégicas"
             onClick={onOpenAiContentStudio}
             disabled={!hasActiveCanvas}
             ariaLabel={hasActiveCanvas ? 'Abrir herramientas estratégicas' : 'Herramientas estratégicas (activa un lienzo para usar)'}

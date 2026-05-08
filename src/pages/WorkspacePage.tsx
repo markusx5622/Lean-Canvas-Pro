@@ -643,7 +643,7 @@ export function WorkspacePage() {
                 disabled={!activeProject}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-[13px] font-bold tracking-tight transition-all shadow-sm shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                ✨ Herramientas
+                ✨ Herramientas Estratégicas
               </button>
             </div>
 
