@@ -41,15 +41,15 @@ test.describe('Herramientas Estratégicas (local tools)', () => {
     const summaryCard = page.locator('article', { hasText: 'Resumen ejecutivo' });
     await summaryCard.getByRole('button', { name: /Generar/ }).click();
     // Result should appear instantly (local generation)
-    await expect(summaryCard.locator('div.whitespace-pre-wrap')).toBeVisible();
+    await expect(summaryCard.locator('[data-testid="generated-output"]')).toBeVisible();
 
     const pitchCard = page.locator('article', { hasText: 'Elevator pitch' });
     await pitchCard.getByRole('button', { name: /Generar/ }).click();
-    await expect(pitchCard.locator('div.whitespace-pre-wrap')).toBeVisible();
+    await expect(pitchCard.locator('[data-testid="generated-output"]')).toBeVisible();
 
     const landingCard = page.locator('article', { hasText: 'Texto para landing page' });
     await landingCard.getByRole('button', { name: /Generar/ }).click();
-    await expect(landingCard.locator('div.whitespace-pre-wrap')).toBeVisible();
+    await expect(landingCard.locator('[data-testid="generated-output"]')).toBeVisible();
 
     // No AI API calls should have been made
     expect(apiCalls).toHaveLength(0);
