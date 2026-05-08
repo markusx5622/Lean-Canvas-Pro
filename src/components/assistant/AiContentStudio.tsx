@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Copy, Check, Sparkles, AlertCircle, Info, ChevronRight, BarChart2, FileText, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Sparkles, AlertCircle, Info, ChevronRight, BarChart2, FileText, Lightbulb, Presentation } from 'lucide-react';
 import type { CanvasContext } from '../../lib/assistantService';
 import { CONTENT_ACTIONS, type AiContentType } from '../../lib/aiContentPrompts';
-import { runStrategicChecks, type StrategicCheck } from '../../lib/localStrategicTools';
+import { runStrategicChecks, generateReadinessReport, type StrategicCheck, type ReadinessStatus } from '../../lib/localStrategicTools';
 
 interface AiContentStudioProps {
   canvasContext: CanvasContext;
@@ -41,10 +41,62 @@ function severityLabel(severity: StrategicCheck['severity']) {
   return 'text-blue-700 dark:text-blue-300';
 }
 
+// ── Readiness helpers ─────────────────────────────────────────────────────────
+
+function statusConfig(status: ReadinessStatus) {
+  if (status === 'listo') return {
+    label: 'Listo para presentar',
+    emoji: '✅',
+    bg: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/50',
+    text: 'text-emerald-700 dark:text-emerald-300',
+    badge: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300',
+  };
+  if (status === 'refinamiento') return {
+    label: 'Necesita refinamiento',
+    emoji: '🔶',
+    bg: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/50',
+    text: 'text-amber-700 dark:text-amber-300',
+    badge: 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300',
+  };
+  return {
+    label: 'En fase inicial',
+    emoji: '🔴',
+    bg: 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/50',
+    text: 'text-rose-700 dark:text-rose-300',
+    badge: 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400',
+  };
+}
+
+// ── Score display thresholds ──────────────────────────────────────────────────
+
+const SCORE_EXCELLENT = 75;
+const SCORE_MODERATE = 45;
+const MIN_FILLED_FOR_CONTENT_HINT = 4;
+
+function ScoreBar({ label, score }: { label: string; score: number }) {
+  const color = score >= SCORE_EXCELLENT ? 'bg-emerald-500' : score >= SCORE_MODERATE ? 'bg-amber-500' : 'bg-rose-500';
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between">
+        <span className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">{label}</span>
+        <span className={`text-[12px] font-extrabold tabular-nums ${score >= SCORE_EXCELLENT ? 'text-emerald-600 dark:text-emerald-400' : score >= SCORE_MODERATE ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'}`}>
+          {score}/100
+        </span>
+      </div>
+      <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${color}`}
+          style={{ width: `${score}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiContentStudioProps) {
-  const [activeTab, setActiveTab] = useState<'analysis' | 'generation'>('analysis');
+  const [activeTab, setActiveTab] = useState<'analysis' | 'generation' | 'readiness'>('analysis');
   const [stateByType, setStateByType] = useState<Record<AiContentType, GenerationState>>({
     executiveSummary: INITIAL_STATE,
     elevatorPitch: INITIAL_STATE,
@@ -54,6 +106,8 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
   const checks = runStrategicChecks(canvasContext);
   const criticalCount = checks.filter((c) => c.severity === 'critical').length;
   const warningCount = checks.filter((c) => c.severity === 'warning').length;
+
+  const readiness = generateReadinessReport(canvasContext);
 
   const generateContent = (type: AiContentType) => {
     const action = CONTENT_ACTIONS.find((a) => a.type === type);
@@ -117,7 +171,7 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
         </div>
 
         {/* ── Tabs ────────────────────────────────────────────────────────── */}
-        <div className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 p-1 self-start">
+        <div className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 p-1 self-start flex-wrap">
           <button
             onClick={() => setActiveTab('analysis')}
             className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all ${
@@ -144,6 +198,17 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
           >
             <FileText size={14} strokeWidth={2.4} />
             Generar contenido
+          </button>
+          <button
+            onClick={() => setActiveTab('readiness')}
+            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all ${
+              activeTab === 'readiness'
+                ? 'bg-indigo-600 text-white'
+                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Presentation size={14} strokeWidth={2.4} />
+            Preparar presentación
           </button>
         </div>
 
@@ -256,7 +321,7 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
             )}
 
             {/* Hint to generate content */}
-            {canvasContext.filledCount >= 4 && (
+            {canvasContext.filledCount >= MIN_FILLED_FOR_CONTENT_HINT && (
               <button
                 onClick={() => setActiveTab('generation')}
                 className="inline-flex items-center gap-2 self-start text-[13px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
@@ -267,7 +332,7 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
               </button>
             )}
           </div>
-        ) : (
+        ) : activeTab === 'generation' ? (
           /* ── Generation tab ──────────────────────────────────────────────── */
           <div className="grid gap-4 lg:grid-cols-3">
             {CONTENT_ACTIONS.map((action) => {
@@ -321,6 +386,140 @@ export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiConten
               );
             })}
           </div>
+        ) : (
+          /* ── Readiness tab ───────────────────────────────────────────────── */
+          (() => {
+            const cfg = statusConfig(readiness.status);
+            return (
+              <div className="flex flex-col gap-4">
+                {/* Status card */}
+                <div className={`rounded-2xl border ${cfg.bg} p-4 flex flex-col gap-3`}>
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-white/60 dark:bg-slate-900/50 flex items-center justify-center text-xl">
+                        {cfg.emoji}
+                      </div>
+                      <div>
+                        <p className={`font-display text-[16px] font-extrabold tracking-tight ${cfg.text}`}>
+                          {cfg.label}
+                        </p>
+                        <p className="text-[12px] text-slate-500 dark:text-slate-400">
+                          Evaluación local · sin IA · resultados instantáneos
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`text-[20px] font-extrabold tabular-nums px-3 py-1 rounded-xl ${cfg.badge}`}>
+                      {readiness.overallScore}/100
+                    </span>
+                  </div>
+
+                  {/* Score bars */}
+                  <div className="flex flex-col gap-2.5 pt-1">
+                    <ScoreBar label="Completitud" score={readiness.completenessScore} />
+                    <ScoreBar label="Claridad estratégica" score={readiness.clarityScore} />
+                  </div>
+                </div>
+
+                {/* Two-column layout for reasons + next steps */}
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Reasons */}
+                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/70 dark:bg-slate-900/70 p-4 flex flex-col gap-2">
+                    <h3 className="font-display text-[14px] font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                      <AlertCircle size={14} className="text-amber-500 dark:text-amber-400" strokeWidth={2.4} />
+                      Estado actual
+                    </h3>
+                    <ul className="flex flex-col gap-1.5">
+                      {readiness.reasons.map((r, i) => (
+                        <li key={i} className="text-[12px] text-slate-600 dark:text-slate-300 leading-relaxed flex items-start gap-2">
+                          <span className="text-slate-400 dark:text-slate-500 mt-0.5 shrink-0">·</span>
+                          {r}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Next steps */}
+                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/70 dark:bg-slate-900/70 p-4 flex flex-col gap-2">
+                    <h3 className="font-display text-[14px] font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                      <ChevronRight size={14} className="text-indigo-500 dark:text-indigo-400" strokeWidth={2.4} />
+                      Siguientes pasos
+                    </h3>
+                    {readiness.nextSteps.length === 0 ? (
+                      <p className="text-[12px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                        ¡Sin pasos pendientes! El canvas está listo para presentar.
+                      </p>
+                    ) : (
+                      <ol className="flex flex-col gap-1.5">
+                        {readiness.nextSteps.map((s, i) => (
+                          <li key={i} className="text-[12px] text-slate-600 dark:text-slate-300 leading-relaxed flex items-start gap-2">
+                            <span className="text-[10px] font-extrabold text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-full px-1.5 py-0.5 shrink-0 mt-0.5 tabular-nums">
+                              {i + 1}
+                            </span>
+                            {s}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                </div>
+
+                {/* Prioritised recommendations */}
+                {readiness.recommendations.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <h3 className="font-display text-[14px] font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                      <Lightbulb size={14} className="text-indigo-500 dark:text-indigo-400" strokeWidth={2.4} />
+                      Recomendaciones priorizadas
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                      {readiness.recommendations.map((rec, i) => (
+                        <div
+                          key={i}
+                          className={`rounded-2xl border p-3 flex items-start gap-3 ${
+                            rec.priority === 'alta'
+                              ? 'border-rose-200 dark:border-rose-800/50 bg-rose-50 dark:bg-rose-950/30'
+                              : rec.priority === 'media'
+                              ? 'border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/30'
+                              : 'border-blue-200 dark:border-blue-800/40 bg-blue-50 dark:bg-blue-950/30'
+                          }`}
+                        >
+                          <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 mt-0.5 uppercase tracking-wide ${
+                            rec.priority === 'alta'
+                              ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300'
+                              : rec.priority === 'media'
+                              ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
+                              : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                          }`}>
+                            {rec.priority}
+                          </span>
+                          <p className={`text-[12px] leading-relaxed ${
+                            rec.priority === 'alta'
+                              ? 'text-rose-700 dark:text-rose-300'
+                              : rec.priority === 'media'
+                              ? 'text-amber-700 dark:text-amber-300'
+                              : 'text-blue-700 dark:text-blue-300'
+                          }`}>
+                            {rec.text}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* CTA to generate content when ready */}
+                {canvasContext.filledCount >= MIN_FILLED_FOR_CONTENT_HINT && (
+                  <button
+                    onClick={() => setActiveTab('generation')}
+                    className="inline-flex items-center gap-2 self-start text-[13px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+                  >
+                    <Sparkles size={15} strokeWidth={2.4} />
+                    Crear resumen ejecutivo, pitch o landing
+                    <ChevronRight size={14} strokeWidth={2.4} />
+                  </button>
+                )}
+              </div>
+            );
+          })()
         )}
       </div>
     </motion.section>
