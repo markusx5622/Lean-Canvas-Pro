@@ -1,62 +1,60 @@
 import { test, expect } from '@playwright/test';
 import { setupSupabaseMocks, loginAndEnterWorkspace } from './helpers/mocks';
 
-test.describe('AI content studio', () => {
+test.describe('Herramientas Estratégicas (local tools)', () => {
   test.beforeEach(async ({ page }) => {
     await setupSupabaseMocks(page);
-
-    await page.route('**/api/assistant', async (route) => {
-      const body = route.request().postDataJSON() as {
-        messages?: Array<{ role: string; content: string }>;
-      };
-      const prompt = body.messages?.[0]?.content ?? '';
-
-      let reply = 'Respuesta generada de prueba.';
-      if (prompt.includes('resumen ejecutivo')) {
-        reply = 'Resumen ejecutivo de prueba para validar la UI.';
-      } else if (prompt.includes('elevator pitch')) {
-        reply = 'Elevator pitch de prueba para validar la UI.';
-      } else if (prompt.includes('landing page')) {
-        reply = 'Texto de landing page de prueba para validar la UI.';
-      }
-
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ reply }),
-      });
-    });
-
     await loginAndEnterWorkspace(page);
   });
 
-  test('opens dedicated AI content section and generates outputs', async ({ page }) => {
-    await page.getByRole('button', { name: '✨ Centro IA' }).click();
+  test('opens strategic tools section from canvas button', async ({ page }) => {
+    await page.getByRole('button', { name: /Herramientas/ }).first().click();
 
-    await expect(page.getByText('Asistente y generación de contenido en un único lugar')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Asistente IA' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Generar contenido' })).toBeVisible();
+    await expect(page.getByText('Herramientas Estratégicas')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Análisis/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Generar contenido/ })).toBeVisible();
+  });
 
-    await page.getByLabel('Mensaje para el asistente').fill('Dame una recomendación rápida');
-    await page.getByRole('button', { name: 'Enviar' }).click();
-    await expect(page.getByText('Respuesta generada de prueba.')).toBeVisible();
+  test('shows strategic analysis tab with canvas state', async ({ page }) => {
+    await page.getByRole('button', { name: /Herramientas/ }).first().click();
 
-    await page.getByRole('button', { name: 'Generar contenido' }).click();
+    await expect(page.getByText('Herramientas Estratégicas')).toBeVisible();
+    await expect(page.getByText('Estado del canvas')).toBeVisible();
+    // Analysis should show some output (either checks or "no issues" message)
+    const hasChecks = await page.locator('[class*="rose"],[class*="amber"],[class*="blue"]').first().isVisible().catch(() => false);
+    const hasNoIssues = await page.getByText('Canvas estratégicamente sólido').isVisible().catch(() => false);
+    expect(hasChecks || hasNoIssues).toBe(true);
+  });
+
+  test('generates content locally without API calls', async ({ page }) => {
+    // Ensure no calls to /api/assistant happen
+    const apiCalls: string[] = [];
+    page.on('request', (req) => {
+      if (req.url().includes('/api/assistant')) {
+        apiCalls.push(req.url());
+      }
+    });
+
+    await page.getByRole('button', { name: /Herramientas/ }).first().click();
+    await page.getByRole('button', { name: /Generar contenido/ }).click();
 
     const summaryCard = page.locator('article', { hasText: 'Resumen ejecutivo' });
-    await summaryCard.getByRole('button', { name: 'Generar' }).click();
-    await expect(summaryCard.getByText('Resumen ejecutivo de prueba para validar la UI.')).toBeVisible();
-    await expect(summaryCard.getByRole('button', { name: 'Copiar resumen' })).toBeVisible();
+    await summaryCard.getByRole('button', { name: /Generar/ }).click();
+    // Result should appear instantly (local generation)
+    await expect(summaryCard.locator('div.whitespace-pre-wrap')).toBeVisible();
 
     const pitchCard = page.locator('article', { hasText: 'Elevator pitch' });
-    await pitchCard.getByRole('button', { name: 'Generar' }).click();
-    await expect(pitchCard.getByText('Elevator pitch de prueba para validar la UI.')).toBeVisible();
+    await pitchCard.getByRole('button', { name: /Generar/ }).click();
+    await expect(pitchCard.locator('div.whitespace-pre-wrap')).toBeVisible();
 
     const landingCard = page.locator('article', { hasText: 'Texto para landing page' });
-    await landingCard.getByRole('button', { name: 'Generar' }).click();
-    await expect(landingCard.getByText('Texto de landing page de prueba para validar la UI.')).toBeVisible();
+    await landingCard.getByRole('button', { name: /Generar/ }).click();
+    await expect(landingCard.locator('div.whitespace-pre-wrap')).toBeVisible();
 
-    await page.screenshot({ path: '/tmp/ai-content-studio.png', fullPage: true });
+    // No AI API calls should have been made
+    expect(apiCalls).toHaveLength(0);
+
+    await page.screenshot({ path: '/tmp/herramientas-estrategicas.png', fullPage: true });
 
     await page.getByRole('button', { name: 'Volver al canvas' }).click();
     await expect(page.getByLabel('Seleccionar lienzo')).toBeVisible();
