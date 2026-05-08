@@ -139,11 +139,3 @@ export function ExecutiveSummaryDialog({ canvasContext, onClose }: ExecutiveSumm
   );
 }
 
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-interface ExecutiveSummaryDialogProps {
-  canvasContext: CanvasContext;
-  onClose: () => void;
-}
-

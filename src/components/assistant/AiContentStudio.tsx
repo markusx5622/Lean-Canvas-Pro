@@ -5,7 +5,7 @@ import type { CanvasContext } from '../../lib/assistantService';
 import { CONTENT_ACTIONS, type AiContentType } from '../../lib/aiContentPrompts';
 import { runStrategicChecks, type StrategicCheck } from '../../lib/localStrategicTools';
 
-interface HerramientasEstrategicasProps {
+interface AiContentStudioProps {
   canvasContext: CanvasContext;
   onBack: () => void;
   onGenerated?: (type: AiContentType) => void;
@@ -43,7 +43,7 @@ function severityLabel(severity: StrategicCheck['severity']) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function AiContentStudio({ canvasContext, onBack, onGenerated }: HerramientasEstrategicasProps) {
+export function AiContentStudio({ canvasContext, onBack, onGenerated }: AiContentStudioProps) {
   const [activeTab, setActiveTab] = useState<'analysis' | 'generation'>('analysis');
   const [stateByType, setStateByType] = useState<Record<AiContentType, GenerationState>>({
     executiveSummary: INITIAL_STATE,
