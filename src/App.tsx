@@ -46,12 +46,9 @@ const App = () => {
     }
   }, [theme]);
 
-  // Sharing is temporarily disabled — redirect public share URLs to the home page.
-  // To re-enable: import SharedCanvasView and render it here based on shareToken.
   const shareToken = getShareToken();
   if (shareToken) {
-    window.location.replace('/');
-    return null;
+    return <SharedCanvasView token={shareToken} />;
   }
 
   const inviteToken = getInviteToken();
