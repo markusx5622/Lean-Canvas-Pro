@@ -1,16 +1,21 @@
-Copyright (c) 2026 Marc Cubero Cantavella. Todos los derechos reservados.
+MIT License
 
-Esta obra, su estructura, diseño y código fuente son propiedad exclusiva e intelectual de Marc Cubero Cantavella.
+Copyright (c) 2026 Marc Cubero Cantavella
 
-PERMISOS OTORGADOS:
-- Uso general de la plataforma: Cualquier persona es libre de utilizar la versión pública, compilada y desplegada de esta herramienta en la web para sus proyectos y planificación estratégica personal o empresarial.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-DERECHOS ESTRICTAMENTE RESTRINGIDOS:
-Todas las demás acciones están prohibidas. Ninguna parte de este repositorio (incluyendo, pero no limitándose a: código fuente, diseño de interfaz, arquitectura de software, prompts de IA y lógica de negocio) puede ser copiada, alterada, reproducida, distribuida, republicada, descargada, mostrada, posteada o transmitida en forma alguna o por medio alguno sin el consentimiento explícito, previo y por escrito de Marc Cubero Cantavella.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-Esto incluye:
-- Prohibición de clonar (fork) el repositorio para fines comerciales o derivativos.
-- Prohibición de reutilizar el código fuente en herramientas de terceros.
-- Prohibición de comercializar, vender o licenciar esta herramienta bajo el nombre de un tercero.
-
-El acceso público a este repositorio (por ejemplo, en GitHub) tiene como único y exclusivo propósito servir como portafolio profesional y demostración de capacidades técnicas e ingeniería del autor. La disponibilidad pública del código NO constituye, bajo ningún concepto, una licencia de código abierto (Open Source).
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
