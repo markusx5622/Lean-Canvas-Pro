@@ -331,11 +331,11 @@ npm run test:e2e:ui
 
 ## ⚖️ Licencia y Propiedad Intelectual
 
-**© 2026 Marc Cubero Cantavella. Todos los derechos reservados.**
+**Copyright © 2026 Marc Cubero Cantavella — Todos los derechos reservados.**
 
-Esta plataforma, su código fuente, arquitectura, diseño y concepto son propiedad exclusiva e intelectual de su creador.
+Esta plataforma, su código fuente, arquitectura, diseño y concepto son propiedad intelectual exclusiva de su creador.
 
 - 🔹 **Uso Permitido:** Puedes acceder, navegar y utilizar la aplicación funcional desplegada libremente para conceptualizar tus propios modelos de negocio y startups.
 - ❌ **Restricciones:** No está permitida la copia, clonación, distribución, redistribución, modificación, reventa o creación de obras derivadas del código fuente o de la interfaz sin la autorización expresa y por escrito de Marc Cubero Cantavella.
 
-> *La presencia de este código fuente en un repositorio público de GitHub cumple una función estrictamente demostrativa y de portafolio profesional de capacidad técnica. No otorga licencias Open Source de libre explotación.* Para más información legal, consulta el archivo [LICENSE](file:///c:/Users/es00700248/Desktop/Personal/Lean-Canvas-Pro/LICENSE).
+> *La presencia de este código fuente en un repositorio público de GitHub cumple una función estrictamente demostrativa y de portafolio profesional. No otorga licencia Open Source ni derecho alguno de explotación.* Para más información legal, consulta el archivo [`LICENSE`](./LICENSE).
