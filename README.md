@@ -1,244 +1,325 @@
 # 🚀 Lean Canvas Pro  
-*Plataforma estratégica de modelado de negocio y validación heurística para Startups*
+*Plataforma de Alto Rendimiento para Modelado Estratégico de Negocios, Evaluación Heurística Local y Colaboración en Tiempo Real para Startups*
 
-![Status](https://img.shields.io/badge/Status-Active-success)
-![License](https://img.shields.io/badge/License-Proprietary_&_All_Rights_Reserved-red)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
-![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
-![Auditor Local](https://img.shields.io/badge/Motor-Heur%C3%ADstico_Local-brightgreen)
+[![Status](https://img.shields.io/badge/Status-Active_Production-success?style=for-the-badge&logo=rocket)](https://github.com/markusx5622/Lean-Canvas-Pro)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.0-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres_%26_Auth-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Motor Heurístico](https://img.shields.io/badge/Motor-Heur%C3%ADstico_Local_100%25-brightgreen?style=for-the-badge)](https://github.com/markusx5622/Lean-Canvas-Pro)
+[![License](https://img.shields.io/badge/Licencia-Proprietary-red?style=for-the-badge)](file:///c:/Users/es00700248/Desktop/Personal/Lean-Canvas-Pro/LICENSE)
+
+---
+
+## 📌 Índice de Contenidos
+
+1. [Sobre el Proyecto](#-sobre-el-proyecto)
+2. [Arquitectura General del Sistema](#-arquitectura-general-del-sistema)
+3. [Características Principales](#-características-principales)
+4. [Motor Heurístico Local & Asistente Estratégico](#-motor-heur%C3%ADstico-local--asistente-estrat%C3%A9gico)
+5. [Catálogo de Plantillas Predefinidas](#-cat%C3%A1logo-de-plantillas-predefinidas)
+6. [Persistencia y Sincronización Híbrida (Local-First + Cloud)](#-persistencia-y-sincronizaci%C3%B3n-h%C3%ADbrida-local-first--cloud)
+7. [Módulo de Colaboración, Workspaces y Feedback](#-m%C3%B3dulo-de-colaboraci%C3%B3n-workspaces-y-feedback)
+8. [Exportación Avanzada y Modo Presentación](#-exportaci%C3%B3n-avanzada-y-modo-presentaci%C3%B3n)
+9. [Esquema de Base de Datos y Migraciones SQL](#-esquema-de-base-de-datos-y-migraciones-sql)
+10. [Observabilidad y Telemetría (Sentry & PostHog)](#-observabilidad-y-telemetr%C3%ADa-sentry--posthog)
+11. [Guía de Instalación y Despliegue Local](#-gu%C3%ADa-de-instalaci%C3%B3n-y-despliegue-local)
+12. [Variables de Entorno](#-variables-de-entorno)
+13. [Suite de Tests y Control de Calidad](#-suite-de-tests-y-control-de-calidad)
+14. [Créditos y Contexto Académico](#-cr%C3%A9ditos-y-contexto-acad%C3%A9mico)
+15. [Licencia y Propiedad Intelectual](#-licencia-y-propiedad-intelectual)
+
+---
 
 ## 🎯 Sobre el Proyecto
 
-**Lean Canvas Pro** es una suite profesional diseñada para ser el núcleo decisivo en la etapa temprana (*Early Stage*) de toda Startup. Desarrollada para acompañar a founders, directivos y CEOs hacia el éxito, esta plataforma permite construir modelos de negocio de manera iterativa, estructurada y profesional, respaldados activamente por auditorías heurísticas ejecutadas 100% localmente en el navegador.
+**Lean Canvas Pro** es una plataforma web *Full-Stack* de grado profesional creada para actuar como el sistema operativo decisional de cualquier Startup en fase temprana (*Early Stage*). Diseñada desde la perspectiva de la *Ingeniería de Organización Industrial*, permite a founders, directivos, consultores e inversores conceptualizar, validar e iterar modelos de negocio basados en la metodología *Lean Canvas* de Ash Maurya.
+
+A diferencia de las herramientas genéricas de diagramación, **Lean Canvas Pro** incorpora un **Motor de Evaluación Heurística Local** que inspecciona la especificidad, coherencia lógica cruzada entre bloques, defendibilidad ante inversores y claridad estratégica de cada modelo directamente en el navegador, **garantizando la máxima privacidad sin enviar secretos de negocio a servidores o APIs de terceros**.
+
+---
+
+## 🏗️ Arquitectura General del Sistema
+
+El proyecto combina un frontend interactivo SPA en **React 19** y **TypeScript**, empaquetado con **Vite**, junto a un backend robusto en **Node.js Express** optimizado para entornos servidor y servido híbrido (local y Vercel Serverless).
+
+```mermaid
+flowchart TD
+    subgraph UI ["Client Layer (Browser SPA)"]
+        ReactApp["React 19 SPA + Framer Motion"]
+        StateEngine["Workspace / Auth Contexts"]
+        LocalCache[("localStorage (Caché Inmediata)")]
+        HeuristicEngine["Evaluador Heurístico (Local Audit)"]
+        AiStudio["Estudio Estratégico Local"]
+    end
+
+    subgraph Backend ["Backend Layer"]
+        ExpressServer["Node.js Express Server (Helmet + Security CSP)"]
+        SentryNode["Sentry Error Telemetry"]
+    end
+
+    subgraph Cloud ["Cloud & Storage Services"]
+        SupabaseAuth["Supabase Auth (JWT Email/Password)"]
+        SupabaseDb[("Supabase Postgres (RLS Enabled)")]
+        PostHog["PostHog Analytics (Privacy-First)"]
+    end
+
+    ReactApp <--> StateEngine
+    StateEngine <--> LocalCache
+    StateEngine <--> HeuristicEngine
+    StateEngine <--> AiStudio
+
+    StateEngine -- "Sync Debounced (600ms)" --> SupabaseDb
+    StateEngine -- "Auth Sessions" --> SupabaseAuth
+    ReactApp -- "Error Capture" --> SentryNode
+    ReactApp -- "Anonymized Events" --> PostHog
+    ExpressServer -- "Static Delivery / SPA Fallback" --> ReactApp
+```
+
+---
 
 ## ✨ Características Principales
 
-- 📋 **Modelado Estratégico Dinámico:** Construcción ágil, intuitiva y visual de los 9 bloques fundamentales del modelo *Lean Canvas*.
-- 🤖 **Auditoría Estratégica con Motor Heurístico Local:** Motor estratégico 100% local que evalúa bloques individuales o el proyecto al completo dando feedback sobre CAC, LTV, coherencia entre bloques, viabilidad del modelo y prioridades de mejora. Sin dependencias de APIs externas.
-- 🔒 **Persistencia y Privacidad Local:** Los datos de negocio se almacenan en el almacenamiento local del navegador y nunca abandonan tu dispositivo. Los secretos industriales y datos de la startup pertenecen a los directivos.
-- 🌓 **Diseño Adaptativo y Accesible:** Interfaz inmersiva enfocada a la productividad continua; modos claro y oscuro pulidos para evitar la fatiga en las sesiones largas de brainstorming.
-- 📁 **Centro de Gestión Integral:** Administración de múltiples ideas y proyectos, con facilidades de importación, exportación en JSON e impresión del lienzo directamente desde el navegador.
+### 📋 1. Edición Dinámica del Lienzo de 9 Bloques
+- Interfaz interactiva de los 9 bloques del *Lean Canvas*: **Problema, Solución, Propuesta Única de Valor, Ventaja Injusta, Segmentos de Clientes, Canales, Flujo de Ingresos, Estructura de Costes y Métricas Clave**.
+- Edición fluida con debounce optimizado, autoguardado multitabla y estado visual de sincronización.
+- Soporte para **Modo Claro (Light) y Modo Oscuro (Dark)** pulido al detalle para prevenir fatiga visual en sesiones intensas de brainstorming.
 
-## 🛠️ Stack Tecnológico y Arquitectura
+### 🤖 2. Auditoría Heurística de Negocio (100% Local)
+- Análisis multivariable en tiempo real del grado de especificidad, claridad y completitud de cada bloque.
+- Evaluación de **Coherencia Cruzada** entre bloques (ej. validación del encaje entre Problema y Solución, o compatibilidad entre Canales y Segmentos).
+- Generación instantánea de **Alertas para Inversores (*Investor Flags*)**, **Barreras de Defendibilidad** y **Prioridades de Acción**.
 
-- **Frontend:** React 18, TypeScript, Tailwind CSS, Framer Motion (para transiciones hápticas visuales), Lucide Icons.
-- **Backend:** Servidor en Node.js mediante Express con Vite en modo middleware (*Full-Stack*).
-- **Motor Heurístico:** Motor heurístico local (`src/evaluator`) que analiza el canvas al instante: puntuación, fortalezas, inconsistencias entre bloques y prioridades de mejora. Sin dependencias de APIs externas.
+### 💼 3. Centro de Plantillas por Industria (*Templates Studio*)
+- Biblioteca integrada con **9 plantillas preconfiguradas** preparadas para acelerar el diseño de nuevos modelos: SaaS B2B, Marketplace, E-commerce, Producto de IA, Fintech, EdTech, HealthTech, SaaS B2C y PropTech.
 
-## 🔑 Autenticación (Supabase Auth)
+### 👥 4. Colaboración y Control de Accesos (Workspaces)
+- Creación de espacios de trabajo (*Workspaces*) multi-usuario con roles diferenciados: **Propietario (*Owner*)**, **Editor** y **Lector (*Viewer*)**.
+- Sistema de invitaciones por email mediante tokens seguros de un solo uso.
+- **Comentarios por Bloque**: Hilos contextuales de retroalimentación directa sobre elementos concretos del lienzo.
+- **Snapshots de Versiones**: Captura de estados históricos del canvas para auditar evoluciones y pivots.
 
-Lean Canvas Pro usa **Supabase Auth** para gestionar cuentas reales de usuario.  
-La autenticación es completamente por email y contraseña; la sesión persiste al recargar el navegador gracias al almacenamiento de sesión de Supabase.
+### 🔗 5. Enlaces Públicos de Solo Lectura
+- Generación de enlaces únicos públicos (`/share/:token`) protegidos por RPC para compartir modelos con mentores o inversores sin requerir registro.
 
-### Arquitectura
+### 📄 6. Exportación Profesional y Presentación
+- Rendereado vectorial de documentos **PDF de alta resolución** utilizando `@react-pdf/renderer`.
+- Exportación estructurada de **Resumen Ejecutivo**.
+- **Modo Presentación Fullscreen**: Vista interactiva en formato diapositivas optimizada para reuniones de pitch.
+- Copias de seguridad completas en formato **JSON** con soporte de importación y restauración inmediata.
 
-| Pieza | Responsabilidad |
-|---|---|
-| `src/lib/supabase.ts` | Cliente Supabase singleton |
-| `src/contexts/AuthContext.tsx` | Context que expone `user`, `session`, `loading`, `signIn`, `signUp`, `signOut` |
-| `src/components/auth/AuthPage.tsx` | Pantalla de registro/inicio de sesión coherente con el diseño |
-| `src/App.tsx` (componente `App`) | Auth-gate: muestra `AuthPage` o el workspace según el estado de sesión |
+---
 
-### Setup local
+## 🤖 Motor Heurístico Local & Asistente Estratégico
 
-1. Crea un proyecto gratuito en [supabase.com](https://supabase.com).
-2. Ve a **Settings → API** y copia la URL y la clave `anon public`.
-3. Crea un archivo `.env` en la raíz del proyecto (basándote en `.env.example`):
-   ```env
-   VITE_SUPABASE_URL=https://your-project-ref.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-public-key
+El núcleo analítico de **Lean Canvas Pro** reside en `src/evaluator` y `src/lib/localStrategicTools.ts`. Al funcionar de forma completamente local, no requiere llamadas a APIs de inteligencia artificial ni subscripciones externas, ofreciendo respuestas instantáneas sin latencia.
+
+### Métrica Global de Evaluación (*Readiness Score*)
+
+El motor evalúa el canvas otorgando una puntuación global sobre **100 puntos** desglosada en las siguientes dimensiones:
+
+| Dimensión | Ponderación | Criterios de Evaluación |
+|---|:---:|---|
+| **Completitud (*Completeness*)** | 30% | Cobertura de los 9 bloques del lienzo y volumen mínimo de información estructurada. |
+| **Especificidad (*Specificity*)** | 35% | Presencia de métricas cuantitativas, cifras financieras, tecnologías nombradas, perfiles concretos y canales explícitos (penaliza la ambigüedad). |
+| **Coherencia Cruzada (*Coherence*)** | 20% | Alineación estratégica entre pares críticos: *Problema ↔ Solución*, *Canales ↔ Segmentos*, *Ingresos ↔ Costes*. |
+| **Defendibilidad (*Defensibility*)** | 15% | Fuerza de la *Ventaja Injusta* (patentes, efectos de red, contratos exclusivos, data flywheels). |
+
+### Generadores Estratégicos Automáticos
+
+A través del panel **AI Content Studio**, el sistema genera artefactos estratégicos listos para producción:
+- 📝 **Resumen Ejecutivo:** Síntesis ejecutiva de la startup a partir de la propuesta de valor y los segmentos clave.
+- ⚡ **Elevator Pitch:** Discurso de impacto comercial de 30 segundos.
+- 🌐 **Copy para Landing Page:** Encabezados, subtítulos y llamados a la acción (CTAs) para páginas de captación.
+- 📊 **Estimación de Tamaño de Mercado (TAM / SAM / SOM):** Desglose heurístico del mercado total, direccionable y obtenible.
+- 🔄 **Recomendaciones de Pivotaje:** Diagnóstico de riesgos operativos e hipotesis débiles que requieren validación urgente.
+
+---
+
+## 📦 Catálogo de Plantillas Predefinidas
+
+| Emoji | Plantilla | Categoría | Descripción Breve |
+|:---:|---|---|---|
+| 💼 | **SaaS B2B** | Software | Herramientas de productividad y automatización para empresas. |
+| 🛒 | **Marketplace** | Plataforma | Conexión bilateral de oferta y demanda con efectos de red. |
+| 🏪 | **E-commerce** | Retail | Tienda online especializada de alto valor percibido y curación. |
+| 🤖 | **Producto de IA** | IA | Automatización de flujos complejos mediante modelos de lenguaje/datos. |
+| 💳 | **Fintech** | Finanzas | Servicios financieros digitales, pagos, crédito y gestión eficiente. |
+| 🎓 | **EdTech** | Educación | Bootcamps, cursos y formación orientada a inserción laboral. |
+| 🏥 | **HealthTech** | Salud | Telemedicina, monitoreo continuo y soluciones de bienestar personal. |
+| 📱 | **SaaS B2C** | Software | Aplicaciones de consumo individual enfocadas en hábito y retención. |
+| 🏠 | **PropTech** | Inmobiliaria | Digitalización de transacciones, gestión y análisis inmobiliario. |
+
+---
+
+## ⚡ Persistencia y Sincronización Híbrida (Local-First + Cloud)
+
+El sistema de datos está construido bajo la arquitectura **Local-First with Cloud Auto-Sync**:
+
+```
+[Entrada de Datos del Usuario]
+       │
+       ├──► localStorage Cache (Escritura Inmediata < 1ms) ──► Render Instantáneo en UI
+       │
+       └──► Supabase Postgres Sync (Debounce de 600ms) ─────► Persistencia Segura Multi-Dispositivo
+```
+
+### Principales Beneficios:
+1. **Zero-Latency UI:** La interfaz responde instantáneamente sin esperar respuesta de red.
+2. **Resiliencia Offline:** El usuario puede trabajar sin conexión a Internet; la caché local mantiene los datos intactos.
+3. **Migración Transparente:** Los usuarios que inician sesión por primera vez migran automáticamente sus lienzos locales previos a su cuenta en la nube sin pérdida de información.
+
+---
+
+## 👥 Módulo de Colaboración, Workspaces y Feedback
+
+ Lean Canvas Pro soporta la gestión colaborativa a nivel de equipo:
+
+- **Estructura jerárquica:** `Workspace ──► Members & Roles ──► Canvases`.
+- **Niveles de Permiso Granulares:**
+  - `owner`: Control total del workspace, gestión de miembros, eliminación de lienzos.
+  - `editor`: Creación y modificación libre de lienzos e hipótesis dentro del workspace.
+  - `viewer`: Acceso exclusivo de lectura y comentarios.
+- **Sistema de Comentarios (`canvas_comments`):** Hilos de discusión asociados a cada bloque numerado del 1 al 9, permitiendo iteraciones con timestamp y estado de resolución.
+
+---
+
+## 📊 Exportación Avanzada y Modo Presentación
+
+1. **PDF Vectorial (`CanvasPdfDocument.tsx`):**
+   - Layout en apaisado (Landscape A4) fiel al diseño original.
+   - Tipografías legibles, codificación de colores por bloque y membrete profesional con metadatos del proyecto.
+2. **Presentación Interactiva (`PresentationMode.tsx`):**
+   - Modo pantalla completa con soporte de navegación por teclado (flechas / espacio).
+   - Diapositivas individuales animadas por bloque con diseño tipográfico de alta legibilidad para proyectores o compartición por videollamada.
+
+---
+
+## 🗄️ Esquema de Base de Datos y Migraciones SQL
+
+La persistencia en la nube utiliza **Supabase Postgres** con **Row Level Security (RLS)** activado en todas las tablas para garantizar aislamiento estricto de inquilinos (*Tenant Isolation*).
+
+### Resumen de Migraciones SQL (`supabase/migrations/`)
+
+| Migración | Nombre | Descripción y Responsabilidad |
+|:---:|---|---|
+| `001` | `001_create_canvases.sql` | Tabla principal de lienzos (`canvases`), trigger de `updated_at` y políticas RLS para propietarios. |
+| `002` | `002_create_canvas_snapshots.sql` | Historial de versiones (`canvas_snapshots`) para respaldar recuperaciones de lienzo. |
+| `003` | `003_create_canvas_shares.sql` | Enlaces públicos de solo lectura (`canvas_shares`) y función segura RPC `get_canvas_by_share_token`. |
+| `004` | `004_create_workspaces.sql` | Gestión de organizaciones (`workspaces`) y miembros de equipo (`workspace_members`). |
+| `005` | `005_create_workspace_invitations.sql` | Gestión de invitaciones pendientes (`workspace_invitations`) y funciones RPC asociadas. |
+| `006` | `006_workspace_canvas_permissions.sql` | Ajuste de restricciones de borrado (`DELETE`) según el rol asignado en el workspace. |
+| `007` | `007_create_canvas_comments.sql` | Hilos de comentarios por bloque (`canvas_comments`) con políticas de visibilidad por miembros. |
+| `008` | `008_workspace_share_read_policy.sql` | Políticas de lectura pública ampliadas para miembros de workspace. |
+
+---
+
+## 🔬 Observabilidad y Telemetría (Sentry & PostHog)
+
+### Sentry Error Tracking (`src/lib/sentry.ts` & `server.ts`)
+- **Frontend:** Captura de excepciones no controladas y errores de renderizado mediante `ErrorBoundary`.
+- **Backend:** Middleware de captura de errores Express con filtrado de PII (los datos estratégicos de los lienzos nunca se envían a Sentry).
+- **Activación transparente:** Se habilita automáticamente solo cuando la variable `VITE_SENTRY_DSN` o `SENTRY_DSN` está presente.
+
+### PostHog Product Analytics (`src/lib/analytics.ts`)
+- Métrica anónima del uso de características (creación de lienzos, ejecuciones del evaluador, exportaciones en PDF).
+- Sin seguimiento de datos sensibles de negocio ni textos de los bloques.
+
+---
+
+## 🛠️ Guía de Instalación y Despliegue Local
+
+### Requisitos Previos
+- **Node.js**: v18.0.0 o superior.
+- **npm**: v9.0.0 o superior.
+- Proyecto en **Supabase** (cuenta gratuita).
+
+### Pasos de Instalación
+
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/markusx5622/Lean-Canvas-Pro.git
+   cd Lean-Canvas-Pro
    ```
-4. En el panel de Supabase, asegúrate de que **Email Auth** está habilitado en *Authentication → Providers*.  
-   (Opcional) Desactiva la confirmación de email en entornos de desarrollo en *Authentication → Settings → Email confirmations*.
-5. Ejecuta **todas** las migraciones en orden (ver sección de base de datos más abajo).
-6. Arranca el servidor de desarrollo:
+
+2. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
+
+3. **Configurar el archivo de entorno `.env`:**
+   Crea un archivo `.env` en la raíz del proyecto basándote en `.env.example`:
+   ```env
+   VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+   VITE_SUPABASE_ANON_KEY=tu-clave-anonima-publica
+   VITE_SENTRY_DSN=
+   SENTRY_DSN=
+   PORT=3000
+   ```
+
+4. **Ejecutar las migraciones en Supabase:**
+   Abre el Editor SQL de tu panel de Supabase y ejecuta en orden secuencial los archivos situados en `supabase/migrations/001_...` a `008_...`.
+
+5. **Iniciar el servidor de desarrollo:**
    ```bash
    npm run dev
    ```
-
-> Las variables `VITE_*` son expuestas al cliente por Vite de forma segura.  
-> Nunca añadas la clave `service_role` al frontend.
+   La aplicación estará disponible en `http://localhost:3000`.
 
 ---
 
-## ☁️ Persistencia Cloud (Supabase Postgres)
+## 🔑 Variables de Entorno
 
-Los lienzos se almacenan en Supabase Postgres con **Row Level Security** activado, de modo que cada usuario solo puede acceder a sus propios datos.
-
-### Esquema
-
-```sql
--- Tabla: canvases
-id          uuid        PRIMARY KEY   -- UUID generado en cliente con crypto.randomUUID()
-user_id     uuid        NOT NULL      -- FK → auth.users, ON DELETE CASCADE
-name        text        NOT NULL      -- Nombre del lienzo
-data        jsonb       NOT NULL      -- Bloques del lienzo: { "1": "Problema...", "4": "Solución..." }
-created_at  timestamptz NOT NULL
-updated_at  timestamptz NOT NULL      -- Actualizado automáticamente por trigger
-```
-
-Los 9 bloques del canvas (identificados por su número 1–9) se guardan como claves del objeto JSON `data`.
-
-### Migración
-
-Ejecuta **todos** los archivos de `supabase/migrations/` **una sola vez y en orden** en tu proyecto de Supabase:
-
-1. Abre **Dashboard → SQL Editor → New query**.
-2. Para cada archivo de la lista siguiente, pega el contenido y haz clic en **Run**:
-
-| Archivo | Qué crea |
-|---|---|
-| `001_create_canvases.sql` | Tabla `canvases`, trigger `set_updated_at` y RLS |
-| `002_create_canvas_snapshots.sql` | Tabla `canvas_snapshots` y RLS |
-| `003_create_canvas_shares.sql` | Tabla `canvas_shares`, RLS básica y función RPC `get_canvas_by_share_token` |
-| `004_create_workspaces.sql` | Tablas `workspaces` y `workspace_members` |
-| `005_create_workspace_invitations.sql` | Tabla `workspace_invitations`, RPCs de invitación |
-| `006_workspace_canvas_permissions.sql` | Políticas de DELETE más restrictivas para canvases de workspace |
-| `007_create_canvas_comments.sql` | Tabla `canvas_comments` y RLS |
-| `008_workspace_share_read_policy.sql` | Política SELECT para que los miembros de workspace puedan leer shares existentes |
-
-> **Importante:** saltar cualquier migración provocará fallos silenciosos o errores de RLS en la feature correspondiente. Las migraciones son aditivas y seguras de re-ejecutar gracias a las cláusulas `IF NOT EXISTS` / `CREATE OR REPLACE`.
-
-### Flujo de persistencia
-
-```
-[Usuario teclea]
-      │  600 ms debounce
-      ▼
-updateBlock() ──► localStorage cache (escritura inmediata)
-      │
-      └──► Supabase updateCanvas() (fire-and-forget, en paralelo)
-
-[Carga inicial]
-      │
-      ├──► localStorage cache → render instantáneo
-      └──► Supabase listCanvases() → reconcilia y actualiza UI
-             │
-             └── Si no hay datos en Supabase:
-                   • Migra desde la clave legacy lean-canvas-pro-projects (una sola vez)
-                   • O crea un lienzo vacío por defecto
-```
-
-### Decisiones clave
-
-| Decisión | Justificación |
-|---|---|
-| **Supabase Postgres** | Coherente con la auth ya implementada; sin nueva infraestructura |
-| **UUID generado en cliente** | Permite escritura optimista sin round-trip extra |
-| **localStorage como caché** | Render instantáneo al recargar; resiliencia ante desconexión |
-| **Fire-and-forget para el sync** | Mantiene la fluidez de edición; los errores no bloquean la UI |
-| **Migración automática una vez** | Ningún dato del usuario se pierde al pasar a cloud |
-| **RLS en Postgres** | Los datos de cada usuario son privados por defecto, incluso si la `anon key` se expone |
-
-### Archivos relevantes
-
-| Archivo | Responsabilidad |
-|---|---|
-| `src/lib/canvasService.ts` | CRUD helpers sobre la tabla `canvases` |
-| `src/hooks/useCanvases.ts` | Hook: estado local + sync cloud + migración legacy |
-| `supabase/migrations/001_create_canvases.sql` | Schema, trigger y RLS |
-
-
+| Variable | Ámbito | Requerida | Descripción |
+|---|:---:|:---:|---|
+| `VITE_SUPABASE_URL` | Frontend | **Sí** | URL Endpoint del proyecto Supabase. |
+| `VITE_SUPABASE_ANON_KEY` | Frontend | **Sí** | Clave pública anónima (*Anon Public Key*) de Supabase. |
+| `VITE_SENTRY_DSN` | Frontend | No | DSN de Sentry para reporte de errores en cliente. |
+| `SENTRY_DSN` | Backend | No | DSN de Sentry para el servidor Express. |
+| `VITE_POSTHOG_KEY` | Frontend | No | API Key de PostHog para métricas de uso. |
+| `VITE_POSTHOG_HOST` | Frontend | No | Host custom o por defecto de PostHog. |
+| `PORT` | Backend | No | Puerto de escucha del servidor HTTP (por defecto `3000`). |
 
 ---
 
-## 🔗 Compartir Canvas (Solo Lectura)
+## 🧪 Suite de Tests y Control de Calidad
 
-Lean Canvas Pro permite generar un enlace público de solo lectura para cualquier canvas. Los destinatarios pueden ver el canvas sin necesidad de cuenta y sin poder editarlo.
+El proyecto cuenta con una cobertura exhaustiva de pruebas unitarias, de integración y pruebas E2E (*End-to-End*).
 
-### Cómo funciona
+```bash
+# Ejecutar comprobación de tipos TypeScript
+npm run lint
 
-1. Abre la sidebar y pulsa **Compartir** sobre el canvas activo.
-2. Haz clic en **Generar enlace de solo lectura** → se crea un registro en `canvas_shares`.
-3. Copia el enlace generado (`/share/<token>`) y compártelo.
-4. Cualquier persona con el enlace puede ver el canvas en modo lectura en la ruta `/share/:token` — sin autenticación.
+# Ejecutar suite de pruebas unitarias (Vitest)
+npm run test
 
-### Modelo de datos
+# Modo de pruebas interactivas en vivo
+npm run test:watch
 
-```sql
--- Tabla: canvas_shares
-id          uuid        PRIMARY KEY
-canvas_id   uuid        NOT NULL UNIQUE   -- FK → canvases; un share por canvas
-user_id     uuid        NOT NULL          -- DEFAULT auth.uid() — quién creó el share
-token       uuid        NOT NULL UNIQUE   -- slug del enlace público
-created_at  timestamptz NOT NULL
+# Ejecutar pruebas End-to-End con Playwright
+npm run test:e2e
+
+# Interfaz visual de Playwright
+npm run test:e2e:ui
 ```
 
-### Políticas RLS
-
-| Política | Operación | Permite |
-|---|---|---|
-| `Owners can manage their canvas shares` | ALL | Solo el creador del share (`user_id = auth.uid()`) |
-| `Workspace members can view canvas shares` | SELECT | Cualquier miembro del workspace al que pertenece el canvas |
-
-La función `get_canvas_by_share_token(p_token uuid)` es `SECURITY DEFINER` y permite a llamadas anónimas leer el canvas del share sin RLS.
-
-### Archivos relevantes
-
-| Archivo | Responsabilidad |
-|---|---|
-| `src/lib/shareService.ts` | CRUD + RPC helpers con null guards explícitos |
-| `src/hooks/useCanvasSharing.ts` | Estado del share por canvas; maneja error 23505 |
-| `src/components/ShareModal.tsx` | UI del modal de compartir |
-| `src/components/SharedCanvasView.tsx` | Vista pública de solo lectura (`/share/:token`) |
-| `supabase/migrations/003_create_canvas_shares.sql` | Tabla, RLS base y función RPC |
-| `supabase/migrations/008_workspace_share_read_policy.sql` | SELECT policy para miembros de workspace |
+### Cobertura Principal de Tests:
+- **`evaluateCanvas.test.ts`**: Pruebas de cálculo de puntuaciones, reglas de coherencia cruzada y priorización de problemas.
+- **`evaluateBlock.test.ts`**: Pruebas de especificidad y análisis de términos vagos por bloque.
+- **`scoring.test.ts`**: Pruebas de agregación de sub-puntuaciones matemáticas.
+- **`localStrategicTools.test.ts`**: Pruebas deterministas de los generadores estratégicos.
 
 ---
 
-## 🔍 Error Tracking (Sentry)
+## 🎓 Créditos y Contexto Académico
 
-Lean Canvas Pro integra **Sentry** para captura de errores en frontend y backend.  
-La integración es completamente opcional: si las variables de entorno no están definidas, la aplicación funciona con normalidad sin enviar ningún dato.
+**Lean Canvas Pro** ha sido conceptualizado, diseñado y desarrollado íntegramente por **Marc Cubero Cantavella**, en el marco de sus investigaciones y aplicación técnica desde la **Ingeniería de Organización Industrial** en la **Universidad Europea de Valencia**.
 
-### Variables de entorno
-
-| Variable | Dónde se usa | Descripción |
-|---|---|---|
-| `VITE_SENTRY_DSN` | Frontend (Vite → navegador) | DSN del proyecto Sentry para el cliente React |
-| `SENTRY_DSN` | Backend (Node.js) | DSN del proyecto Sentry para el servidor Express |
-
-Añade ambas variables a tu archivo `.env` (consulta `.env.example` para el formato exacto).
-
-### Qué se captura
-
-| Superficie | Qué se reporta | Qué se omite intencionalmente |
-|---|---|---|
-| **Frontend** | Errores de render capturados por `ErrorBoundary`, excepciones no controladas | Contenido de los bloques del canvas, email del usuario |
-| **Backend** | Excepciones que llegan al error-handler de Express | Cuerpos de request (canvas data) |
-
-### Contexto de usuario
-
-Al autenticarse, se adjunta únicamente el **ID de usuario** de Supabase al scope de Sentry.  
-El email y cualquier otro dato personal quedan fuera del reporte para respetar la privacidad.
-
-### Setup
-
-1. Crea un proyecto en [sentry.io](https://sentry.io) (puedes usar uno solo para ambos o uno separado por entorno).
-2. Copia el **DSN** desde *Project → Settings → Client Keys*.
-3. Añade las variables a tu `.env`:
-   ```env
-   VITE_SENTRY_DSN=https://your-key@oXXXXX.ingest.sentry.io/XXXXXXX
-   SENTRY_DSN=https://your-key@oXXXXX.ingest.sentry.io/XXXXXXX
-   ```
-4. Reinicia el servidor de desarrollo (`npm run dev`).
-
-### Archivos relevantes
-
-| Archivo | Responsabilidad |
-|---|---|
-| `src/lib/sentry.ts` | `initSentry()` – inicializa el SDK de React/browser |
-| `src/main.tsx` | Llama a `initSentry()` antes del primer render |
-| `src/ErrorBoundary.tsx` | Reporta errores de render vía `Sentry.captureException` |
-| `src/contexts/AuthContext.tsx` | Adjunta / limpia el user scope (`Sentry.setUser`) |
-| `server.ts` | Inicializa `@sentry/node` y registra `setupExpressErrorHandler` |
+- 👨‍💻 **Autor:** Marc Cubero Cantavella
+- 🏛️ **Institución:** Universidad Europea de Valencia
+- 🔗 **Perfil Profesional:** [LinkedIn - Marc Cubero Cantavella](https://www.linkedin.com/in/marc-cubero-cantavella-bb04542a7)
 
 ---
-
-Diseñado y desarrollado de manera empírica en el ecosistema de talento e innovación por **Marc Cubero Cantavella** desde el campo de la *Ingeniería de Organización Industrial* aplicados sobre la **Universidad Europea de Valencia**. 
-
-[🔗 Conectar con Marc Cubero en LinkedIn](https://www.linkedin.com/in/marc-cubero-cantavella-bb04542a7)
 
 ## ⚖️ Licencia y Propiedad Intelectual
 
@@ -246,7 +327,7 @@ Diseñado y desarrollado de manera empírica en el ecosistema de talento e innov
 
 Esta plataforma, su código fuente, arquitectura, diseño y concepto son propiedad exclusiva e intelectual de su creador.
 
-🔹 **Puedes** acceder y usar la aplicación funcional en la web de forma abierta para construir tus modelos y dar vida a tus Startups.  
-❌ **No puedes** descargar, clonar, copiar, distribuir, revender, modificar ni realizar obras derivadas de este código fuente o del diseño para fines comerciales ni no comerciales sin la autorización directa, mediante firma, de Marc Cubero. 
+- 🔹 **Uso Permitido:** Puedes acceder, navegar y utilizar la aplicación funcional desplegada libremente para conceptualizar tus propios modelos de negocio y startups.
+- ❌ **Restricciones:** No está permitida la copia, clonación, distribución, redistribución, modificación, reventa o creación de obras derivadas del código fuente o de la interfaz sin la autorización expresa y por escrito de Marc Cubero Cantavella.
 
-> *La visibilidad de este código fuente en repositorios como GitHub sirve con fines exclusivos de portafolio y evidencia de capacidad técnica. No se ampara de ninguna manera bajo terminologías Open Source.* Por favor, ver el archivo `LICENSE` completo del repositorio para detalles legales.
+> *La presencia de este código fuente en un repositorio público de GitHub cumple una función estrictamente demostrativa y de portafolio profesional de capacidad técnica. No otorga licencias Open Source de libre explotación.* Para más información legal, consulta el archivo [LICENSE](file:///c:/Users/es00700248/Desktop/Personal/Lean-Canvas-Pro/LICENSE).
