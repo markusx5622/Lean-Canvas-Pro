@@ -1,13 +1,21 @@
-# 🚀 Lean Canvas Pro  
-*Plataforma de Alto Rendimiento para Modelado Estratégico de Negocios, Evaluación Heurística Local y Colaboración en Tiempo Real para Startups*
+<p align="center">
+  <img src="public/logo.svg" width="96" height="96" alt="Lean Canvas Pro Logo" />
+</p>
 
-[![Status](https://img.shields.io/badge/Status-Active_Production-success?style=for-the-badge&logo=rocket)](https://github.com/markusx5622/Lean-Canvas-Pro)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19.0-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Supabase](https://img.shields.io/badge/Supabase-Postgres_%26_Auth-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-[![Motor Heurístico](https://img.shields.io/badge/Motor-Heur%C3%ADstico_Local_100%25-brightgreen?style=for-the-badge)](https://github.com/markusx5622/Lean-Canvas-Pro)
-[![License](https://img.shields.io/badge/Licencia-Proprietary-red?style=for-the-badge)](file:///c:/Users/es00700248/Desktop/Personal/Lean-Canvas-Pro/LICENSE)
+<h1 align="center">Lean Canvas Pro</h1>
+
+<p align="center">
+  <b>Plataforma de Alto Rendimiento para Modelado Estratégico de Negocios, Evaluación Heurística Local y Colaboración en Tiempo Real para Startups</b>
+</p>
+
+<p align="center">
+  <a href="https://github.com/markusx5622/Lean-Canvas-Pro"><img src="https://img.shields.io/badge/Status-Active_Production-success?style=for-the-badge&logo=rocket" alt="Status"></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.8-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19.0-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React"></a>
+  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind_CSS-4.1-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS"></a>
+  <a href="https://supabase.com/"><img src="https://img.shields.io/badge/Supabase-Postgres_%26_Auth-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase"></a>
+  <a href="https://github.com/markusx5622/Lean-Canvas-Pro"><img src="https://img.shields.io/badge/Motor-Heur%C3%ADstico_Local_100%25-brightgreen?style=for-the-badge" alt="Motor Heurístico"></a>
+</p>
 
 ---
 
